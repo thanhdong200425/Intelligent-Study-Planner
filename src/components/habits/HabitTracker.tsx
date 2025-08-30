@@ -250,7 +250,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({ onHabitUpdate }) => 
               {/* Today's Progress */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Today's Progress</span>
+                  <span className="text-sm font-medium text-gray-700">Today&apos;s Progress</span>
                   <span className="text-sm text-gray-600">
                     {todayProgress.completed} / {todayProgress.target} min
                   </span>

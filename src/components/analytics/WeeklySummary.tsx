@@ -23,6 +23,7 @@ import {
   Award,
   AlertTriangle 
 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface WeeklySummaryProps {
   weekStart?: Date;
@@ -90,6 +91,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
     const productiveTimeSlot = findMostProductiveTimeSlot(timeBlocks);
 
     const summaryData: WeeklySummaryType = {
+      id: uuidv4(),
       weekStart,
       weekEnd,
       tasksCompleted: completedTasks,
@@ -98,7 +100,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
       totalPredictedTime,
       timePerCourse,
       habitStreaks,
-      mostProductiveTimeSlot: productiveTimeSlot,
+      mostProductiveTimeSlot: productiveTimeSlot || undefined,
     };
 
     setSummary(summaryData);

@@ -90,7 +90,7 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
       <div className="bg-blue-50 p-4 rounded-lg">
         <h3 className="text-sm font-semibold text-blue-900 mb-2">How it works:</h3>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Click "Generate Week" to create time blocks for your tasks</li>
+          <li>• Click &quot;Generate Week&quot; to create time blocks for your tasks</li>
           <li>• Drag and drop blocks in the calendar to reschedule</li>
           <li>• Use the timer to track actual time spent</li>
           <li>• Check your weekly summary for insights</li>

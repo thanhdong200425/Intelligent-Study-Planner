@@ -61,6 +61,7 @@ export interface HabitCompletion {
 }
 
 export interface WeeklySummary {
+  id: string;
   weekStart: Date;
   weekEnd: Date;
   tasksCompleted: number;
