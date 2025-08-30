@@ -6,6 +6,7 @@ import { Course } from '@/types';
 import { CourseStorage } from '@/lib/storage';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useForm } from 'react-hook-form';
 
 interface CourseFormProps {
   onSubmit?: (course: Course) => void;
@@ -20,53 +21,29 @@ const PRESET_COLORS = [
 ];
 
 export const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    color: PRESET_COLORS[0],
-  });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const { register, formState: { errors }, reset, handleSubmit, setValue, getValues } = useForm<Course>();
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Course name is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-
+  const onSubmitHandler = (data: Course) => {    
     const course: Course = {
       id: uuidv4(),
-      name: formData.name.trim(),
-      color: formData.color,
+      name: data.name.trim(),
+      color: data.color,
     };
 
     CourseStorage.add(course);
     onSubmit?.(course);
 
-    // Reset form
-    setFormData({
-      name: '',
-      color: PRESET_COLORS[0],
-    });
-    setErrors({});
+    reset();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
       <Input
         label="Course Name"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        error={errors.name}
+        {...register('name')}
+        error={errors.name?.message}
         placeholder="e.g., CS 101, Mathematics, Literature"
+        className='text-black'
       />
 
       <div>
@@ -79,10 +56,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, onCancel }) =>
               key={color}
               type="button"
               className={`w-8 h-8 rounded-full border-2 ${
-                formData.color === color ? 'border-gray-900' : 'border-gray-300'
+                getValues('color') === color ? 'border-gray-900' : 'border-gray-300'
               }`}
               style={{ backgroundColor: color }}
-              onClick={() => setFormData({ ...formData, color })}
+              onClick={() => setValue('color', color)}
             />
           ))}
         </div>

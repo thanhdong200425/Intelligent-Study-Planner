@@ -18,7 +18,6 @@ export default function Home() {
   const [calendarKey, setCalendarKey] = useState(0);
 
   const handlePlanGenerated = () => {
-    // Force calendar to reload
     setCalendarKey(prev => prev + 1);
   };
 

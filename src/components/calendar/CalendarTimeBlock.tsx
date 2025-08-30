@@ -30,7 +30,7 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
     zIndex: isDragging ? 1000 : 1,
   } : {};
 
-  const duration = Math.round((timeBlock.endTime.getTime() - timeBlock.startTime.getTime()) / (1000 * 60));
+  const duration = Math.round((timeBlock?.endTime?.getTime() - timeBlock?.startTime?.getTime()) / (1000 * 60));
   const startTime = format(timeBlock.startTime, 'HH:mm');
   const endTime = format(timeBlock.endTime, 'HH:mm');
 
