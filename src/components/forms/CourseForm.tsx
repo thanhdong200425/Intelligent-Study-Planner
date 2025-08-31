@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { Course } from '@/types';
-import { CourseStorage } from '@/lib/storage';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { useForm } from 'react-hook-form';
+import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { Course } from "@/types";
+import { CourseStorage } from "@/lib/storage";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@heroui/react";
+import { useForm } from "react-hook-form";
 
 interface CourseFormProps {
   onSubmit?: (course: Course) => void;
@@ -14,16 +14,39 @@ interface CourseFormProps {
 }
 
 const PRESET_COLORS = [
-  '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
-  '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
-  '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
-  '#ec4899', '#f43f5e'
+  "#ef4444",
+  "#f97316",
+  "#f59e0b",
+  "#eab308",
+  "#84cc16",
+  "#22c55e",
+  "#10b981",
+  "#14b8a6",
+  "#06b6d4",
+  "#0ea5e9",
+  "#3b82f6",
+  "#6366f1",
+  "#8b5cf6",
+  "#a855f7",
+  "#d946ef",
+  "#ec4899",
+  "#f43f5e",
 ];
 
-export const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, onCancel }) => {
-  const { register, formState: { errors }, reset, handleSubmit, setValue, getValues } = useForm<Course>();
+export const CourseForm: React.FC<CourseFormProps> = ({
+  onSubmit,
+  onCancel,
+}) => {
+  const {
+    register,
+    formState: { errors },
+    reset,
+    handleSubmit,
+    setValue,
+    getValues,
+  } = useForm<Course>();
 
-  const onSubmitHandler = (data: Course) => {    
+  const onSubmitHandler = (data: Course) => {
     const course: Course = {
       id: uuidv4(),
       name: data.name.trim(),
@@ -40,10 +63,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, onCancel }) =>
     <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
       <Input
         label="Course Name"
-        {...register('name')}
-        error={errors.name?.message}
+        {...(register("name"), { required: true, minLength: 1 })}
         placeholder="e.g., CS 101, Mathematics, Literature"
-        className='text-black'
+        isRequired
       />
 
       <div>
@@ -56,10 +78,12 @@ export const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, onCancel }) =>
               key={color}
               type="button"
               className={`w-8 h-8 rounded-full border-2 ${
-                getValues('color') === color ? 'border-gray-900' : 'border-gray-300'
+                getValues("color") === color
+                  ? "border-gray-900"
+                  : "border-gray-300"
               }`}
               style={{ backgroundColor: color }}
-              onClick={() => setValue('color', color)}
+              onClick={() => setValue("color", color)}
             />
           ))}
         </div>
