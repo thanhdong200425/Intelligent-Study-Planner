@@ -1,12 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { TimeBlock, Task, Course } from '@/types';
-import { TimeBlockStorage, TaskStorage, CourseStorage } from '@/lib/storage';
-import { format, addDays, startOfWeek, addMinutes } from 'date-fns';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
-import { CalendarTimeBlock } from './CalendarTimeBlock';
-import { DroppableTimeSlot } from './DroppableTimeSlot';
+import React, { useState, useEffect } from "react";
+import { TimeBlock, Task, Course } from "@/types";
+import { TimeBlockStorage, TaskStorage, CourseStorage } from "@/lib/storage";
+import { format, addDays, startOfWeek, addMinutes } from "date-fns";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import { CalendarTimeBlock } from "./CalendarTimeBlock";
+import { DroppableTimeSlot } from "./DroppableTimeSlot";
 
 interface CalendarGridProps {
   weekStart?: Date;
@@ -14,17 +19,25 @@ interface CalendarGridProps {
   onTimeBlockDelete?: (id: string) => void;
 }
 
-export const CalendarGrid: React.FC<CalendarGridProps> = ({ 
+export const CalendarGrid: React.FC<CalendarGridProps> = ({
   weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }),
   onTimeBlockUpdate,
-  onTimeBlockDelete 
+  onTimeBlockDelete,
 }) => {
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [activeBlock, setActiveBlock] = useState<TimeBlock | null>(null);
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
   const hours = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
 
   useEffect(() => {
@@ -35,31 +48,32 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     const blocks = TimeBlockStorage.getByWeek(weekStart);
     const allTasks = TaskStorage.getAll();
     const allCourses = CourseStorage.getAll();
-    
+
     setTimeBlocks(blocks);
     setTasks(allTasks);
     setCourses(allCourses);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    const block = timeBlocks.find(b => b.id === event.active.id);
+    const block = timeBlocks.find((b) => b.id === event.active.id);
     setActiveBlock(block || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over || !activeBlock) {
       setActiveBlock(null);
       return;
     }
 
-    const [dayIndex, hour] = over.id.toString().split('-').map(Number);
+    const [dayIndex, hour] = over.id.toString().split("-").map(Number);
     const targetDate = addDays(weekStart, dayIndex);
     const newStartTime = new Date(targetDate);
     newStartTime.setHours(hour, 0, 0, 0);
 
-    const duration = activeBlock.endTime.getTime() - activeBlock.startTime.getTime();
+    const duration =
+      activeBlock.endTime.getTime() - activeBlock.startTime.getTime();
     const newEndTime = new Date(newStartTime.getTime() + duration);
 
     const updatedBlock: TimeBlock = {
@@ -80,10 +94,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     slotStart.setHours(hour, 0, 0, 0);
     const slotEnd = addMinutes(slotStart, 60);
 
-    return timeBlocks.filter(block => {
+    return timeBlocks.filter((block) => {
       const blockStart = new Date(block.startTime);
       const blockEnd = new Date(block.endTime);
-      
+
       return (
         (blockStart >= slotStart && blockStart < slotEnd) ||
         (blockEnd > slotStart && blockEnd <= slotEnd) ||
@@ -93,11 +107,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const getTaskForBlock = (block: TimeBlock): Task | undefined => {
-    return tasks.find(t => t.id === block.taskId);
+    return tasks.find((t) => t.id === block.taskId);
   };
 
   const getCourseForTask = (task: Task): Course | undefined => {
-    return courses.find(c => c.id === task.courseId);
+    return courses.find((c) => c.id === task.courseId);
   };
 
   const handleDeleteBlock = (blockId: string) => {
@@ -117,7 +131,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             return (
               <div key={day} className="p-3 text-center">
                 <div className="text-sm font-medium text-gray-900">{day}</div>
-                <div className="text-xs text-gray-500">{format(date, 'MMM d')}</div>
+                <div className="text-xs text-gray-500">
+                  {format(date, "MMM d")}
+                </div>
               </div>
             );
           })}
@@ -125,27 +141,27 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
         {/* Grid */}
         <div className="grid grid-cols-8">
-          {hours.map(hour => (
+          {hours.map((hour) => (
             <React.Fragment key={hour}>
               {/* Time column */}
               <div className="p-2 text-xs text-gray-500 border-b border-r bg-gray-50">
-                {format(new Date().setHours(hour, 0, 0, 0), 'HH:mm')}
+                {format(new Date().setHours(hour, 0, 0, 0), "HH:mm")}
               </div>
-              
+
               {/* Day columns */}
               {days.map((_, dayIndex) => {
                 const blocksInSlot = getBlocksForTimeSlot(dayIndex, hour);
-                
+
                 return (
                   <DroppableTimeSlot
                     key={`${dayIndex}-${hour}`}
                     id={`${dayIndex}-${hour}`}
                     className="relative border-b border-r h-16 hover:bg-gray-50"
                   >
-                    {blocksInSlot.map(block => {
+                    {blocksInSlot.map((block) => {
                       const task = getTaskForBlock(block);
                       const course = task ? getCourseForTask(task) : undefined;
-                      
+
                       return (
                         <CalendarTimeBlock
                           key={block.id}
@@ -169,7 +185,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         {activeBlock && (
           <div className="p-2 bg-blue-100 border border-blue-300 rounded shadow-lg">
             <div className="text-xs font-medium">
-              {activeBlock.isBreak ? 'Break' : getTaskForBlock(activeBlock)?.title || 'Unknown Task'}
+              {activeBlock.isBreak
+                ? "Break"
+                : getTaskForBlock(activeBlock)?.title || "Unknown Task"}
             </div>
           </div>
         )}
