@@ -6,7 +6,7 @@ import { Course } from "@/types";
 import { CourseStorage } from "@/lib/storage";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@heroui/react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 interface CourseFormProps {
   onSubmit?: (course: Course) => void;
@@ -38,13 +38,16 @@ export const CourseForm: React.FC<CourseFormProps> = ({
   onCancel,
 }) => {
   const {
+    control,
     register,
     formState: { errors },
     reset,
     handleSubmit,
     setValue,
     getValues,
-  } = useForm<Course>();
+  } = useForm<Course>({
+    mode: "onBlur",
+  });
 
   const onSubmitHandler = (data: Course) => {
     const course: Course = {
@@ -61,11 +64,29 @@ export const CourseForm: React.FC<CourseFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
-      <Input
-        label="Course Name"
-        {...(register("name"), { required: true, minLength: 1 })}
-        placeholder="e.g., CS 101, Mathematics, Literature"
-        isRequired
+      <Controller
+        control={control}
+        name="name"
+        rules={{
+          required: {
+            value: true,
+            message: "Please enter a valid course name",
+          },
+          minLength: {
+            value: 2,
+            message: "Course name must be at least 2 character long",
+          },
+        }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Course Name"
+            isRequired
+            className="w-full"
+            errorMessage={errors.name?.message}
+            isInvalid={errors.name ? true : false}
+          />
+        )}
       />
 
       <div>
