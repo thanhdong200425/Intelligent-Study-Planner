@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Course } from "@/types";
 import { CourseStorage } from "@/lib/storage";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@heroui/react";
+import { addToast, Input } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
 
 interface CourseFormProps {
@@ -39,12 +39,11 @@ export const CourseForm: React.FC<CourseFormProps> = ({
 }) => {
   const {
     control,
-    register,
-    formState: { errors },
     reset,
+    formState: { errors },
     handleSubmit,
     setValue,
-    getValues,
+    watch,
   } = useForm<Course>({
     mode: "onBlur",
   });
@@ -58,8 +57,16 @@ export const CourseForm: React.FC<CourseFormProps> = ({
 
     CourseStorage.add(course);
     onSubmit?.(course);
-
-    reset();
+    addToast({
+      title: "Course added successfully",
+      color: "success",
+      timeout: 2000,
+      shouldShowTimeoutProgress: true,
+    });
+    reset({
+      name: "",
+      color: "",
+    });
   };
 
   return (
@@ -99,9 +106,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               key={color}
               type="button"
               className={`w-8 h-8 rounded-full border-2 ${
-                getValues("color") === color
-                  ? "border-gray-900"
-                  : "border-gray-300"
+                watch("color") === color ? "border-gray-900" : "border-gray-300"
               }`}
               style={{ backgroundColor: color }}
               onClick={() => setValue("color", color)}

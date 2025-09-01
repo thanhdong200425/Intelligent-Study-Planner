@@ -2,6 +2,7 @@
   "name": "intell-study-planner",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -13,6 +14,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@heroui/react": "^2.8.3",
+    "@internationalized/date": "^3.9.0",
     "@tanstack/react-query": "^5.85.6",
     "@types/uuid": "^10.0.0",
     "date-fns": "^4.1.0",

@@ -1,110 +1,158 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { AvailabilityWindow } from '@/types';
-import { AvailabilityStorage } from '@/lib/storage';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import React from "react";
+import { v4 as uuidv4 } from "uuid";
+import { AvailabilityWindow } from "@/types";
+import { AvailabilityStorage } from "@/lib/storage";
+import { Controller, useForm } from "react-hook-form";
+import { Input, Select, SelectItem, Button, addToast } from "@heroui/react";
 
 interface AvailabilityFormProps {
   onSubmit?: (window: AvailabilityWindow) => void;
   onCancel?: () => void;
 }
 
-export const AvailabilityForm: React.FC<AvailabilityFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    dayOfWeek: 1, // Monday
-    startTime: '09:00',
-    endTime: '17:00',
+export const AvailabilityForm: React.FC<AvailabilityFormProps> = ({
+  onSubmit,
+  onCancel,
+}) => {
+  const {
+    control,
+    reset,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<AvailabilityWindow>({
+    defaultValues: {
+      dayOfWeek: 1, // Monday
+      startTime: "09:00",
+      endTime: "17:00",
+    },
+    mode: "onBlur",
   });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const startTime = watch("startTime");
 
   const dayOptions = [
-    { value: '0', label: 'Sunday' },
-    { value: '1', label: 'Monday' },
-    { value: '2', label: 'Tuesday' },
-    { value: '3', label: 'Wednesday' },
-    { value: '4', label: 'Thursday' },
-    { value: '5', label: 'Friday' },
-    { value: '6', label: 'Saturday' },
+    { value: "0", label: "Sunday" },
+    { value: "1", label: "Monday" },
+    { value: "2", label: "Tuesday" },
+    { value: "3", label: "Wednesday" },
+    { value: "4", label: "Thursday" },
+    { value: "5", label: "Friday" },
+    { value: "6", label: "Saturday" },
   ];
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    
-    if (!formData.startTime) {
-      newErrors.startTime = 'Start time is required';
-    }
-    
-    if (!formData.endTime) {
-      newErrors.endTime = 'End time is required';
-    }
-    
-    if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
-      newErrors.endTime = 'End time must be after start time';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validateTime = (value: string) => {
+    if (!value) return "Time is required";
+    return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
+  const validateEndTime = (value: string) => {
+    if (!value) return "End time is required";
+    if (startTime && value <= startTime) {
+      return "End time must be after start time";
+    }
+    return true;
+  };
 
+  const onSubmitHandler = (data: AvailabilityWindow) => {
     const availabilityWindow: AvailabilityWindow = {
       id: uuidv4(),
-      dayOfWeek: formData.dayOfWeek,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
+      dayOfWeek: data.dayOfWeek,
+      startTime: data.startTime,
+      endTime: data.endTime,
     };
 
     AvailabilityStorage.add(availabilityWindow);
     onSubmit?.(availabilityWindow);
 
-    // Reset form
-    setFormData({
-      dayOfWeek: 1,
-      startTime: '09:00',
-      endTime: '17:00',
+    addToast({
+      title: "Availability Added",
+      color: "success",
+      timeout: 3000,
+      shouldShowTimeoutProgress: true,
     });
-    setErrors({});
+
+    // Reset form
+    reset({
+      dayOfWeek: 1,
+      startTime: "09:00",
+      endTime: "17:00",
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Select
-        label="Day of Week"
-        value={formData.dayOfWeek.toString()}
-        onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
-        options={dayOptions}
+    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
+      <Controller
+        control={control}
+        name="dayOfWeek"
+        rules={{
+          required: { value: true, message: "Day of week is required" },
+        }}
+        render={({ field }) => (
+          <Select
+            {...field}
+            selectedKeys={field.value ? [field.value.toString()] : []}
+            onSelectionChange={(keys) => {
+              const selectedKey = Array.from(keys)[0] as string;
+              field.onChange(parseInt(selectedKey));
+            }}
+            isInvalid={!!errors.dayOfWeek?.message}
+            errorMessage={errors.dayOfWeek?.message}
+            label="Day of Week"
+          >
+            {dayOptions.map((day) => (
+              <SelectItem key={day.value}>{day.label}</SelectItem>
+            ))}
+          </Select>
+        )}
       />
 
-      <Input
-        label="Start Time"
-        type="time"
-        value={formData.startTime}
-        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-        error={errors.startTime}
+      <Controller
+        control={control}
+        name="startTime"
+        rules={{
+          required: { value: true, message: "Start time is required" },
+          validate: validateTime,
+        }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Start Time"
+            type="time"
+            isInvalid={!!errors.startTime?.message}
+            errorMessage={errors.startTime?.message}
+            size="sm"
+          />
+        )}
       />
 
-      <Input
-        label="End Time"
-        type="time"
-        value={formData.endTime}
-        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-        error={errors.endTime}
+      <Controller
+        control={control}
+        name="endTime"
+        rules={{
+          required: { value: true, message: "End time is required" },
+          validate: validateEndTime,
+        }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="End Time"
+            type="time"
+            isInvalid={!!errors.endTime?.message}
+            errorMessage={errors.endTime?.message}
+            size="sm"
+          />
+        )}
       />
 
       <div className="flex gap-2">
-        <Button type="submit" variant="primary">
+        <Button type="submit" color="primary">
           Add Availability
         </Button>
         {onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel}>
+          <Button type="button" color="secondary" onPress={onCancel}>
             Cancel
           </Button>
         )}
