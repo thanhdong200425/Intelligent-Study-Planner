@@ -97,7 +97,7 @@ export class WeeklyScheduler {
       const dayOfWeek = getDay(currentDay);
 
       const dayAvailability = availability.filter(
-        (a) => a.dayOfWeek === dayOfWeek
+        (a) => Number(a.dayOfWeek) === dayOfWeek
       );
 
       dayAvailability.forEach((window) => {

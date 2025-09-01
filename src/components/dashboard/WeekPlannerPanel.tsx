@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { TaskStorage, CourseStorage, AvailabilityStorage } from "@/lib/storage";
+import { addToast } from "@heroui/react";
 
 interface WeekPlannerPanelProps {
   currentWeek: Date;
@@ -31,11 +32,6 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
     tasks: 0,
     availability: 0,
   });
-  const [lastGenerationResult, setLastGenerationResult] = useState<{
-    success: boolean;
-    blocksGenerated: number;
-    message: string;
-  } | null>(null);
 
   useEffect(() => {
     updateDataStats();
@@ -68,26 +64,32 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
       }
     },
     onSuccess: (blocks) => {
-      setLastGenerationResult({
-        success: true,
-        blocksGenerated: blocks.length,
-        message: `Successfully generated ${blocks.length} time blocks!`,
-      });
       onPlanGenerated();
       updateDataStats();
+      addToast({
+        title: "Plan Generated",
+        description: `Successfully generated ${blocks.length} time blocks!`,
+        color: "success",
+      });
     },
     onError: (error: unknown) => {
       console.error("Error generating weekly plan:", error);
       const isDataCorruption =
         error instanceof Error &&
         error.message?.includes("Data corruption detected");
-      setLastGenerationResult({
-        success: false,
-        blocksGenerated: 0,
-        message: isDataCorruption
-          ? "Data corruption detected. Please reset your data and try again."
-          : "Failed to generate schedule. Please check your data.",
-      });
+      if (isDataCorruption) {
+        addToast({
+          title: "Data Corruption Detected",
+          description: "Please reset your data and try again.",
+          color: "danger",
+        });
+      } else {
+        addToast({
+          title: "Plan Generation Failed",
+          description: "Failed to generate schedule. Please check your data.",
+          color: "danger",
+        });
+      }
     },
   });
 
@@ -169,32 +171,6 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
           <div className="text-xs text-gray-500">Time Slots</div>
         </div>
       </div>
-
-      {/* Status Message */}
-      {lastGenerationResult && (
-        <div
-          className={`p-4 rounded-lg mb-6 ${
-            lastGenerationResult.success
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-          }`}
-        >
-          <div className="flex items-center space-x-2">
-            {lastGenerationResult.success ? (
-              <Zap className="w-4 h-4 text-green-600" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-red-600" />
-            )}
-            <span
-              className={`text-sm font-medium ${
-                lastGenerationResult.success ? "text-green-800" : "text-red-800"
-              }`}
-            >
-              {lastGenerationResult.message}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Instructions */}
       <div className="bg-blue-50 p-4 rounded-lg">
