@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { TimeBlock, Task, Course } from "@/types";
 import { TimeBlockStorage, TaskStorage, CourseStorage } from "@/lib/storage";
 import { format, addDays, startOfWeek, addMinutes } from "date-fns";
@@ -12,6 +13,9 @@ import {
 } from "@dnd-kit/core";
 import { CalendarTimeBlock } from "./CalendarTimeBlock";
 import { DroppableTimeSlot } from "./DroppableTimeSlot";
+import { ContextMenu, ContextMenuItem } from "@/components/ui/ContextMenu";
+import { FocusSessionModal } from "@/components/timer/FocusSessionModal";
+import { Clock } from "lucide-react";
 
 interface CalendarGridProps {
   weekStart?: Date;
@@ -24,10 +28,31 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onTimeBlockUpdate,
   onTimeBlockDelete,
 }) => {
+  const router = useRouter();
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [activeBlock, setActiveBlock] = useState<TimeBlock | null>(null);
+
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    isOpen: boolean;
+    position: { x: number; y: number };
+    timeBlock: TimeBlock | null;
+  }>({
+    isOpen: false,
+    position: { x: 0, y: 0 },
+    timeBlock: null,
+  });
+
+  // Focus session modal state
+  const [focusModal, setFocusModal] = useState<{
+    isOpen: boolean;
+    timeBlock: TimeBlock | null;
+  }>({
+    isOpen: false,
+    timeBlock: null,
+  });
 
   const days = [
     "Monday",
@@ -40,11 +65,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   ];
   const hours = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
 
-  useEffect(() => {
-    loadData();
-  }, [weekStart]);
-
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const blocks = TimeBlockStorage.getByWeek(weekStart);
     const allTasks = TaskStorage.getAll();
     const allCourses = CourseStorage.getAll();
@@ -52,7 +73,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setTimeBlocks(blocks);
     setTasks(allTasks);
     setCourses(allCourses);
-  };
+  }, [weekStart]);
+
+  useEffect(() => {
+    loadData();
+  }, [weekStart, loadData]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const block = timeBlocks.find((b) => b.id === event.active.id);
@@ -60,7 +85,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { over } = event;
 
     if (!over || !activeBlock) {
       setActiveBlock(null);
@@ -120,6 +145,50 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     loadData();
   };
 
+  const handleBlockRightClick = (
+    event: React.MouseEvent,
+    timeBlock: TimeBlock
+  ) => {
+    event.preventDefault();
+    setContextMenu({
+      isOpen: true,
+      position: { x: event.clientX, y: event.clientY },
+      timeBlock,
+    });
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenu({
+      isOpen: false,
+      position: { x: 0, y: 0 },
+      timeBlock: null,
+    });
+  };
+
+  const handleStartFocusSession = () => {
+    if (contextMenu.timeBlock) {
+      setFocusModal({
+        isOpen: true,
+        timeBlock: contextMenu.timeBlock,
+      });
+      handleContextMenuClose();
+    }
+  };
+
+  const handleFocusModalClose = () => {
+    setFocusModal({
+      isOpen: false,
+      timeBlock: null,
+    });
+  };
+
+  const handleStartSession = () => {
+    if (focusModal.timeBlock) {
+      router.push(`/timer?timeBlockId=${focusModal.timeBlock.id}`);
+    }
+    handleFocusModalClose();
+  };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -169,6 +238,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                           task={task}
                           course={course}
                           onDelete={() => handleDeleteBlock(block.id)}
+                          onRightClick={(event) =>
+                            handleBlockRightClick(event, block)
+                          }
                         />
                       );
                     })}
@@ -192,6 +264,38 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
         )}
       </DragOverlay>
+
+      {/* Context Menu */}
+      <ContextMenu
+        isOpen={contextMenu.isOpen}
+        position={contextMenu.position}
+        onClose={handleContextMenuClose}
+      >
+        <ContextMenuItem
+          onClick={handleStartFocusSession}
+          icon={<Clock className="w-4 h-4" />}
+        >
+          Start Focus Session
+        </ContextMenuItem>
+      </ContextMenu>
+
+      {/* Focus Session Modal */}
+      <FocusSessionModal
+        isOpen={focusModal.isOpen}
+        onClose={handleFocusModalClose}
+        onStartSession={handleStartSession}
+        timeBlock={focusModal.timeBlock || undefined}
+        task={
+          focusModal.timeBlock
+            ? getTaskForBlock(focusModal.timeBlock)
+            : undefined
+        }
+        course={
+          focusModal.timeBlock && getTaskForBlock(focusModal.timeBlock)
+            ? getCourseForTask(getTaskForBlock(focusModal.timeBlock)!)
+            : undefined
+        }
+      />
     </DndContext>
   );
 };
