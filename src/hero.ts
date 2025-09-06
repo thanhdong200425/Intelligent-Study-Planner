@@ -1,8 +1,8 @@
 // hero.ts
-import { heroui } from "@heroui/react";
+import { heroui } from '@heroui/react';
 
 export default heroui({
-  defaultTheme: "light",
+  defaultTheme: 'light',
   themes: {
     light: {
       layout: {},

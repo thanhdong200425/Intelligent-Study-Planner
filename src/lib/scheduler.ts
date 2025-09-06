@@ -1,12 +1,12 @@
-import { Task, AvailabilityWindow, TimeBlock, Deadline } from "@/types";
+import { Task, AvailabilityWindow, TimeBlock, Deadline } from '@/types';
 import {
   TaskStorage,
   AvailabilityStorage,
   DeadlineStorage,
   TimeBlockStorage,
-} from "@/lib/storage";
-import { v4 as uuidv4 } from "uuid";
-import { addDays, addMinutes, getDay, startOfWeek } from "date-fns";
+} from '@/lib/storage';
+import { v4 as uuidv4 } from 'uuid';
+import { addDays, addMinutes, getDay, startOfWeek } from 'date-fns';
 
 interface SchedulingOptions {
   weekStart: Date;
@@ -29,7 +29,7 @@ export class WeeklyScheduler {
   }
 
   generateWeeklySchedule(): TimeBlock[] {
-    const tasks = TaskStorage.getAll().filter((task) => !task.completed);
+    const tasks = TaskStorage.getAll().filter(task => !task.completed);
     const availability = AvailabilityStorage.getAll();
     const deadlines = DeadlineStorage.getAll();
 
@@ -49,20 +49,20 @@ export class WeeklyScheduler {
     );
 
     // Save to storage
-    scheduledBlocks.forEach((block) => TimeBlockStorage.add(block));
+    scheduledBlocks.forEach(block => TimeBlockStorage.add(block));
 
     return scheduledBlocks;
   }
 
   private clearWeekSchedule(): void {
     const existingBlocks = TimeBlockStorage.getByWeek(this.options.weekStart);
-    existingBlocks.forEach((block) => TimeBlockStorage.remove(block.id));
+    existingBlocks.forEach(block => TimeBlockStorage.remove(block.id));
   }
 
   private prioritizeTasks(tasks: Task[], deadlines: Deadline[]): Task[] {
     return tasks.sort((a, b) => {
-      const deadlineA = deadlines.find((d) => d.id === a.deadlineId);
-      const deadlineB = deadlines.find((d) => d.id === b.deadlineId);
+      const deadlineA = deadlines.find(d => d.id === a.deadlineId);
+      const deadlineB = deadlines.find(d => d.id === b.deadlineId);
 
       // Tasks with deadlines get higher priority
       if (deadlineA && !deadlineB) return -1;
@@ -97,14 +97,14 @@ export class WeeklyScheduler {
       const dayOfWeek = getDay(currentDay);
 
       const dayAvailability = availability.filter(
-        (a) => Number(a.dayOfWeek) === dayOfWeek
+        a => Number(a.dayOfWeek) === dayOfWeek
       );
 
-      dayAvailability.forEach((window) => {
+      dayAvailability.forEach(window => {
         const [startHour, startMinute] = window.startTime
-          .split(":")
+          .split(':')
           .map(Number);
-        const [endHour, endMinute] = window.endTime.split(":").map(Number);
+        const [endHour, endMinute] = window.endTime.split(':').map(Number);
 
         const start = new Date(currentDay);
         start.setHours(startHour, startMinute, 0, 0);
@@ -186,14 +186,14 @@ export class WeeklyScheduler {
 
               scheduledBlocks.push({
                 id: uuidv4(),
-                taskId: "",
+                taskId: '',
                 startTime: breakStart,
                 endTime: breakEnd,
                 isBreak: true,
                 breakType:
                   breakMinutes === this.options.shortBreakMinutes
-                    ? "short"
-                    : "long",
+                    ? 'short'
+                    : 'long',
               });
 
               currentSlotTime = breakEnd;
@@ -233,8 +233,8 @@ export class WeeklyScheduler {
     schedulingEfficiency: number;
   } {
     const blocks = TimeBlockStorage.getByWeek(this.options.weekStart);
-    const taskBlocks = blocks.filter((b) => !b.isBreak);
-    const breakBlocks = blocks.filter((b) => b.isBreak);
+    const taskBlocks = blocks.filter(b => !b.isBreak);
+    const breakBlocks = blocks.filter(b => b.isBreak);
 
     const totalTaskMinutes = taskBlocks.reduce(
       (sum, block) =>
@@ -250,7 +250,7 @@ export class WeeklyScheduler {
 
     const totalScheduledMinutes = totalTaskMinutes + totalBreakMinutes;
 
-    const allTasks = TaskStorage.getAll().filter((task) => !task.completed);
+    const allTasks = TaskStorage.getAll().filter(task => !task.completed);
     const totalTaskEstimate = allTasks.reduce(
       (sum, task) => sum + task.estimateMinutes,
       0

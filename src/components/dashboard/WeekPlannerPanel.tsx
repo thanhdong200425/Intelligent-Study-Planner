@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { WeeklyScheduler } from "@/lib/scheduler";
-import { Button } from "@/components/ui/Button";
-import { format, addWeeks, subWeeks } from "date-fns";
+import React, { useState, useEffect } from 'react';
+import { WeeklyScheduler } from '@/lib/scheduler';
+import { Button } from '@/components/ui/Button';
+import { format, addWeeks, subWeeks } from 'date-fns';
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,10 +11,10 @@ import {
   Zap,
   Database,
   AlertCircle,
-} from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { TaskStorage, CourseStorage, AvailabilityStorage } from "@/lib/storage";
-import { addToast } from "@heroui/react";
+} from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { TaskStorage, CourseStorage, AvailabilityStorage } from '@/lib/storage';
+import { addToast } from '@heroui/react';
 
 interface WeekPlannerPanelProps {
   currentWeek: Date;
@@ -40,7 +40,7 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
   const updateDataStats = () => {
     setDataStats({
       courses: CourseStorage.getAll().length,
-      tasks: TaskStorage.getAll().filter((t) => !t.completed).length,
+      tasks: TaskStorage.getAll().filter(t => !t.completed).length,
       availability: AvailabilityStorage.getAll().length,
     });
   };
@@ -55,39 +55,39 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
         // Check if it's a date-related error
         if (
           error instanceof Error &&
-          (error.message?.includes("getTime") ||
-            error.message?.includes("Date"))
+          (error.message?.includes('getTime') ||
+            error.message?.includes('Date'))
         ) {
-          throw new Error("Data corruption detected. Try resetting your data.");
+          throw new Error('Data corruption detected. Try resetting your data.');
         }
         throw error;
       }
     },
-    onSuccess: (blocks) => {
+    onSuccess: blocks => {
       onPlanGenerated();
       updateDataStats();
       addToast({
-        title: "Plan Generated",
+        title: 'Plan Generated',
         description: `Successfully generated ${blocks.length} time blocks!`,
-        color: "success",
+        color: 'success',
       });
     },
     onError: (error: unknown) => {
-      console.error("Error generating weekly plan:", error);
+      console.error('Error generating weekly plan:', error);
       const isDataCorruption =
         error instanceof Error &&
-        error.message?.includes("Data corruption detected");
+        error.message?.includes('Data corruption detected');
       if (isDataCorruption) {
         addToast({
-          title: "Data Corruption Detected",
-          description: "Please reset your data and try again.",
-          color: "danger",
+          title: 'Data Corruption Detected',
+          description: 'Please reset your data and try again.',
+          color: 'danger',
         });
       } else {
         addToast({
-          title: "Plan Generation Failed",
-          description: "Failed to generate schedule. Please check your data.",
-          color: "danger",
+          title: 'Plan Generation Failed',
+          description: 'Failed to generate schedule. Please check your data.',
+          color: 'danger',
         });
       }
     },
@@ -108,76 +108,76 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
     dataStats.courses > 0 && dataStats.tasks > 0 && dataStats.availability > 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className='bg-white rounded-lg shadow-lg p-6'>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-bold text-gray-900">Week Planner</h2>
-          <div className="flex items-center space-x-2">
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center space-x-4'>
+          <h2 className='text-xl font-bold text-gray-900'>Week Planner</h2>
+          <div className='flex items-center space-x-2'>
             <button
               onClick={previousWeek}
-              className="p-1 hover:bg-gray-100 rounded"
+              className='p-1 hover:bg-gray-100 rounded'
             >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className='w-5 h-5 text-gray-600' />
             </button>
-            <span className="text-sm font-medium text-gray-700 min-w-[200px] text-center">
-              {format(currentWeek, "MMM d")} -{" "}
-              {format(currentWeekEnd, "MMM d, yyyy")}
+            <span className='text-sm font-medium text-gray-700 min-w-[200px] text-center'>
+              {format(currentWeek, 'MMM d')} -{' '}
+              {format(currentWeekEnd, 'MMM d, yyyy')}
             </span>
             <button
               onClick={nextWeek}
-              className="p-1 hover:bg-gray-100 rounded"
+              className='p-1 hover:bg-gray-100 rounded'
             >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className='w-5 h-5 text-gray-600' />
             </button>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className='flex items-center space-x-3'>
           <Button
             onClick={() => generateWeeklyPlan()}
             disabled={isGenerating || !hasRequiredData}
-            variant="primary"
-            className="flex items-center space-x-2"
+            variant='primary'
+            className='flex items-center space-x-2'
           >
             {isGenerating ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className='w-4 h-4 animate-spin' />
             ) : (
-              <Zap className="w-4 h-4" />
+              <Zap className='w-4 h-4' />
             )}
-            <span>{isGenerating ? "Generating..." : "Generate Week"}</span>
+            <span>{isGenerating ? 'Generating...' : 'Generate Week'}</span>
           </Button>
         </div>
       </div>
 
       {/* Data Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-semibold text-gray-900">
+      <div className='grid grid-cols-3 gap-4 mb-6'>
+        <div className='bg-gray-50 p-3 rounded-lg text-center'>
+          <div className='text-lg font-semibold text-gray-900'>
             {dataStats.courses}
           </div>
-          <div className="text-xs text-gray-500">Courses</div>
+          <div className='text-xs text-gray-500'>Courses</div>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-semibold text-gray-900">
+        <div className='bg-gray-50 p-3 rounded-lg text-center'>
+          <div className='text-lg font-semibold text-gray-900'>
             {dataStats.tasks}
           </div>
-          <div className="text-xs text-gray-500">Active Tasks</div>
+          <div className='text-xs text-gray-500'>Active Tasks</div>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-semibold text-gray-900">
+        <div className='bg-gray-50 p-3 rounded-lg text-center'>
+          <div className='text-lg font-semibold text-gray-900'>
             {dataStats.availability}
           </div>
-          <div className="text-xs text-gray-500">Time Slots</div>
+          <div className='text-xs text-gray-500'>Time Slots</div>
         </div>
       </div>
 
       {/* Instructions */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">
+      <div className='bg-blue-50 p-4 rounded-lg'>
+        <h3 className='text-sm font-semibold text-blue-900 mb-2'>
           How it works:
         </h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+        <ul className='text-sm text-blue-800 space-y-1'>
           <li>
             • Add your courses, tasks, and availability in the &quot;Add
             Data&quot; tab

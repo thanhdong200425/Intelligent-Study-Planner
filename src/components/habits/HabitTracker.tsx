@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Habit, HabitCompletion } from "@/types";
-import { HabitStorage, HabitCompletionStorage } from "@/lib/storage";
-import { v4 as uuidv4 } from "uuid";
-import { format, startOfDay, subDays, isSameDay } from "date-fns";
-import { Check, Plus, Flame, Target } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
-import { Button, Input, addToast } from "@heroui/react";
+import React, { useState, useEffect } from 'react';
+import { Habit, HabitCompletion } from '@/types';
+import { HabitStorage, HabitCompletionStorage } from '@/lib/storage';
+import { v4 as uuidv4 } from 'uuid';
+import { format, startOfDay, subDays, isSameDay } from 'date-fns';
+import { Check, Plus, Flame, Target } from 'lucide-react';
+import { Controller, useForm } from 'react-hook-form';
+import { Button, Input, addToast } from '@heroui/react';
 
 interface HabitTrackerProps {
   onHabitUpdate?: () => void;
@@ -30,10 +30,10 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<Habit>({
     defaultValues: {
-      name: "",
+      name: '',
       targetMinutes: 20,
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   useEffect(() => {
@@ -60,14 +60,14 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
     HabitStorage.add(habit);
 
     addToast({
-      title: "Habit Added",
-      color: "success",
+      title: 'Habit Added',
+      color: 'success',
       timeout: 3000,
       shouldShowTimeoutProgress: true,
     });
 
     reset({
-      name: "",
+      name: '',
       targetMinutes: 20,
     });
     setIsAddingHabit(false);
@@ -83,7 +83,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
 
     // Check if already completed today
     const existingCompletion = completions.find(
-      (c) => c.habitId === habitId && isSameDay(new Date(c.date), today)
+      c => c.habitId === habitId && isSameDay(new Date(c.date), today)
     );
 
     if (existingCompletion) {
@@ -114,11 +114,11 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
   };
 
   const updateHabitStreaks = (habitId: string) => {
-    const habit = habits.find((h) => h.id === habitId);
+    const habit = habits.find(h => h.id === habitId);
     if (!habit) return;
 
     const habitCompletions = completions
-      .filter((c) => c.habitId === habitId)
+      .filter(c => c.habitId === habitId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     let currentStreak = 0;
@@ -129,7 +129,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
     // Calculate current streak
     while (true) {
       const completion = habitCompletions.find(
-        (c) =>
+        c =>
           isSameDay(new Date(c.date), checkDate) &&
           c.minutes >= habit.targetMinutes
       );
@@ -153,7 +153,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
     for (let i = 0; i < 365; i++) {
       // Check last year
       const completion = habitCompletions.find(
-        (c) =>
+        c =>
           isSameDay(new Date(c.date), checkDate) &&
           c.minutes >= habit.targetMinutes
       );
@@ -180,12 +180,12 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
   const getTodayProgress = (
     habitId: string
   ): { completed: number; target: number; percentage: number } => {
-    const habit = habits.find((h) => h.id === habitId);
+    const habit = habits.find(h => h.id === habitId);
     if (!habit) return { completed: 0, target: 0, percentage: 0 };
 
     const today = startOfDay(new Date());
     const todayCompletion = completions.find(
-      (c) => c.habitId === habitId && isSameDay(new Date(c.date), today)
+      c => c.habitId === habitId && isSameDay(new Date(c.date), today)
     );
 
     const completed = todayCompletion?.minutes || 0;
@@ -201,9 +201,9 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
     for (let i = 6; i >= 0; i--) {
       const date = subDays(startOfDay(new Date()), i);
       const completion = completions.find(
-        (c) => c.habitId === habitId && isSameDay(new Date(c.date), date)
+        c => c.habitId === habitId && isSameDay(new Date(c.date), date)
       );
-      const habit = habits.find((h) => h.id === habitId);
+      const habit = habits.find(h => h.id === habitId);
       const progress =
         habit && completion
           ? Math.min((completion.minutes / habit.targetMinutes) * 100, 100)
@@ -214,83 +214,83 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Habit Tracker</h2>
+      <div className='flex justify-between items-center'>
+        <h2 className='text-2xl font-bold text-gray-900'>Habit Tracker</h2>
         <Button
           onClick={() => setIsAddingHabit(true)}
-          color="primary"
-          size="sm"
-          className="flex items-center gap-2"
+          color='primary'
+          size='sm'
+          className='flex items-center gap-2'
         >
-          <Plus className="w-4 h-4" />
+          <Plus className='w-4 h-4' />
           Add Habit
         </Button>
       </div>
 
       {/* Add Habit Form */}
       {isAddingHabit && (
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className='p-4 bg-gray-50 rounded-lg'>
+          <form onSubmit={handleSubmit(onSubmitHandler)} className='space-y-4'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <Controller
                 control={control}
-                name="name"
+                name='name'
                 rules={{
                   required: {
                     value: true,
-                    message: "Habit name is required",
+                    message: 'Habit name is required',
                   },
                 }}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    label="Habit Name"
+                    label='Habit Name'
                     isInvalid={!!errors.name?.message}
                     errorMessage={errors.name?.message}
-                    placeholder="e.g., Review notes, Exercise"
-                    size="sm"
+                    placeholder='e.g., Review notes, Exercise'
+                    size='sm'
                   />
                 )}
               />
 
               <Controller
                 control={control}
-                name="targetMinutes"
+                name='targetMinutes'
                 rules={{
                   required: {
                     value: true,
-                    message: "Target minutes is required",
+                    message: 'Target minutes is required',
                   },
                   min: {
                     value: 1,
-                    message: "Target must be at least 1 minute",
+                    message: 'Target must be at least 1 minute',
                   },
                 }}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    label="Target Minutes"
-                    type="number"
-                    min="1"
-                    value={field.value?.toString() || ""}
-                    onChange={(e) =>
+                    label='Target Minutes'
+                    type='number'
+                    min='1'
+                    value={field.value?.toString() || ''}
+                    onChange={e =>
                       field.onChange(parseInt(e.target.value) || 0)
                     }
                     isInvalid={!!errors.targetMinutes?.message}
                     errorMessage={errors.targetMinutes?.message}
-                    size="sm"
+                    size='sm'
                   />
                 )}
               />
 
-              <div className="flex items-end gap-2">
-                <Button type="submit" color="primary" isLoading={isSubmitting}>
+              <div className='flex items-end gap-2'>
+                <Button type='submit' color='primary' isLoading={isSubmitting}>
                   Add
                 </Button>
                 <Button
-                  type="button"
+                  type='button'
                   disabled={isSubmitting}
                   onPress={() => setIsAddingHabit(false)}
                 >
@@ -303,51 +303,51 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
       )}
 
       {/* Habits List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {habits.map((habit) => {
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        {habits.map(habit => {
           const todayProgress = getTodayProgress(habit.id);
           const weeklyProgress = getWeeklyProgress(habit.id);
           const isCompleted = todayProgress.percentage >= 100;
 
           return (
-            <div key={habit.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={habit.id} className='bg-white rounded-lg shadow-md p-6'>
               {/* Habit Header */}
-              <div className="flex justify-between items-start mb-4">
+              <div className='flex justify-between items-start mb-4'>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className='text-lg font-semibold text-gray-900'>
                     {habit.name}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className='text-sm text-gray-600'>
                     {habit.targetMinutes} minutes daily
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-orange-600">
-                    <Flame className="w-4 h-4" />
-                    <span className="font-semibold">{habit.currentStreak}</span>
+                <div className='flex items-center gap-3'>
+                  <div className='flex items-center gap-1 text-orange-600'>
+                    <Flame className='w-4 h-4' />
+                    <span className='font-semibold'>{habit.currentStreak}</span>
                   </div>
                   {isCompleted && (
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <Check className="w-5 h-5 text-green-600" />
+                    <div className='w-8 h-8 bg-green-100 rounded-full flex items-center justify-center'>
+                      <Check className='w-5 h-5 text-green-600' />
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Today's Progress */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
+              <div className='mb-4'>
+                <div className='flex justify-between items-center mb-2'>
+                  <span className='text-sm font-medium text-gray-700'>
                     Today&apos;s Progress
                   </span>
-                  <span className="text-sm text-gray-600">
+                  <span className='text-sm text-gray-600'>
                     {todayProgress.completed} / {todayProgress.target} min
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className='w-full bg-gray-200 rounded-full h-2'>
                   <div
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      isCompleted ? "bg-green-500" : "bg-blue-500"
+                      isCompleted ? 'bg-green-500' : 'bg-blue-500'
                     }`}
                     style={{ width: `${todayProgress.percentage}%` }}
                   />
@@ -355,45 +355,45 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
               </div>
 
               {/* Weekly Progress */}
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-700 mb-2">
+              <div className='mb-4'>
+                <div className='text-sm font-medium text-gray-700 mb-2'>
                   This Week
                 </div>
-                <div className="flex gap-1">
+                <div className='flex gap-1'>
                   {weeklyProgress.map((progress, index) => {
                     const date = subDays(new Date(), 6 - index);
                     const isToday = isSameDay(date, new Date());
                     return (
-                      <div key={index} className="flex-1">
+                      <div key={index} className='flex-1'>
                         <div
                           className={`h-8 rounded-sm ${
                             progress >= 100
-                              ? "bg-green-200"
+                              ? 'bg-green-200'
                               : progress >= 50
-                              ? "bg-yellow-200"
-                              : progress > 0
-                              ? "bg-gray-200"
-                              : "bg-gray-100"
-                          } ${isToday ? "ring-2 ring-blue-500" : ""}`}
-                          title={`${format(date, "MMM d")}: ${Math.round(
+                                ? 'bg-yellow-200'
+                                : progress > 0
+                                  ? 'bg-gray-200'
+                                  : 'bg-gray-100'
+                          } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                          title={`${format(date, 'MMM d')}: ${Math.round(
                             progress
                           )}%`}
                         >
                           <div
                             className={`h-full rounded-sm ${
                               progress >= 100
-                                ? "bg-green-500"
+                                ? 'bg-green-500'
                                 : progress >= 50
-                                ? "bg-yellow-500"
-                                : progress > 0
-                                ? "bg-gray-400"
-                                : ""
+                                  ? 'bg-yellow-500'
+                                  : progress > 0
+                                    ? 'bg-gray-400'
+                                    : ''
                             }`}
                             style={{ width: `${Math.min(progress, 100)}%` }}
                           />
                         </div>
-                        <div className="text-xs text-center mt-1 text-gray-500">
-                          {format(date, "E")[0]}
+                        <div className='text-xs text-center mt-1 text-gray-500'>
+                          {format(date, 'E')[0]}
                         </div>
                       </div>
                     );
@@ -403,27 +403,27 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
 
               {/* Check-in */}
               {!isCompleted && (
-                <div className="flex gap-2">
+                <div className='flex gap-2'>
                   <Input
-                    type="number"
-                    min="1"
-                    placeholder="Minutes"
-                    label="Check-in Minutes"
-                    value={checkInData[habit.id]?.toString() || ""}
-                    onChange={(e) =>
+                    type='number'
+                    min='1'
+                    placeholder='Minutes'
+                    label='Check-in Minutes'
+                    value={checkInData[habit.id]?.toString() || ''}
+                    onChange={e =>
                       setCheckInData({
                         ...checkInData,
                         [habit.id]: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="flex-1"
-                    size="sm"
-                    variant="bordered"
+                    className='flex-1'
+                    size='sm'
+                    variant='bordered'
                   />
                   <Button
                     onPress={() => checkInHabit(habit.id)}
-                    color="primary"
-                    size="md"
+                    color='primary'
+                    size='md'
                     disabled={
                       !checkInData[habit.id] || checkInData[habit.id] <= 0
                     }
@@ -434,18 +434,18 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
               )}
 
               {/* Stats */}
-              <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                <div className="p-2 bg-gray-50 rounded">
-                  <div className="text-lg font-semibold text-gray-900">
+              <div className='mt-4 grid grid-cols-2 gap-4 text-center'>
+                <div className='p-2 bg-gray-50 rounded'>
+                  <div className='text-lg font-semibold text-gray-900'>
                     {habit.currentStreak}
                   </div>
-                  <div className="text-xs text-gray-600">Current Streak</div>
+                  <div className='text-xs text-gray-600'>Current Streak</div>
                 </div>
-                <div className="p-2 bg-gray-50 rounded">
-                  <div className="text-lg font-semibold text-gray-900">
+                <div className='p-2 bg-gray-50 rounded'>
+                  <div className='text-lg font-semibold text-gray-900'>
                     {habit.longestStreak}
                   </div>
-                  <div className="text-xs text-gray-600">Best Streak</div>
+                  <div className='text-xs text-gray-600'>Best Streak</div>
                 </div>
               </div>
             </div>
@@ -454,15 +454,15 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
       </div>
 
       {habits.length === 0 && !isAddingHabit && (
-        <div className="text-center py-12">
-          <Target className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <div className='text-center py-12'>
+          <Target className='w-12 h-12 mx-auto mb-4 text-gray-400' />
+          <h3 className='text-lg font-medium text-gray-900 mb-2'>
             No habits yet
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className='text-gray-600 mb-4'>
             Start tracking your daily habits to build consistency
           </p>
-          <Button onClick={() => setIsAddingHabit(true)} color="primary">
+          <Button onClick={() => setIsAddingHabit(true)} color='primary'>
             Add Your First Habit
           </Button>
         </div>

@@ -1,35 +1,42 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Navigation } from "@/components/layout/Navigation";
-import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { Timer } from "@/components/timer/Timer";
-import { DataEntryTabs } from "@/components/data-entry/DataEntryTabs";
-import { HabitTracker } from "@/components/habits/HabitTracker";
-import { WeeklySummary } from "@/components/analytics/WeeklySummary";
-import { WeekPlannerPanel } from "@/components/dashboard/WeekPlannerPanel";
-import { TimeBlock } from "@/types";
-import { startOfWeek } from "date-fns";
-import { TimeBlockStorage } from "@/lib/storage";
+import React, { useState } from 'react';
+import { Navigation } from '@/components/layout/Navigation';
+import { CalendarGrid } from '@/components/calendar/CalendarGrid';
+import { Timer } from '@/components/timer/Timer';
+import { DataEntryTabs } from '@/components/data-entry/DataEntryTabs';
+import { HabitTracker } from '@/components/habits/HabitTracker';
+import { WeeklySummary } from '@/components/analytics/WeeklySummary';
+import { WeekPlannerPanel } from '@/components/dashboard/WeekPlannerPanel';
+import { TimeBlock } from '@/types';
+import { startOfWeek } from 'date-fns';
+import { TimeBlockStorage } from '@/lib/storage';
 
-const TABS = ['calendar', 'timer', 'add-data', 'habits', 'analytics', 'statistics'] as const;
+const TABS = [
+  'calendar',
+  'timer',
+  'add-data',
+  'habits',
+  'analytics',
+  'statistics',
+] as const;
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<typeof TABS[number]>("calendar");
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('calendar');
   const [currentWeek, setCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  const [selectedTimeBlock, setSelectedTimeBlock] = useState<TimeBlock | undefined>(
-    undefined
-  );
+  const [selectedTimeBlock, setSelectedTimeBlock] = useState<
+    TimeBlock | undefined
+  >(undefined);
   const [calendarKey, setCalendarKey] = useState(0);
 
   const handlePlanGenerated = () => {
-    setCalendarKey((prev) => prev + 1);
+    setCalendarKey(prev => prev + 1);
   };
 
   const handleTimeBlockUpdate = () => {
-    setCalendarKey((prev) => prev + 1);
+    setCalendarKey(prev => prev + 1);
   };
 
   // How can I get the time blocks
@@ -37,9 +44,9 @@ export default function Home() {
 
   const renderActiveTab = () => {
     switch (activeTab) {
-      case "calendar":
+      case 'calendar':
         return (
-          <div className="space-y-6">
+          <div className='space-y-6'>
             <WeekPlannerPanel
               currentWeek={currentWeek}
               onWeekChange={setCurrentWeek}
@@ -49,15 +56,17 @@ export default function Home() {
               key={calendarKey}
               weekStart={currentWeek}
               onTimeBlockUpdate={handleTimeBlockUpdate}
-              onClickTimeBlock={(id) => {
-                setSelectedTimeBlock(timeBlocks.find((block) => block.id === id) || undefined);
+              onClickTimeBlock={id => {
+                setSelectedTimeBlock(
+                  timeBlocks.find(block => block.id === id) || undefined
+                );
               }}
             />
           </div>
         );
-      case "timer":
+      case 'timer':
         return (
-          <div className="max-w-2xl mx-auto">
+          <div className='max-w-2xl mx-auto'>
             <Timer
               timeBlock={selectedTimeBlock || undefined}
               onComplete={() => {
@@ -68,23 +77,26 @@ export default function Home() {
             />
           </div>
         );
-      case "add-data":
+      case 'add-data':
         return <DataEntryTabs />;
-      case "habits":
+      case 'habits':
         return <HabitTracker />;
-      case "analytics":
+      case 'analytics':
         return <WeeklySummary weekStart={currentWeek} />;
-      case 'statistics': 
-        
+      case 'statistics':
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as typeof TABS[number])} />
-      <main className="flex light max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className='min-h-screen bg-gray-50'>
+      <Navigation
+        activeTab={activeTab}
+        onTabChange={tab => setActiveTab(tab as (typeof TABS)[number])}
+      />
+      <main className='flex light max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {renderActiveTab()}
       </main>
     </div>

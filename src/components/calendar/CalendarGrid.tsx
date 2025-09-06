@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { TimeBlock, Task, Course } from "@/types";
-import { TimeBlockStorage, TaskStorage, CourseStorage } from "@/lib/storage";
-import { format, addDays, startOfWeek, addMinutes } from "date-fns";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { TimeBlock, Task, Course } from '@/types';
+import { TimeBlockStorage, TaskStorage, CourseStorage } from '@/lib/storage';
+import { format, addDays, startOfWeek, addMinutes } from 'date-fns';
 import {
   DndContext,
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-} from "@dnd-kit/core";
-import { CalendarTimeBlock } from "./CalendarTimeBlock";
-import { DroppableTimeSlot } from "./DroppableTimeSlot";
-import { ContextMenu, ContextMenuItem } from "@/components/ui/ContextMenu";
-import { FocusSessionModal } from "@/components/timer/FocusSessionModal";
-import { Clock } from "lucide-react";
+} from '@dnd-kit/core';
+import { CalendarTimeBlock } from './CalendarTimeBlock';
+import { DroppableTimeSlot } from './DroppableTimeSlot';
+import { ContextMenu, ContextMenuItem } from '@/components/ui/ContextMenu';
+import { FocusSessionModal } from '@/components/timer/FocusSessionModal';
+import { Clock } from 'lucide-react';
 
 interface CalendarGridProps {
   weekStart?: Date;
@@ -57,13 +57,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   });
 
   const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
   ];
   const hours = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
 
@@ -82,7 +82,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   }, [weekStart, loadData]);
 
   const handleDragStart = (event: DragStartEvent) => {
-    const block = timeBlocks.find((b) => b.id === event.active.id);
+    const block = timeBlocks.find(b => b.id === event.active.id);
     setActiveBlock(block || null);
   };
 
@@ -94,7 +94,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       return;
     }
 
-    const [dayIndex, hour] = over.id.toString().split("-").map(Number);
+    const [dayIndex, hour] = over.id.toString().split('-').map(Number);
     const targetDate = addDays(weekStart, dayIndex);
     const newStartTime = new Date(targetDate);
     newStartTime.setHours(hour, 0, 0, 0);
@@ -121,7 +121,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     slotStart.setHours(hour, 0, 0, 0);
     const slotEnd = addMinutes(slotStart, 60);
 
-    return timeBlocks.filter((block) => {
+    return timeBlocks.filter(block => {
       const blockStart = new Date(block.startTime);
       const blockEnd = new Date(block.endTime);
 
@@ -134,11 +134,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const getTaskForBlock = (block: TimeBlock): Task | undefined => {
-    return tasks.find((t) => t.id === block.taskId);
+    return tasks.find(t => t.id === block.taskId);
   };
 
   const getCourseForTask = (task: Task): Course | undefined => {
-    return courses.find((c) => c.id === task.courseId);
+    return courses.find(c => c.id === task.courseId);
   };
 
   const handleDeleteBlock = (blockId: string) => {
@@ -193,17 +193,17 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className='bg-white rounded-lg shadow-lg overflow-hidden'>
         {/* Header */}
-        <div className="grid grid-cols-8 bg-gray-50 border-b">
-          <div className="p-3 text-sm font-medium text-gray-500">Time</div>
+        <div className='grid grid-cols-8 bg-gray-50 border-b'>
+          <div className='p-3 text-sm font-medium text-gray-500'>Time</div>
           {days.map((day, index) => {
             const date = addDays(weekStart, index);
             return (
-              <div key={day} className="p-3 text-center">
-                <div className="text-sm font-medium text-gray-900">{day}</div>
-                <div className="text-xs text-gray-500">
-                  {format(date, "MMM d")}
+              <div key={day} className='p-3 text-center'>
+                <div className='text-sm font-medium text-gray-900'>{day}</div>
+                <div className='text-xs text-gray-500'>
+                  {format(date, 'MMM d')}
                 </div>
               </div>
             );
@@ -211,12 +211,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-8">
-          {hours.map((hour) => (
+        <div className='grid grid-cols-8'>
+          {hours.map(hour => (
             <React.Fragment key={hour}>
               {/* Time column */}
-              <div className="p-2 text-xs text-gray-500 border-b border-r bg-gray-50">
-                {format(new Date().setHours(hour, 0, 0, 0), "HH:mm")}
+              <div className='p-2 text-xs text-gray-500 border-b border-r bg-gray-50'>
+                {format(new Date().setHours(hour, 0, 0, 0), 'HH:mm')}
               </div>
 
               {/* Day columns */}
@@ -227,9 +227,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   <DroppableTimeSlot
                     key={`${dayIndex}-${hour}`}
                     id={`${dayIndex}-${hour}`}
-                    className="relative border-b border-r h-16 hover:bg-gray-50"
+                    className='relative border-b border-r h-16 hover:bg-gray-50'
                   >
-                    {blocksInSlot.map((block) => {
+                    {blocksInSlot.map(block => {
                       const task = getTaskForBlock(block);
                       const course = task ? getCourseForTask(task) : undefined;
 
@@ -240,10 +240,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                           task={task}
                           course={course}
                           onDelete={() => handleDeleteBlock(block.id)}
-                          onRightClick={(event) =>
+                          onRightClick={event =>
                             handleBlockRightClick(event, block)
                           }
-                          onClick={() => props.onClickTimeBlock && props.onClickTimeBlock(block.id)}
+                          onClick={() =>
+                            props.onClickTimeBlock &&
+                            props.onClickTimeBlock(block.id)
+                          }
                         />
                       );
                     })}
@@ -258,11 +261,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       {/* Drag overlay */}
       <DragOverlay>
         {activeBlock && (
-          <div className="p-2 bg-blue-100 border border-blue-300 rounded shadow-lg">
-            <div className="text-xs font-medium">
+          <div className='p-2 bg-blue-100 border border-blue-300 rounded shadow-lg'>
+            <div className='text-xs font-medium'>
               {activeBlock.isBreak
-                ? "Break"
-                : getTaskForBlock(activeBlock)?.title || "Unknown Task"}
+                ? 'Break'
+                : getTaskForBlock(activeBlock)?.title || 'Unknown Task'}
             </div>
           </div>
         )}
@@ -276,7 +279,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       >
         <ContextMenuItem
           onClick={handleStartFocusSession}
-          icon={<Clock className="w-4 h-4" />}
+          icon={<Clock className='w-4 h-4' />}
         >
           Start Focus Session
         </ContextMenuItem>

@@ -9,10 +9,10 @@ interface DroppableTimeSlotProps {
   className?: string;
 }
 
-export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({ 
-  id, 
-  children, 
-  className = '' 
+export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
+  id,
+  children,
+  className = '',
 }) => {
   const { isOver, setNodeRef } = useDroppable({
     id,
