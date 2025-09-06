@@ -11,8 +11,10 @@ import { WeekPlannerPanel } from "@/components/dashboard/WeekPlannerPanel";
 import { TimeBlock } from "@/types";
 import { startOfWeek } from "date-fns";
 
+const TABS = ['calendar', 'timer', 'add-data', 'habits', 'analytics', 'statistics'] as const;
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("calendar");
+  const [activeTab, setActiveTab] = useState<typeof TABS[number]>("calendar");
   const [currentWeek, setCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -65,6 +67,8 @@ export default function Home() {
         return <HabitTracker />;
       case "analytics":
         return <WeeklySummary weekStart={currentWeek} />;
+      case 'statistics': 
+        
       default:
         return null;
     }
@@ -72,8 +76,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-
+      <Navigation activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as typeof TABS[number])} />
       <main className="light max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderActiveTab()}
       </main>

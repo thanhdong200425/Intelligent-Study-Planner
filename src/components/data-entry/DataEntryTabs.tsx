@@ -5,7 +5,8 @@ import { CourseForm } from "@/components/forms/CourseForm";
 import { DeadlineForm } from "@/components/forms/DeadlineForm";
 import { TaskForm } from "@/components/forms/TaskForm";
 import { AvailabilityForm } from "@/components/forms/AvailabilityForm";
-import { BookOpen, Calendar, CheckSquare, Clock } from "lucide-react";
+import { Statistics } from "@/components/statistics/Statistics";
+import { BookOpen, Calendar, CheckSquare, Clock, BarChart3 } from "lucide-react";
 
 export const DataEntryTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState("courses");
@@ -24,6 +25,12 @@ export const DataEntryTabs: React.FC = () => {
       label: "Availability",
       icon: Clock,
       component: AvailabilityForm,
+    },
+    {
+      id: "statistics",
+      label: "Statistics",
+      icon: BarChart3,
+      component: Statistics,
     },
   ];
 
