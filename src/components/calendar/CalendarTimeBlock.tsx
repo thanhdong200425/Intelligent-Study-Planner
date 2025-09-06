@@ -13,6 +13,7 @@ interface CalendarTimeBlockProps {
   onDelete: () => void;
   onStartTimer?: () => void;
   onRightClick?: (event: React.MouseEvent) => void;
+  onClick?: () => void;
 }
 
 export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
@@ -22,6 +23,7 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
   onDelete,
   onStartTimer,
   onRightClick,
+  onClick,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -126,6 +128,7 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
       {...listeners}
       {...attributes}
       onContextMenu={onRightClick}
+      onClick={onClick}
       className={`absolute inset-x-0 border rounded-sm p-1 cursor-move group ${
         isDragging ? "opacity-50" : ""
       } ${timeBlock.completed ? "opacity-75" : ""}`}

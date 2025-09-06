@@ -10,6 +10,7 @@ import { WeeklySummary } from "@/components/analytics/WeeklySummary";
 import { WeekPlannerPanel } from "@/components/dashboard/WeekPlannerPanel";
 import { TimeBlock } from "@/types";
 import { startOfWeek } from "date-fns";
+import { TimeBlockStorage } from "@/lib/storage";
 
 const TABS = ['calendar', 'timer', 'add-data', 'habits', 'analytics', 'statistics'] as const;
 
@@ -18,8 +19,8 @@ export default function Home() {
   const [currentWeek, setCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
-  const [selectedTimeBlock, setSelectedTimeBlock] = useState<TimeBlock | null>(
-    null
+  const [selectedTimeBlock, setSelectedTimeBlock] = useState<TimeBlock | undefined>(
+    undefined
   );
   const [calendarKey, setCalendarKey] = useState(0);
 
@@ -30,6 +31,9 @@ export default function Home() {
   const handleTimeBlockUpdate = () => {
     setCalendarKey((prev) => prev + 1);
   };
+
+  // How can I get the time blocks
+  const timeBlocks = TimeBlockStorage.getAll();
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -45,6 +49,9 @@ export default function Home() {
               key={calendarKey}
               weekStart={currentWeek}
               onTimeBlockUpdate={handleTimeBlockUpdate}
+              onClickTimeBlock={(id) => {
+                setSelectedTimeBlock(timeBlocks.find((block) => block.id === id) || undefined);
+              }}
             />
           </div>
         );
@@ -54,10 +61,10 @@ export default function Home() {
             <Timer
               timeBlock={selectedTimeBlock || undefined}
               onComplete={() => {
-                setSelectedTimeBlock(null);
+                setSelectedTimeBlock(undefined);
                 handleTimeBlockUpdate();
               }}
-              onCancel={() => setSelectedTimeBlock(null)}
+              onCancel={() => setSelectedTimeBlock(undefined)}
             />
           </div>
         );
@@ -77,7 +84,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as typeof TABS[number])} />
-      <main className="light max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex light max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderActiveTab()}
       </main>
     </div>

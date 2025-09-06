@@ -21,12 +21,14 @@ interface CalendarGridProps {
   weekStart?: Date;
   onTimeBlockUpdate?: (timeBlock: TimeBlock) => void;
   onTimeBlockDelete?: (id: string) => void;
+  onClickTimeBlock?: (id: string) => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
   weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }),
   onTimeBlockUpdate,
   onTimeBlockDelete,
+  ...props
 }) => {
   const router = useRouter();
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
@@ -241,6 +243,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                           onRightClick={(event) =>
                             handleBlockRightClick(event, block)
                           }
+                          onClick={() => props.onClickTimeBlock && props.onClickTimeBlock(block.id)}
                         />
                       );
                     })}
