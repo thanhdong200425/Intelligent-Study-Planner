@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project Progress Description
 
-## Getting Started
+I am building an **Intelligent Study Planner & Habit Tracker** — an app that combines a calendar, to-do list, and productivity coach.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 Objectives
+- Help students manage study tasks, deadlines, and habits.  
+- Provide **smart scheduling** (adaptive plans, auto-reschedule).  
+- Track **habits and focus sessions** with notes and streaks.  
+- Generate **analytics & insights** on productivity.  
+- Prepare for **future AI/ML features** like task duration prediction and personalized study recommendations.  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✅ Phase 1 (Core MVP)
+- Built **front-end (Next.js)** for initial UI (basic planning + logging).  
+- Added **manual input flows**:  
+  - Courses, tasks, deadlines, availability windows.  
+  - Generate simple study plans with time blocks.  
+  - Log study sessions with actual minutes and notes.  
+- Provided **habit tracking** basics with streaks and daily check-ins.  
+- Exported **weekly calendar view** with study/break blocks.  
+- Delivered **initial insights** (planned vs actual, skipped tasks).  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🚀 Phase 2 (Backend Foundation – Pre-ML)
 
-To learn more about Next.js, take a look at the following resources:
+### Tech Stack
+- **Backend:** NestJS (modular APIs, Swagger docs).  
+- **Database:** PostgreSQL (Prisma ORM).  
+- **Cache/Jobs:** Redis + BullMQ.  
+- **Deployment:** Docker Compose on DigitalOcean droplet (Nginx reverse proxy, HTTPS).  
+- **Auth (for MVP):** simple API key / header guard (JWT later).  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Backend Features
+- Full **CRUD APIs**: users, courses, deadlines, tasks, availability, habits.  
+- **Planner v0 (deterministic):**  
+  - Greedy scheduling based on priority + due dates.  
+  - 50m focus / 10m break blocks with spillover handling.  
+  - Rolling reschedule for missed sessions.  
+- **Sessions API:** start/stop/cancel timers, log actual minutes.  
+- **Weekly Analytics API:** planned vs actual time, overdue tasks, per-course breakdown, habit streaks, rule-based insights.  
+- **Background Jobs:**  
+  - Auto weekly plan generation (Sunday night).  
+  - Hourly catch-up for missed tasks.  
+  - Daily analytics snapshot.  
+- **Infrastructure:**  
+  - Health checks for DB + Redis.  
+  - Logging, error filters, CORS setup.  
+  - Seed script for demo user + sample data.  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+👉 With this, the app has a **solid backend foundation** for scheduling, habits, sessions, and analytics — ready to integrate **ML features (Phase 3)** such as task duration prediction, adaptive reminders, and personalized study recommendations.
