@@ -1,27 +1,46 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Habit, HabitCompletion } from '@/types';
 import { HabitStorage, HabitCompletionStorage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { format, startOfDay, subDays, isSameDay } from 'date-fns';
-import { Check, Plus, Flame, Target } from 'lucide-react';
+import { Check, Plus, Target, MoreHorizontal } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Input, addToast } from '@heroui/react';
-
-interface HabitTrackerProps {
-  onHabitUpdate?: () => void;
-}
+import {
+  Button,
+  Card,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  NumberInput,
+  addToast,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  useDisclosure,
+} from '@heroui/react';
+import { HabitTrackerProps } from './HabitTracker.types';
 
 export const HabitTracker: React.FC<HabitTrackerProps> = ({
   onHabitUpdate,
 }) => {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [completions, setCompletions] = useState<HabitCompletion[]>([]);
-  const [isAddingHabit, setIsAddingHabit] = useState(false);
   const [checkInData, setCheckInData] = useState<{ [habitId: string]: number }>(
     {}
   );
+  const [deleteHabitId, setDeleteHabitId] = useState<string | null>(null);
+  const {
+    isOpen,
+    onOpen,
+    onClose: onModalClose,
+    onOpenChange,
+  } = useDisclosure();
 
   const {
     control,
@@ -31,22 +50,21 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
   } = useForm<Habit>({
     defaultValues: {
       name: '',
-      targetMinutes: 20,
+      targetMinutes: undefined,
     },
     mode: 'onBlur',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const allHabits = HabitStorage.getAll();
     const allCompletions = HabitCompletionStorage.getAll();
     setHabits(allHabits);
     setCompletions(allCompletions);
-  };
+  }, []);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
   const onSubmitHandler = (data: Habit) => {
     const habit: Habit = {
       id: uuidv4(),
@@ -68,10 +86,10 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
 
     reset({
       name: '',
-      targetMinutes: 20,
+      targetMinutes: undefined,
     });
-    setIsAddingHabit(false);
     loadData();
+    onModalClose();
     onHabitUpdate?.();
   };
 
@@ -104,11 +122,32 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
       HabitCompletionStorage.add(completion);
     }
 
+    loadData();
+
     // Update habit streaks
     updateHabitStreaks(habitId);
 
     // Clear input
     setCheckInData({ ...checkInData, [habitId]: 0 });
+    onHabitUpdate?.();
+  };
+
+  const handleDeleteHabit = () => {
+    if (!deleteHabitId) return;
+    // Remove the habit
+    HabitStorage.remove(deleteHabitId);
+    // Remove associated completions
+    const related = HabitCompletionStorage.getByHabit(deleteHabitId);
+    related.forEach(c => HabitCompletionStorage.remove(c.id));
+
+    addToast({
+      title: 'Habit Deleted',
+      color: 'success',
+      timeout: 2500,
+      shouldShowTimeoutProgress: true,
+    });
+
+    setDeleteHabitId(null);
     loadData();
     onHabitUpdate?.();
   };
@@ -219,7 +258,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
       <div className='flex justify-between items-center'>
         <h2 className='text-2xl font-bold text-gray-900'>Habit Tracker</h2>
         <Button
-          onClick={() => setIsAddingHabit(true)}
+          onPress={onOpen}
           color='primary'
           size='sm'
           className='flex items-center gap-2'
@@ -229,78 +268,78 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
         </Button>
       </div>
 
-      {/* Add Habit Form */}
-      {isAddingHabit && (
-        <div className='p-4 bg-gray-50 rounded-lg'>
-          <form onSubmit={handleSubmit(onSubmitHandler)} className='space-y-4'>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <Controller
-                control={control}
-                name='name'
-                rules={{
-                  required: {
-                    value: true,
-                    message: 'Habit name is required',
-                  },
-                }}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    label='Habit Name'
-                    isInvalid={!!errors.name?.message}
-                    errorMessage={errors.name?.message}
-                    placeholder='e.g., Review notes, Exercise'
-                    size='sm'
-                  />
-                )}
-              />
+      {/* Add Habit Modal */}
+      <Modal isOpen={isOpen} onClose={onModalClose} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader>Add new habit</ModalHeader>
+              <ModalBody>
+                <Controller
+                  control={control}
+                  name='name'
+                  rules={{
+                    required: {
+                      value: true,
+                      message: 'Habit name is required',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <Input {...field} label='Habit name' isRequired />
+                  )}
+                />
 
-              <Controller
-                control={control}
-                name='targetMinutes'
-                rules={{
-                  required: {
-                    value: true,
-                    message: 'Target minutes is required',
-                  },
-                  min: {
-                    value: 1,
-                    message: 'Target must be at least 1 minute',
-                  },
-                }}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    label='Target Minutes'
-                    type='number'
-                    min='1'
-                    value={field.value?.toString() || ''}
-                    onChange={e =>
-                      field.onChange(parseInt(e.target.value) || 0)
-                    }
-                    isInvalid={!!errors.targetMinutes?.message}
-                    errorMessage={errors.targetMinutes?.message}
-                    size='sm'
-                  />
-                )}
-              />
-
-              <div className='flex items-end gap-2'>
-                <Button type='submit' color='primary' isLoading={isSubmitting}>
-                  Add
-                </Button>
-                <Button
-                  type='button'
-                  disabled={isSubmitting}
-                  onPress={() => setIsAddingHabit(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </form>
-        </div>
-      )}
+                <Controller
+                  control={control}
+                  name='targetMinutes'
+                  rules={{
+                    required: {
+                      value: true,
+                      message: 'Target minutes is required',
+                    },
+                    min: {
+                      value: 1,
+                      message: 'Target must be at least 1 minute',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <NumberInput
+                      {...field}
+                      label='Target Minutes'
+                      minValue={1}
+                      isInvalid={!!errors.targetMinutes?.message}
+                      errorMessage={errors.targetMinutes?.message}
+                      size='sm'
+                      isRequired
+                    />
+                  )}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <div className='flex items-end gap-2'>
+                  <Button
+                    type='submit'
+                    color='primary'
+                    isLoading={isSubmitting}
+                    onPress={() => {
+                      handleSubmit(onSubmitHandler)();
+                    }}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    type='button'
+                    disabled={isSubmitting}
+                    onPress={onClose}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Habits List */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
@@ -310,7 +349,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
           const isCompleted = todayProgress.percentage >= 100;
 
           return (
-            <div key={habit.id} className='bg-white rounded-lg shadow-md p-6'>
+            <Card key={habit.id} className='p-6'>
               {/* Habit Header */}
               <div className='flex justify-between items-start mb-4'>
                 <div>
@@ -321,16 +360,38 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
                     {habit.targetMinutes} minutes daily
                   </p>
                 </div>
-                <div className='flex items-center gap-3'>
-                  <div className='flex items-center gap-1 text-orange-600'>
-                    <Flame className='w-4 h-4' />
-                    <span className='font-semibold'>{habit.currentStreak}</span>
-                  </div>
+                <div className='flex items-center gap-1'>
                   {isCompleted && (
                     <div className='w-8 h-8 bg-green-100 rounded-full flex items-center justify-center'>
                       <Check className='w-5 h-5 text-green-600' />
                     </div>
                   )}
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        isIconOnly
+                        variant='light'
+                        radius='full'
+                        aria-label='More actions'
+                      >
+                        <MoreHorizontal className='w-5 h-5 text-gray-600' />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label='Habit actions'
+                      onAction={key => {
+                        if (key === 'delete') setDeleteHabitId(habit.id);
+                      }}
+                    >
+                      <DropdownItem
+                        key='delete'
+                        className='text-danger'
+                        color='danger'
+                      >
+                        Delete
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
                 </div>
               </div>
 
@@ -448,12 +509,37 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
                   <div className='text-xs text-gray-600'>Best Streak</div>
                 </div>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
-      {habits.length === 0 && !isAddingHabit && (
+      {/* Delete Habit Modal */}
+      <Modal isOpen={!!deleteHabitId} onClose={() => setDeleteHabitId(null)}>
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader>Delete habit</ModalHeader>
+              <ModalBody>
+                <p className='text-sm text-gray-700'>
+                  This will permanently delete the habit and all its check-in
+                  history. This action cannot be undone.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <div className='flex items-end gap-2'>
+                  <Button color='danger' onPress={handleDeleteHabit}>
+                    Delete
+                  </Button>
+                  <Button onPress={onClose}>Cancel</Button>
+                </div>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {habits.length === 0 && (
         <div className='text-center py-12'>
           <Target className='w-12 h-12 mx-auto mb-4 text-gray-400' />
           <h3 className='text-lg font-medium text-gray-900 mb-2'>
@@ -462,7 +548,7 @@ export const HabitTracker: React.FC<HabitTrackerProps> = ({
           <p className='text-gray-600 mb-4'>
             Start tracking your daily habits to build consistency
           </p>
-          <Button onClick={() => setIsAddingHabit(true)} color='primary'>
+          <Button onPress={onOpen} color='primary'>
             Add Your First Habit
           </Button>
         </div>
