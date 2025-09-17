@@ -21,6 +21,7 @@
     "@internationalized/date": "^3.9.0",
     "@tanstack/react-query": "^5.85.6",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.12.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",
