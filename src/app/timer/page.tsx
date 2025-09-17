@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Timer } from '@/components/timer/Timer';
 import { TimeBlockStorage } from '@/lib/storage';
 import { TimeBlock } from '@/types';
 
-export default function TimerPage() {
+function TimerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const timeBlockId = searchParams.get('timeBlockId');
@@ -17,16 +17,13 @@ export default function TimerPage() {
 
   const handleComplete = (actualMinutes: number) => {
     if (timeBlock) {
-      // Update the time block with actual minutes
       const updatedBlock = { ...timeBlock, actualMinutes, completed: true };
       TimeBlockStorage.update(updatedBlock);
     }
-    // Navigate back to dashboard
     router.push('/');
   };
 
   const handleCancel = () => {
-    // Navigate back to dashboard
     router.push('/');
   };
 
@@ -51,5 +48,13 @@ export default function TimerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TimerPage() {
+  return (
+    <Suspense fallback={<div className='min-h-screen bg-gray-50 py-8' />}>
+      <TimerContent />
+    </Suspense>
   );
 }
