@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // Base URL can be configured via environment variable
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+const baseURL = process.env.SERVER_URL || '/api';
 
 // Maintain an in-memory auth token to avoid localStorage usage
 let inMemoryToken: string | null = null;
