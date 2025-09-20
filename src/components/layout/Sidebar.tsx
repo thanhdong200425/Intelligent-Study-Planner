@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { 
   Home, 
   CheckSquare, 
@@ -38,8 +39,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Logo */}
       <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-gray-200`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">S</span>
+          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+            <Image
+              src="/logo-transparent.svg"
+              alt="StudyGo Logo"
+              width={100}
+              height={50}
+              className="w-full h-full object-contain"
+            />
           </div>
           {!isCollapsed && (
             <span className="text-xl font-bold text-gray-900 transition-opacity duration-300">
