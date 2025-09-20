@@ -11,7 +11,6 @@ import { HabitTracker } from '@/components/habits/HabitTracker';
 import { WeeklySummary } from '@/components/analytics/WeeklySummary';
 import { TimeBlock } from '@/types';
 import { startOfWeek } from 'date-fns';
-import { TimeBlockStorage } from '@/lib/storage';
 
 const TABS = [
   'calendar',
