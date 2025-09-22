@@ -9,11 +9,14 @@ import BrandLogo from "@/components/auth/BrandLogo";
 import Divider from "@/components/auth/Divider";
 import SocialButton from "@/components/auth/SocialButton";
 import SubmitButton from "@/components/auth/SubmitButton";
-import OTPInput from "@/components/auth/OTPInput";
 
-type VerifyForm = {
-  otp: string;
-};
+// HeroUI
+import { InputOtp } from "@heroui/react";
+
+// Import classNames tách riêng
+import { otpClassNames } from "@/components/auth/OtpStyles";
+
+type VerifyForm = { otp: string };
 
 export default function VerifyCodePage({
   email = "abc@gmail.com",
@@ -32,9 +35,7 @@ export default function VerifyCodePage({
   });
 
   const onSubmit = (data: VerifyForm) => {
-    
     console.log("Verify code:", data.otp);
-    
   };
 
   return (
@@ -57,43 +58,28 @@ export default function VerifyCodePage({
             control={control}
             rules={{
               required: "Please enter the code",
-              // Cho phép gõ dần (chỉ chữ số) và yêu cầu đủ length để hợp lệ
               validate: {
                 digitsOnly: (v) => (/^\d*$/.test(v) ? true : "Digits only"),
-                exactLength: (v) =>
-                  v.length === length || `Code must be ${length} digits`,
+                exactLength: (v) => v.length === length || `Code must be ${length} digits`,
               },
             }}
-            render={({ field }) => {
-              // Map string -> string[] cho OTPInput
-              const valueArray = Array.from({ length }, (_, i) => field.value[i] ?? "");
-              return (
-                <OTPInput
-                  length={length}
-                  value={valueArray}
-                  onChange={(arr) => {
-                    // Chỉ nhận chữ số; RHF sẽ tự validate và cập nhật isValid
-                    const joined = arr.join("");
-                    if (/^\d*$/.test(joined)) {
-                      field.onChange(joined);
-                    }
-                  }}
-                  onComplete={(code) => {
-                    // Khi đủ số lượng, gán thẳng cho field (RHF tự validate)
-                    if (/^\d+$/.test(code)) {
-                      field.onChange(code);
-                    }
-                  }}
-                />
-              );
-            }}
+            render={({ field }) => (
+              <InputOtp
+                length={length}
+                value={field.value}
+                onValueChange={field.onChange}
+                onComplete={(val) => field.onChange(val)}
+                pushPasswordManagerStrategy="none"
+                isInvalid={!!errors.otp}
+                errorMessage={errors.otp?.message}
+                classNames={otpClassNames} // ✅ dùng lại từ file riêng
+              />
+            )}
           />
 
-          {errors.otp && (
-            <p className="mt-1 text-sm text-red-600 text-center">{errors.otp.message}</p>
-          )}
-
-          <SubmitButton disabled={!isValid}>Continue</SubmitButton>
+          <SubmitButton disabled={!isValid} aria-label="Continue">
+            Continue
+          </SubmitButton>
 
           <Divider label="OR" />
 
