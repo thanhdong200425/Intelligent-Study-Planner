@@ -51,7 +51,7 @@ export const Statistics: React.FC = () => {
   const renderContent = () => {
     switch (activeView) {
       case 'courses':
-        return <CoursesList courses={courses} onDataChange={loadData} />;
+        return <CoursesList />;
       case 'deadlines':
         return (
           <DeadlinesList

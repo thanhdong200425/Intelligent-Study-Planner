@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // Base URL can be configured via environment variable
-const baseURL = process.env.SERVER_URL || '/api';
+const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3030';
 
 // Maintain an in-memory auth token to avoid localStorage usage
 let inMemoryToken: string | null = null;
@@ -22,7 +22,12 @@ const shouldSkipAuth = (config: AxiosRequestConfig): boolean => {
   const url = config.url || '';
   // Normalize to path part only
   try {
-    const full = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    const full = new URL(
+      url,
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'http://localhost'
+    );
     const pathname = full.pathname.toLowerCase();
     return (
       pathname.includes('/auth/login') ||
@@ -51,11 +56,11 @@ apiClient.interceptors.request.use(config => {
     const token = inMemoryToken || getAccessTokenFromCookie();
     if (token) {
       config.headers = config.headers || {};
-      (config.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+      (config.headers as Record<string, string>)['Authorization'] =
+        `Bearer ${token}`;
     }
   }
   return config;
 });
 
 export default apiClient;
-

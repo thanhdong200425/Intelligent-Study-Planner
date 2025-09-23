@@ -2,9 +2,9 @@
 
 import React, { useState, useCallback } from 'react';
 import { Course } from '@/types';
-import { CourseStorage } from '@/lib/storage';
-import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Edit2, Plus, Save, X } from 'lucide-react';
+import { CourseApiService } from '@/lib/courseApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2, Edit2, Plus, Save, X, Loader2 } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -16,30 +16,76 @@ import {
   Input,
 } from '@heroui/react';
 
-interface CoursesListProps {
-  courses: Course[];
-  onDataChange: () => void;
-}
-
-export const CoursesList: React.FC<CoursesListProps> = ({
-  courses,
-  onDataChange,
-}) => {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [isAdding, setIsAdding] = useState<boolean>(false);
+export const CoursesList: React.FC = () => {
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<{ name: string; color: string }>({
     name: '',
     color: '#3b82f6',
   });
 
+  const queryClient = useQueryClient();
+
+  // Fetch courses
+  const {
+    data: courses = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['courses'],
+    queryFn: CourseApiService.getCourses,
+  });
+
+  // Create course mutation
+  const createMutation = useMutation({
+    mutationFn: CourseApiService.createCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setEditForm({ name: '', color: '#3b82f6' });
+    },
+    onError: error => {
+      console.error('Failed to create course:', error);
+      alert('Failed to create course. Please try again.');
+    },
+  });
+
+  // Update course mutation
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: { name?: string; color?: string };
+    }) => CourseApiService.updateCourse(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setEditingId(null);
+      setEditForm({ name: '', color: '#3b82f6' });
+    },
+    onError: error => {
+      console.error('Failed to update course:', error);
+      alert('Failed to update course. Please try again.');
+    },
+  });
+
+  // Delete course mutation
+  const deleteMutation = useMutation({
+    mutationFn: CourseApiService.deleteCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+    },
+    onError: error => {
+      console.error('Failed to delete course:', error);
+      alert('Failed to delete course. Please try again.');
+    },
+  });
+
   const handleEdit = (course: Course) => {
     setEditingId(course.id);
     setEditForm({ name: course.name, color: course.color });
-    setIsAdding(false);
   };
 
   const handleAdd = () => {
-    setIsAdding(true);
     setEditForm({ name: '', color: '#3b82f6' });
     setEditingId(null);
   };
@@ -47,40 +93,35 @@ export const CoursesList: React.FC<CoursesListProps> = ({
   const handleSave = () => {
     if (!editForm.name.trim()) return;
 
-    if (isAdding) {
-      const newCourse: Course = {
-        id: uuidv4(),
+    if (createMutation.isPending) {
+      createMutation.mutate({
         name: editForm.name.trim(),
         color: editForm.color,
-      };
-      CourseStorage.add(newCourse);
+      });
     } else if (editingId) {
-      const updatedCourse: Course = {
+      updateMutation.mutate({
         id: editingId,
-        name: editForm.name.trim(),
-        color: editForm.color,
-      };
-      CourseStorage.update(updatedCourse);
+        data: {
+          name: editForm.name.trim(),
+          color: editForm.color,
+        },
+      });
     }
-
-    setEditingId(null);
-    setIsAdding(false);
-    setEditForm({ name: '', color: '#3b82f6' });
-    onDataChange();
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setIsAdding(false);
     setEditForm({ name: '', color: '#3b82f6' });
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this course?')) {
-      CourseStorage.remove(id);
-      onDataChange();
-    }
-  };
+  const handleDelete = useCallback(
+    (id: number) => {
+      if (window.confirm('Are you sure you want to delete this course?')) {
+        deleteMutation.mutate(id);
+      }
+    },
+    [deleteMutation]
+  );
 
   const columns = [
     { name: 'Course Name', uid: 'name', sortable: true },
@@ -88,75 +129,116 @@ export const CoursesList: React.FC<CoursesListProps> = ({
     { name: 'Actions', uid: 'actions' },
   ];
 
-  const renderCell = useCallback((course: Course, columnKey: React.Key) => {
-    const cellValue = course[columnKey as keyof Course];
+  const renderCell = useCallback(
+    (course: Course, columnKey: React.Key) => {
+      const cellValue = course[columnKey as keyof Course];
 
-    switch (columnKey) {
-      case 'name':
-        return (
-          <div className='flex flex-col'>
-            <p className='text-bold text-sm capitalize'>{course.name}</p>
-          </div>
-        );
-      case 'color':
-        return (
-          <div className='flex items-center space-x-2'>
-            <div
-              className='w-6 h-6 rounded border border-gray-300'
-              style={{ backgroundColor: course.color }}
-            />
-            <span className='text-sm text-gray-600'>{course.color}</span>
-          </div>
-        );
-      case 'actions':
-        return (
-          <div className='flex justify-center items-center gap-2'>
-            <Button
-              isIconOnly
-              size='sm'
-              variant='light'
-              onPress={() => handleEdit(course)}
-            >
-              <Edit2 className='w-4 h-4 text-blue-600' />
-            </Button>
-            <Button
-              isIconOnly
-              size='sm'
-              variant='light'
-              onPress={() => handleDelete(course.id)}
-            >
-              <Trash2 className='w-4 h-4 text-red-600' />
-            </Button>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
-  }, []);
+      switch (columnKey) {
+        case 'name':
+          return (
+            <div className='flex flex-col'>
+              <p className='text-bold text-sm capitalize'>{course.name}</p>
+            </div>
+          );
+        case 'color':
+          return (
+            <div className='flex items-center space-x-2'>
+              <div
+                className='w-6 h-6 rounded border border-gray-300'
+                style={{ backgroundColor: course.color }}
+              />
+              <span className='text-sm text-gray-600'>{course.color}</span>
+            </div>
+          );
+        case 'actions':
+          return (
+            <div className='flex justify-center items-center gap-2'>
+              <Button
+                isIconOnly
+                size='sm'
+                variant='light'
+                onPress={() => handleEdit(course)}
+                isDisabled={deleteMutation.isPending}
+              >
+                <Edit2 className='w-4 h-4 text-blue-600' />
+              </Button>
+              <Button
+                isIconOnly
+                size='sm'
+                variant='light'
+                onPress={() => handleDelete(course.id)}
+                isDisabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? (
+                  <Loader2 className='w-4 h-4 text-red-600 animate-spin' />
+                ) : (
+                  <Trash2 className='w-4 h-4 text-red-600' />
+                )}
+              </Button>
+            </div>
+          );
+        default:
+          return cellValue instanceof Date
+            ? cellValue.toLocaleDateString()
+            : cellValue;
+      }
+    },
+    [deleteMutation.isPending, handleDelete]
+  );
 
   const topContent = React.useMemo(() => {
     return (
       <div className='flex justify-between gap-3 items-end'>
         <div className='flex gap-3'>
           <h3 className='text-lg font-semibold'>Courses Management</h3>
+          {isLoading && <Loader2 className='w-5 h-5 animate-spin' />}
         </div>
         <div className='flex gap-3'>
           <Button
             color='primary'
             endContent={<Plus className='w-4 h-4' />}
             onPress={handleAdd}
+            isDisabled={isLoading}
           >
             Add Course
           </Button>
         </div>
       </div>
     );
-  }, []);
+  }, [isLoading]);
+
+  // Show error message if there's an error
+  if (error) {
+    return (
+      <div className='space-y-4'>
+        <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+          <h3 className='text-lg font-semibold text-red-800'>
+            Error Loading Courses
+          </h3>
+          <p className='text-red-600'>
+            {error instanceof Error
+              ? error.message
+              : 'Failed to load courses. Please try again.'}
+          </p>
+          <Button
+            color='primary'
+            size='sm'
+            className='mt-2'
+            onPress={() =>
+              queryClient.invalidateQueries({ queryKey: ['courses'] })
+            }
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-4'>
       {/* Add Course Form Modal/Inline */}
-      {isAdding && (
+      {createMutation.isPending && (
         <div className='bg-white rounded-lg border border-gray-200 p-4 space-y-4'>
           <h4 className='text-md font-semibold'>Add New Course</h4>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -185,9 +267,16 @@ export const CoursesList: React.FC<CoursesListProps> = ({
               color='success'
               size='sm'
               onPress={handleSave}
-              startContent={<Save className='w-4 h-4' />}
+              startContent={
+                createMutation.isPending ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  <Save className='w-4 h-4' />
+                )
+              }
+              isDisabled={createMutation.isPending || !editForm.name.trim()}
             >
-              Save
+              {createMutation.isPending ? 'Saving...' : 'Save'}
             </Button>
             <Button
               color='default'
@@ -195,6 +284,7 @@ export const CoursesList: React.FC<CoursesListProps> = ({
               size='sm'
               onPress={handleCancel}
               startContent={<X className='w-4 h-4' />}
+              isDisabled={createMutation.isPending}
             >
               Cancel
             </Button>
@@ -231,9 +321,16 @@ export const CoursesList: React.FC<CoursesListProps> = ({
               color='success'
               size='sm'
               onPress={handleSave}
-              startContent={<Save className='w-4 h-4' />}
+              startContent={
+                updateMutation.isPending ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  <Save className='w-4 h-4' />
+                )
+              }
+              isDisabled={updateMutation.isPending || !editForm.name.trim()}
             >
-              Save
+              {updateMutation.isPending ? 'Saving...' : 'Save'}
             </Button>
             <Button
               color='default'
@@ -241,6 +338,7 @@ export const CoursesList: React.FC<CoursesListProps> = ({
               size='sm'
               onPress={handleCancel}
               startContent={<X className='w-4 h-4' />}
+              isDisabled={updateMutation.isPending}
             >
               Cancel
             </Button>
@@ -270,7 +368,12 @@ export const CoursesList: React.FC<CoursesListProps> = ({
         <TableBody
           items={courses}
           emptyContent={
-            courses.length === 0 && !isAdding ? (
+            isLoading ? (
+              <div className='text-center py-8 text-gray-500'>
+                <Loader2 className='w-6 h-6 animate-spin mx-auto mb-2' />
+                Loading courses...
+              </div>
+            ) : courses.length === 0 && !createMutation.isPending ? (
               <div className='text-center py-8 text-gray-500'>
                 No courses found. Click "Add Course" to create your first
                 course.

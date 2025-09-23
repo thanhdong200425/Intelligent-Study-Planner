@@ -1,7 +1,10 @@
 export interface Course {
-  id: string;
+  id: number;
+  userId: number;
   name: string;
   color: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Deadline {
