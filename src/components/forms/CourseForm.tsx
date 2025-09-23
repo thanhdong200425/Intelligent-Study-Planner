@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { addToast, Input } from '@heroui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import CourseApiService from '@/lib/courseApi';
+import CourseApiService from '@/services/courseApi';
 
 interface CourseFormProps {
   onSubmit?: (course: Partial<Course>) => void;

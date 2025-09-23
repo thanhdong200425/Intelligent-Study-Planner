@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient } from '@/lib/api';
 import { Course } from '@/types';
 
 export interface CreateCourseRequest {

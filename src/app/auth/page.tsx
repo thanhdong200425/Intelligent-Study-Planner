@@ -1,7 +1,8 @@
 import React from 'react';
 import { AuthCard, BrandLogo, AuthForm } from '@/components/auth';
+import apiClient from '@/lib/api';
 
-export default function AuthPage() {
+export default async function AuthPage() {
   return (
     <div className='min-h-screen w-full bg-slate-50 flex items-center justify-center p-6'>
       <AuthCard>
