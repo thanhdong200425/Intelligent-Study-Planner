@@ -1,6 +1,5 @@
 import React from 'react';
 import { AuthCard, BrandLogo, AuthForm } from '@/components/auth';
-import apiClient from '@/lib/api';
 
 export default async function AuthPage() {
   return (
