@@ -7,7 +7,7 @@ export async function setSessionCookie(sid: string, maxAge: number) {
   const incomingRequestCookie = await cookies();
   incomingRequestCookie.set(COOKIE, sid, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge,
@@ -23,7 +23,7 @@ export async function clearSessionCookie() {
   const incomingRequestCookie = await cookies();
   incomingRequestCookie.set(COOKIE, '', {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: 0,
