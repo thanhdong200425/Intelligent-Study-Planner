@@ -3,30 +3,92 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Facebook, Lock, Mail, Twitter } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
-import { Form, Input, Checkbox, Button, Divider, Link } from '@heroui/react';
+import {
+  Form,
+  Input,
+  Checkbox,
+  Button,
+  Divider,
+  Link,
+  addToast,
+} from '@heroui/react';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { authenticateUser, setRedirectTo } from '@/store/slices/authSlice';
 
-interface AuthFormProps {
+export interface AuthFormProps {
   email: string;
   password: string;
   remember: boolean;
 }
 
-const AuthForm = () => {
+interface AuthFormComponentProps {
+  redirectTo?: string;
+}
+
+const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { isLoading, error } = useAppSelector(state => state.auth);
+
+  // Form control
   const {
-    register,
     handleSubmit,
     control,
-    formState: { errors, isValid, isSubmitting },
+    reset,
+    formState: { errors, isValid },
   } = useForm<AuthFormProps>({
     mode: 'onSubmit',
     defaultValues: { email: '', password: '', remember: true },
   });
 
+  // Handle authentication
+  const handleAuthentication = async (
+    data: Pick<AuthFormProps, 'email' | 'password'>
+  ) => {
+    try {
+      // Set redirect path if provided
+      if (redirectTo) {
+        dispatch(setRedirectTo(redirectTo));
+      }
+
+      const result = await dispatch(authenticateUser(data)).unwrap();
+
+      addToast({
+        title: 'Signed in successfully',
+        color: 'success',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+
+      reset({ email: '', password: '', remember: true });
+
+      // Redirect to intended destination or home page
+      const redirectPath =
+        redirectTo && redirectTo !== '/auth' ? redirectTo : '/';
+      router.push(redirectPath);
+    } catch (error) {
+      addToast({
+        title: 'Authentication failed',
+        color: 'danger',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+      console.error('Authentication error: ', error);
+    }
+  };
+
+  // States
   const [showPassword, setShowPassword] = useState(false);
+
+  // Handlers
+  const onSubmit = (data: Pick<AuthFormProps, 'email' | 'password'>) => {
+    handleAuthentication(data);
+  };
 
   return (
     <Form
-      onSubmit={handleSubmit(data => console.log(data))}
+      onSubmit={handleSubmit(onSubmit)}
       className='mt-8 space-y-6 flex flex-col'
     >
       {/* Email */}
@@ -126,10 +188,10 @@ const AuthForm = () => {
         type='submit'
         color='primary'
         className='w-full'
-        isDisabled={!isValid || isSubmitting}
-        isLoading={isSubmitting}
+        isDisabled={!isValid || isLoading}
+        isLoading={isLoading}
       >
-        {isSubmitting ? 'Processing...' : 'Continue'}
+        {isLoading ? 'Processing...' : 'Continue'}
       </Button>
 
       <div className='flex w-full items-center my-6'>

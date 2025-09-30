@@ -11,6 +11,8 @@ import {
   DropdownItem,
   Avatar,
 } from '@heroui/react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logoutUser } from '@/store/slices/authSlice';
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -21,6 +23,12 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSidebar,
   isSidebarCollapsed = false,
 }) => {
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+  };
   return (
     <header className='h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6'>
       {/* Left Section with Toggle and Search */}
@@ -74,10 +82,15 @@ export const Header: React.FC<HeaderProps> = ({
         <Dropdown placement='bottom-end'>
           <DropdownTrigger>
             <div className='flex items-center space-x-2 cursor-pointer'>
-              <Avatar size='sm' name='Muslig' className='w-8 h-8' />
+              <Avatar
+                size='sm'
+                name={user?.name || user?.email || 'User'}
+                className='w-8 h-8'
+              />
               <div className='text-sm'>
-                <div className='text-gray-900 font-medium'>Muslig</div>
-                <div className='text-gray-500 text-xs'>Admin</div>
+                <div className='text-gray-900 font-medium'>
+                  {user?.name || user?.email || 'User'}
+                </div>
               </div>
               <ChevronDown className='w-4 h-4 text-gray-400' />
             </div>
@@ -85,7 +98,12 @@ export const Header: React.FC<HeaderProps> = ({
           <DropdownMenu aria-label='User menu'>
             <DropdownItem key='profile'>Profile</DropdownItem>
             <DropdownItem key='settings'>Settings</DropdownItem>
-            <DropdownItem key='logout' className='text-danger' color='danger'>
+            <DropdownItem
+              key='logout'
+              className='text-danger'
+              color='danger'
+              onPress={handleLogout}
+            >
               Logout
             </DropdownItem>
           </DropdownMenu>

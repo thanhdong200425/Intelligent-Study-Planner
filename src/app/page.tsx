@@ -2,13 +2,15 @@ import { MainDashboard } from '@/components';
 import { startOfWeek } from 'date-fns';
 
 interface HomeProps {
-  searchParams: {
+  searchParams: Promise<{
     tab?: string;
     week?: string;
-  };
+  }>;
 }
 
-export default function Home({ searchParams }: HomeProps) {
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+
   // Parse the tab from URL search params
   const validTabs = [
     'calendar',
@@ -20,21 +22,19 @@ export default function Home({ searchParams }: HomeProps) {
     'settings',
   ];
   const activeTab =
-    searchParams.tab && validTabs.includes(searchParams.tab)
-      ? searchParams.tab
-      : 'calendar';
+    params.tab && validTabs.includes(params.tab) ? params.tab : 'calendar';
 
   // Parse the week from URL search params
   let initialWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-  if (searchParams.week) {
+  if (params.week) {
     try {
-      const parsedWeek = new Date(searchParams.week);
+      const parsedWeek = new Date(params.week);
       if (!isNaN(parsedWeek.getTime())) {
         initialWeek = startOfWeek(parsedWeek, { weekStartsOn: 1 });
       }
     } catch (error) {
       // If parsing fails, use default week
-      console.warn('Invalid week parameter:', searchParams.week);
+      console.warn('Invalid week parameter:', params.week);
     }
   }
 
