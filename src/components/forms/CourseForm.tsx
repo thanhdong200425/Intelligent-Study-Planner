@@ -7,11 +7,15 @@ import { CourseStorage } from '@/lib/storage';
 import { Button } from '@/components/ui/Button';
 import { addToast, Input } from '@heroui/react';
 import { Controller, useForm } from 'react-hook-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import CourseApiService from '@/services/courseApi';
 
 interface CourseFormProps {
-  onSubmit?: (course: Course) => void;
+  onSubmit?: (course: Partial<Course>) => void;
   onCancel?: () => void;
 }
+
+type SubmitData = Pick<Course, 'name' | 'color'>;
 
 const PRESET_COLORS = [
   '#ef4444',
@@ -33,10 +37,7 @@ const PRESET_COLORS = [
   '#f43f5e',
 ];
 
-export const CourseForm: React.FC<CourseFormProps> = ({
-  onSubmit,
-  onCancel,
-}) => {
+export const CourseForm: React.FC<CourseFormProps> = ({ onCancel }) => {
   const {
     control,
     reset,
@@ -48,29 +49,41 @@ export const CourseForm: React.FC<CourseFormProps> = ({
     mode: 'onBlur',
   });
 
-  const onSubmitHandler = (data: Course) => {
-    const course: Course = {
-      id: uuidv4(),
-      name: data.name.trim(),
-      color: data.color,
-    };
+  const queryClient = useQueryClient();
 
-    CourseStorage.add(course);
-    onSubmit?.(course);
-    addToast({
-      title: 'Course added successfully',
-      color: 'success',
-      timeout: 2000,
-      shouldShowTimeoutProgress: true,
-    });
-    reset({
-      name: '',
-      color: '',
-    });
-  };
+  const createCourse = useMutation({
+    mutationFn: (data: SubmitData) => {
+      return CourseApiService.createCourse(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      addToast({
+        title: 'Course added successfully',
+        color: 'success',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+      reset({
+        name: '',
+        color: '',
+      });
+    },
+    onError: error => {
+      console.error('Failed to create course:', error);
+      addToast({
+        title: 'Failed to add course',
+        color: 'danger',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit(onSubmitHandler)} className='space-y-4'>
+    <form
+      onSubmit={handleSubmit(data => createCourse.mutate(data))}
+      className='space-y-4'
+    >
       <Controller
         control={control}
         name='name'
