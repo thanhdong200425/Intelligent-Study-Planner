@@ -14,13 +14,13 @@ import {
 } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setRedirectTo } from '@/store/slices/authSlice';
-import { checkAuthMode, registerOrLogin } from '@/mutations';
+import { checkAuthMode } from '@/services';
+import { setTemporaryEmail } from '@/store/slices/appSlice';
+import { BaseButton, BaseDivider } from '@/components';
 
 export interface AuthFormProps {
   email: string;
   password: string;
-  remember: boolean;
 }
 
 interface AuthFormComponentProps {
@@ -32,16 +32,15 @@ type AuthMode = 'login' | 'register';
 const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
   const router = useRouter();
   const [authMode, setAuthMode] = useState<AuthMode>('login');
-
+  const dispatch = useAppDispatch();
   // Form control
   const {
     handleSubmit,
     control,
-    reset,
     formState: { errors, isValid, isLoading },
   } = useForm<AuthFormProps>({
     mode: 'onSubmit',
-    defaultValues: { email: '', password: '', remember: true },
+    defaultValues: { email: '', password: '' },
   });
 
   // States
@@ -59,7 +58,8 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
       if (result === null) throw new Error('An error occurred');
 
       setAuthMode(result);
-      router.push(`/auth/${authMode}`);
+      dispatch(setTemporaryEmail(data.email));
+      router.push(`/auth/${result}`);
     } catch (error: any) {
       addToast({
         title: 'Error',
@@ -140,23 +140,14 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
         )}
       />*/}
 
-      <Button
+      <BaseButton
         type='submit'
-        color='primary'
-        className='w-full'
-        isDisabled={!isValid || isLoading}
+        isValid={isValid}
         isLoading={isLoading}
-      >
-        {isLoading ? 'Processing...' : 'Continue'}
-      </Button>
+        content={isLoading ? 'Processing...' : 'Continue'}
+      />
 
-      <div className='flex w-full items-center my-6'>
-        <Divider className='flex-1' orientation='horizontal' />
-        <span className='mx-4 text-slate-400 font-semibold text-xs uppercase tracking-widest select-none'>
-          OR
-        </span>
-        <Divider className='flex-1' orientation='horizontal' />
-      </div>
+      <BaseDivider />
 
       <div className='space-y-3'>
         <Button

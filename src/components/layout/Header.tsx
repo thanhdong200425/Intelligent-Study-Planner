@@ -12,7 +12,6 @@ import {
   Avatar,
 } from '@heroui/react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logoutUser } from '@/store/slices/authSlice';
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -26,9 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-  };
+  const handleLogout = () => {};
   return (
     <header className='h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6'>
       {/* Left Section with Toggle and Search */}

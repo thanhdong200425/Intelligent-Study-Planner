@@ -20,6 +20,7 @@ export interface AppState {
     message: string;
     type: 'success' | 'error' | 'warning' | 'info';
   };
+  temporaryEmail: string | null;
 }
 
 export interface NotificationItem {
@@ -51,6 +52,7 @@ const initialState: AppState = {
     message: '',
     type: 'info',
   },
+  temporaryEmail: null,
 };
 
 const appSlice = createSlice({
@@ -71,6 +73,9 @@ const appSlice = createSlice({
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
+    },
+    setTemporaryEmail: (state, action: PayloadAction<string | null>) => {
+      state.temporaryEmail = action.payload;
     },
 
     // Notification actions
@@ -180,6 +185,7 @@ export const {
   toggleSidebar,
   setSidebarCollapsed,
   setLoading,
+  setTemporaryEmail,
   addNotification,
   markNotificationAsRead,
   markAllNotificationsAsRead,
