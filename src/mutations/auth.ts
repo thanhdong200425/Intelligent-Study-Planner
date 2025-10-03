@@ -39,3 +39,17 @@ export const registerOrLogin = async (data: AuthCredentials) => {
     throw err;
   }
 };
+
+type AuthTypeResponse = 'login' | 'register';
+
+export const checkAuthMode = async (
+  data: Pick<AuthCredentials, 'email'>
+): Promise<AuthTypeResponse | null> => {
+  try {
+    const response = await apiClient.post('/auth/check-type', data);
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    return null;
+  }
+};
