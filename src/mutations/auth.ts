@@ -27,13 +27,9 @@ export const useLoginMutation = () => {
         color: 'success',
       });
       
-      // Update Redux store with user and session data
+      // Update Redux store with user data
       dispatch(setAuthData({
         user: data.user,
-        session: {
-          sessionId: data.sessionId,
-          expiresAt: new Date(Date.now() + data.absoluteSeconds * 1000).toISOString(),
-        },
       }));
       
       // Clear temporary email
@@ -109,14 +105,10 @@ export const useCheckAuthModeMutation = () => {
 export const useLogoutMutation = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const session = useAppSelector(state => state.auth.session);
   
   return useMutation({
     mutationFn: async () => {
-      if (session?.sessionId) {
-        return logout(session.sessionId);
-      }
-      return Promise.resolve();
+      await logout();
     },
     onSuccess: () => {
       // Clear Redux auth state
