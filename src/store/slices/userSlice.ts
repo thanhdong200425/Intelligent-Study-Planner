@@ -187,6 +187,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setProfile, clearUser, clearError, updateProfileLocally } =
+export const { setProfile,clearUser, clearError, updateProfileLocally } =
   userSlice.actions;
 export default userSlice.reducer;

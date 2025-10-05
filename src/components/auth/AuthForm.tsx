@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Eye, EyeOff, Facebook, Lock, Mail, Twitter } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -14,78 +14,60 @@ import {
 } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { authenticateUser, setRedirectTo } from '@/store/slices/authSlice';
+import { checkAuthMode } from '@/services';
+import { setTemporaryEmail } from '@/store/slices/appSlice';
+import { BaseButton, BaseDivider } from '@/components';
 
 export interface AuthFormProps {
   email: string;
   password: string;
-  remember: boolean;
 }
 
 interface AuthFormComponentProps {
   redirectTo?: string;
 }
 
+type AuthMode = 'login' | 'register';
+
 const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
   const router = useRouter();
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector(state => state.auth);
-
   // Form control
   const {
     handleSubmit,
     control,
-    reset,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isLoading },
   } = useForm<AuthFormProps>({
     mode: 'onSubmit',
-    defaultValues: { email: '', password: '', remember: true },
+    defaultValues: { email: '', password: '' },
   });
-
-  // Handle authentication
-  const handleAuthentication = async (
-    data: Pick<AuthFormProps, 'email' | 'password'>
-  ) => {
-    try {
-      // Set redirect path if provided
-      if (redirectTo) {
-        dispatch(setRedirectTo(redirectTo));
-      }
-
-      const result = await dispatch(authenticateUser(data)).unwrap();
-
-      addToast({
-        title: 'Signed in successfully',
-        color: 'success',
-        timeout: 2000,
-        shouldShowTimeoutProgress: true,
-      });
-
-      reset({ email: '', password: '', remember: true });
-
-      // Redirect to intended destination or home page
-      const redirectPath =
-        redirectTo && redirectTo !== '/auth' ? redirectTo : '/';
-      router.push(redirectPath);
-    } catch (error) {
-      addToast({
-        title: 'Authentication failed',
-        color: 'danger',
-        timeout: 2000,
-        shouldShowTimeoutProgress: true,
-      });
-      console.error('Authentication error: ', error);
-    }
-  };
 
   // States
   const [showPassword, setShowPassword] = useState(false);
 
   // Handlers
-  const onSubmit = (data: Pick<AuthFormProps, 'email' | 'password'>) => {
-    handleAuthentication(data);
+  const onSubmit = async (data: Pick<AuthFormProps, 'email'>) => {
+    await handleCheckType(data);
   };
 
+  // Check whether to login or register based on email
+  const handleCheckType = async (data: Pick<AuthFormProps, 'email'>) => {
+    try {
+      const result = await checkAuthMode(data);
+      if (result === null) throw new Error('An error occurred');
+
+      setAuthMode(result);
+      dispatch(setTemporaryEmail(data.email));
+      router.push(`/auth/${result}`);
+    } catch (error: any) {
+      addToast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'An error occurred.',
+        color: 'danger',
+      });
+    }
+  };
   return (
     <Form
       onSubmit={handleSubmit(onSubmit)}
@@ -107,11 +89,9 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
             {...field}
             type='email'
             label='Email'
-            placeholder='you@example.com'
             autoComplete='email'
             inputMode='email'
             variant='bordered'
-            startContent={<Mail size={18} className='text-slate-400' />}
             isInvalid={!!errors.email}
             errorMessage={errors.email?.message}
             onChange={e =>
@@ -126,7 +106,7 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
       />
 
       {/* Password */}
-      <Controller
+      {/*<Controller
         name='password'
         control={control}
         rules={{
@@ -158,49 +138,16 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
             }
           />
         )}
+      />*/}
+
+      <BaseButton
+        type='submit'
+        isValid={isValid}
+        isLoading={isLoading}
+        content={isLoading ? 'Processing...' : 'Continue'}
       />
 
-      <div className='mt-3 flex flex-row w-full items-center justify-between'>
-        <Controller
-          name='remember'
-          control={control}
-          render={({ field: { value, onChange, onBlur, name, ref } }) => (
-            <Checkbox
-              isSelected={!!value}
-              onValueChange={onChange}
-              onBlur={onBlur}
-              name={name}
-              ref={ref}
-            >
-              Remember Me
-            </Checkbox>
-          )}
-        />
-        <Link
-          href='#'
-          className='text-sm font-medium text-slate-600 hover:text-slate-900'
-        >
-          Forgot Password
-        </Link>
-      </div>
-
-      <Button
-        type='submit'
-        color='primary'
-        className='w-full'
-        isDisabled={!isValid || isLoading}
-        isLoading={isLoading}
-      >
-        {isLoading ? 'Processing...' : 'Continue'}
-      </Button>
-
-      <div className='flex w-full items-center my-6'>
-        <Divider className='flex-1' orientation='horizontal' />
-        <span className='mx-4 text-slate-400 font-semibold text-xs uppercase tracking-widest select-none'>
-          OR
-        </span>
-        <Divider className='flex-1' orientation='horizontal' />
-      </div>
+      <BaseDivider />
 
       <div className='space-y-3'>
         <Button

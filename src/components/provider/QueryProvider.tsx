@@ -13,7 +13,7 @@ export default function QueryProvider({
   return (
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider>
-        <ToastProvider placement={'top-right'} />
+        <ToastProvider placement={'top-right'} toastOffset={30} />
         {children}
       </HeroUIProvider>
     </QueryClientProvider>

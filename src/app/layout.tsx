@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang='en'>
       <body className={`${inter.variable} antialiased`}>
         <ReduxProvider>
-          <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>{children}</QueryProvider>
         </ReduxProvider>
       </body>
     </html>
