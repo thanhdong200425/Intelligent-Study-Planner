@@ -1,27 +1,43 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@heroui/react';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setTemporaryEmail } from '@/store/slices/appSlice';
 import { 
   login, 
   register, 
+  logout,
   checkAuthMode, 
   type AuthCredentials, 
-  type AuthTypeResponse 
+  type AuthTypeResponse,
+  type LoginResponse
 } from '@/services/auth';
+import { setAuthData, clearAuth } from '@/store/slices/authSlice';
 
 export const useLoginMutation = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   
   return useMutation({
     mutationFn: (credentials: AuthCredentials) => login(credentials),
-    onSuccess: (data) => {
+    onSuccess: (data: LoginResponse) => {
       addToast({
         title: 'Success',
         description: 'Login successful! Welcome back.',
         color: 'success',
       });
+      
+      // Update Redux store with user and session data
+      dispatch(setAuthData({
+        user: data.user,
+        session: {
+          sessionId: data.sessionId,
+          expiresAt: new Date(Date.now() + data.absoluteSeconds * 1000).toISOString(),
+        },
+      }));
+      
+      // Clear temporary email
+      dispatch(setTemporaryEmail(null));
       
       // Redirect to dashboard or intended page
       router.push('/dashboard');
@@ -89,13 +105,23 @@ export const useCheckAuthModeMutation = () => {
   });
 };
 
-// Custom hook for logout (if you have a logout endpoint)
+
 export const useLogoutMutation = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const session = useAppSelector(state => state.auth.session);
   
   return useMutation({
-    mutationFn: async () => {},
+    mutationFn: async () => {
+      if (session?.sessionId) {
+        return logout(session.sessionId);
+      }
+      return Promise.resolve();
+    },
     onSuccess: () => {
+      // Clear Redux auth state
+      dispatch(clearAuth());
+      
       addToast({
         title: 'Success',
         description: 'You have been logged out successfully.',
@@ -105,11 +131,16 @@ export const useLogoutMutation = () => {
       router.push('/auth');
     },
     onError: (error: Error) => {
+      // Even if logout fails on server, clear local state
+      dispatch(clearAuth());
+      
       addToast({
         title: 'Error',
-        description: 'An error occurred during logout.',
-        color: 'danger',
+        description: 'An error occurred during logout, but you have been logged out',
+        color: 'warning',
       });
+      
+      router.push('/auth');
     },
   });
 };
