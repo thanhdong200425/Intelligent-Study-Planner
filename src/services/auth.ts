@@ -1,4 +1,5 @@
 import apiClient from '@/lib/api';
+import { verify } from 'node:crypto';
 
 export interface AuthCredentials {
   email: string;
@@ -19,6 +20,7 @@ export type AuthTypeResponse = 'login' | 'register';
 
 const endpoint = {
   register: '/auth/register',
+  verifyOtp: '/auth/register/verify-otp',
   login: '/auth/login',
   logout: '/auth/logout',
 };
@@ -43,7 +45,20 @@ export const register = async (data: AuthCredentials) => {
     console.log('Error: ', err);
     throw new Error(err.response.data.message);
   }
-}
+};
+
+export const verifyRegisterOtp = async (data: {
+  email: string;
+  otp: number;
+}) => {
+  try {
+    const response = await apiClient.post(endpoint.verifyOtp, data);
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response.data.message);
+  }
+};
 
 export const login = async (data: AuthCredentials): Promise<LoginResponse> => {
   try {

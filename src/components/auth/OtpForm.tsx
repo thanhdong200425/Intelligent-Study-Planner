@@ -1,7 +1,9 @@
 'use client';
 
+import { useVerifyRegisterMutation } from '@/mutations';
 import { Button, Form, InputOtp } from '@heroui/react';
 import { Controller, useForm } from 'react-hook-form';
+import { BaseButton } from '../buttons';
 
 interface OtpFormProps {
   email: string;
@@ -22,8 +24,13 @@ const OtpForm: React.FC<OtpFormProps> = ({ email, length = 6 }) => {
     defaultValues: { email, otp: '' },
   });
 
+  const { mutateAsync: verifyOtp, isPending } = useVerifyRegisterMutation();
+  const onSubmit = async (data: any) => {
+    await verifyOtp(data);
+  };
+
   return (
-    <Form onSubmit={handleSubmit(() => {})} className='mt-8 w-full space-y-6'>
+    <Form onSubmit={handleSubmit(onSubmit)} className='mt-8 w-full space-y-6'>
       <Controller
         name='otp'
         control={control}
@@ -49,15 +56,12 @@ const OtpForm: React.FC<OtpFormProps> = ({ email, length = 6 }) => {
         )}
       />
 
-      <Button
+      <BaseButton
+        isValid={isValid}
+        isLoading={isPending || isSubmitting}
+        content='Continue'
         type='submit'
-        color='primary'
-        className='w-full'
-        isDisabled={!isValid || isSubmitting}
-        isLoading={isSubmitting}
-      >
-        {isSubmitting ? 'Processing...' : 'Continue'}
-      </Button>
+      />
     </Form>
   );
 };

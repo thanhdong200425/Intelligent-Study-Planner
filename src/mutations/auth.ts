@@ -11,6 +11,7 @@ import {
   type AuthCredentials,
   type AuthTypeResponse,
   type LoginResponse,
+  verifyRegisterOtp,
 } from '@/services/auth';
 import { setAuthData, clearAuth } from '@/store/slices/authSlice';
 
@@ -51,23 +52,51 @@ export const useLoginMutation = () => {
 
 // Register mutation
 export const useRegisterMutation = () => {
-  const router = useRouter();
-
   return useMutation({
     mutationFn: (credentials: AuthCredentials) => register(credentials),
     onSuccess: data => {
       addToast({
         title: 'Success',
-        description: 'Account created successfully! Please verify your email.',
+        description:
+          'Account created successfully! Please verify your email to active your account.',
         color: 'success',
       });
-
-      router.push('/verify');
     },
     onError: (error: Error) => {
       addToast({
         title: 'Registration Failed',
         description: error.message || 'An error occurred during registration.',
+        color: 'danger',
+      });
+    },
+  });
+};
+
+// Verify registration OTP mutation
+export const useVerifyRegisterMutation = () => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  return useMutation({
+    mutationFn: (data: { email: string; otp: number }) =>
+      verifyRegisterOtp(data),
+    onSuccess: data => {
+      addToast({
+        title: 'Success',
+        description: 'Verify successfully.',
+        color: 'success',
+      });
+      dispatch(
+        setAuthData({
+          user: data.user,
+        })
+      );
+      router.push('/');
+      dispatch(setTemporaryEmail(null));
+    },
+    onError: (error: Error) => {
+      addToast({
+        title: 'Verification Failed',
+        description: error.message || 'An error occurred during verification.',
         color: 'danger',
       });
     },
