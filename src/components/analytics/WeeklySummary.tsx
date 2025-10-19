@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { WeeklySummary as WeeklySummaryType, TimeBlock } from '@/types';
 import {
   TimeBlockStorage,
@@ -35,11 +35,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
   const [summary, setSummary] = useState<WeeklySummaryType | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    generateWeeklySummary();
-  }, [weekStart]);
-
-  const generateWeeklySummary = () => {
+  const generateWeeklySummary = useCallback(() => {
     setLoading(true);
 
     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -113,8 +109,11 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
     setSummary(summaryData);
     WeeklySummaryStorage.add(summaryData);
     setLoading(false);
-  };
+  }, [weekStart]);
 
+  useEffect(() => {
+    generateWeeklySummary();
+  }, [generateWeeklySummary]);
   const findMostProductiveTimeSlot = (timeBlocks: TimeBlock[]) => {
     const timeSlots: {
       [key: string]: { total: number; actual: number; count: number };
@@ -329,7 +328,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
             Time per Course
           </h3>
           <div className='space-y-3'>
-            {Object.entries(summary.timePerCourse)
+            {/*{Object.entries(summary.timePerCourse)
               .sort(([, a], [, b]) => b - a)
               .map(([courseId, minutes]) => {
                 const course = courses.find(c => c.id === courseId);
@@ -366,7 +365,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
                     </div>
                   </div>
                 );
-              })}
+              })}*/}
           </div>
         </div>
       )}

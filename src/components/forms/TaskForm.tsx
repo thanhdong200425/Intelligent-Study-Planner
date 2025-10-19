@@ -43,7 +43,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
       setDeadlines(allDeadlines);
 
       if (allCourses.length > 0 && !selectedCourseId) {
-        setValue('courseId', allCourses[0].id);
+        // setValue('courseId', allCourses[0].id);
       }
     };
 
@@ -71,13 +71,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
     });
 
     // Reset form
-    reset({
-      title: '',
-      courseId: courses[0]?.id || '',
-      type: 'reading',
-      estimateMinutes: 60,
-      deadlineId: '',
-    });
+    // reset({
+    //   title: '',
+    //   courseId: courses[0]?.id || '',
+    //   type: 'reading',
+    //   estimateMinutes: 60,
+    //   deadlineId: '',
+    // });
   };
 
   if (courses.length === 0) {

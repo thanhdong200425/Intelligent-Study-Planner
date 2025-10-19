@@ -138,7 +138,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const getCourseForTask = (task: Task): Course | undefined => {
-    return courses.find(c => c.id === task.courseId);
+    return undefined;
   };
 
   const handleDeleteBlock = (blockId: string) => {

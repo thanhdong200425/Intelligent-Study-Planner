@@ -31,10 +31,10 @@ export const CourseStorage = {
     coursesStore = coursesStore.map(c => (c.id === course.id ? course : c));
   },
   remove: (id: string) => {
-    coursesStore = coursesStore.filter(c => c.id !== id);
+    coursesStore = coursesStore.filter(c => c.id.toString() !== id);
   },
   getById: (id: string): Course | undefined =>
-    coursesStore.find(c => c.id === id),
+    coursesStore.find(c => c.id.toString() === id),
 };
 
 // Deadline operations

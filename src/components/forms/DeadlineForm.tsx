@@ -59,7 +59,7 @@ export const DeadlineForm: React.FC<DeadlineFormProps> = ({
       const allCourses = CourseStorage.getAll();
       setCourses(allCourses);
       if (allCourses.length > 0 && !watch('courseId')) {
-        setValue('courseId', allCourses[0].id);
+        // setValue('courseId', allCourses[0].id);
       }
     };
 
@@ -86,12 +86,12 @@ export const DeadlineForm: React.FC<DeadlineFormProps> = ({
     });
 
     // Reset form
-    reset({
-      title: '',
-      courseId: courses[0]?.id || '',
-      dueDate: undefined,
-      priority: 'medium',
-    });
+    // reset({
+    //   title: '',
+    //   courseId: courses[0]?.id || '',
+    //   dueDate: undefined,
+    //   priority: 'medium',
+    // });
   };
 
   if (courses.length === 0) {
