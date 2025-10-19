@@ -55,7 +55,7 @@ export const TasksList: React.FC<TasksListProps> = ({
     setIsAdding(true);
     setEditForm({
       title: '',
-      courseId: courses[0]?.id || '',
+      courseId: courses[0]?.id?.toString() || '',
       type: 'reading',
       estimateMinutes: 30,
     });
@@ -137,7 +137,8 @@ export const TasksList: React.FC<TasksListProps> = ({
     }
   };
 
-  const getCourse = (courseId: string) => courses.find(c => c.id === courseId);
+  const getCourse = (courseId: string) =>
+    courses.find(c => c.id.toString() === courseId);
 
   const taskTypes: TaskType[] = ['reading', 'coding', 'writing', 'pset'];
 

@@ -31,7 +31,7 @@ export default function LoginPage() {
     if (!tempEmail) {
       router.push('/auth');
     }
-  }, []);
+  }, [router, tempEmail]);
 
   const { mutateAsync: login, isPending } = useLoginMutation();
 

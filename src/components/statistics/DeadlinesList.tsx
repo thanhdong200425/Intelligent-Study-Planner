@@ -53,12 +53,12 @@ export const DeadlinesList: React.FC<DeadlinesListProps> = ({
 
   const handleAdd = () => {
     setIsAdding(true);
-    setEditForm({
-      title: '',
-      courseId: courses[0]?.id || '',
-      dueDate: '',
-      priority: 'medium',
-    });
+    // setEditForm({
+    //   title: '',
+    //   courseId: courses[0]?.id || '',
+    //   dueDate: '',
+    //   priority: 'medium',
+    // });
     setEditingId(null);
   };
 
@@ -141,7 +141,9 @@ export const DeadlinesList: React.FC<DeadlinesListProps> = ({
     new Date(date) < new Date() &&
     new Date(date).toDateString() !== new Date().toDateString();
 
-  const getCourse = (courseId: string) => courses.find(c => c.id === courseId);
+  // const getCourse = (courseId: string) => courses.find(c => c.id === courseId);
+
+  const getCourse = () => {};
 
   return (
     <div className='space-y-4'>
@@ -325,7 +327,7 @@ export const DeadlinesList: React.FC<DeadlinesListProps> = ({
                       </select>
                     ) : (
                       <span className='text-sm text-gray-600'>
-                        {getCourse(deadline.courseId)?.name || 'Unknown Course'}
+                        Unknown Course
                       </span>
                     )}
                   </td>
