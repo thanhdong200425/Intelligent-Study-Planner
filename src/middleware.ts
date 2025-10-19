@@ -16,11 +16,16 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
+  const sessionCookie = request.cookies.get('sid');
+
   if (isPublicRoute || isPublicApiRoute) {
+    // Check if session is exist or not, it session exist, redirect to home page
+    if (sessionCookie && sessionCookie.value) {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
     return NextResponse.next();
   }
-
-  const sessionCookie = request.cookies.get('sid');
 
   // If no session cookie, redirect to auth page
   if (!sessionCookie || !sessionCookie.value) {

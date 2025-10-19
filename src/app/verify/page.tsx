@@ -1,14 +1,20 @@
+'use client';
+
 import React from 'react';
 import BrandLogo from '@/components/auth/BrandLogo';
 import { OtpForm } from '@/components/auth';
+import { useAppSelector } from '@/store/hooks';
+import { useRouter } from 'next/navigation';
 
-interface VerifyCodePageProps {
-  email?: string;
-}
+export default function VerifyCodePage() {
+  const tempEmail = useAppSelector(state => state.app.temporaryEmail);
+  const router = useRouter();
 
-export default function VerifyCodePage({
-  email = 'abc@gmail.com',
-}: VerifyCodePageProps) {
+  if (!tempEmail) {
+    router.push('');
+    return;
+  }
+
   return (
     <div className='min-h-screen w-full bg-slate-50 flex items-center justify-center p-6'>
       <div className='w-full max-w-md rounded-2xl bg-white/80 backdrop-blur shadow-xl border border-slate-200 p-8'>
@@ -19,11 +25,12 @@ export default function VerifyCodePage({
             Please Check Your Email
           </h1>
           <p className='mt-4 text-slate-600 text-center'>
-            We’ve sent a code to <span className='font-medium'>{email}</span>
+            We’ve sent a code to{' '}
+            <span className='font-medium'>{tempEmail}</span>
           </p>
         </div>
 
-        <OtpForm email={email} />
+        <OtpForm email={tempEmail} />
       </div>
     </div>
   );

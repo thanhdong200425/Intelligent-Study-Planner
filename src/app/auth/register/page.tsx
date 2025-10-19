@@ -11,9 +11,9 @@ import { useRegisterMutation } from '@/mutations';
 import { AuthFormProps } from '@/components/auth/AuthForm';
 
 export default function RegisterPage() {
-  const tempEmail = useAppSelector(state => state.app.temporaryEmail);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const temporaryEmail = useAppSelector(state => state.app.temporaryEmail);
 
   const {
     control,
@@ -22,21 +22,26 @@ export default function RegisterPage() {
   } = useForm<AuthFormProps>({
     mode: 'onBlur',
     defaultValues: {
-      email: tempEmail || '',
+      email: temporaryEmail || '',
       password: '',
     },
   });
 
   useEffect(() => {
-    if (!tempEmail) {
+    if (!temporaryEmail) {
       router.push('/auth');
     }
-  }, [tempEmail]);
+  }, [temporaryEmail, router]);
 
   const { mutateAsync: register, isPending } = useRegisterMutation();
 
   const onSubmit = async (data: any) => {
-    await register(data);
+    try {
+      await register(data);
+      router.push(`/verify`);
+    } catch (error) {
+      console.error('Registration error:', error);
+    }
   };
 
   return (
