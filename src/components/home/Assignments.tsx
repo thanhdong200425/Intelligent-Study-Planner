@@ -1,47 +1,44 @@
+
 import React from 'react';
-import { CheckIcon } from './icons/Icons';
 
 const assignments = [
-  { title: 'Colour Theory', date: '01 Sep 2022', grade: '86/100', status: 'Grade', completed: true },
-  { title: 'Design system', date: '01 Sep 2022', grade: '90/100', status: 'Grade', completed: true },
-  { title: 'User persona', date: '03 Sep 2022', grade: '0/100', status: 'To Do', completed: false },
-  { title: 'Prototyping', date: '06 Sep 2022', grade: '0/100', status: 'To Do', completed: false },
+  { title: 'Colour Theory', date: '01 Sep 2022', grade: '86/100', status: 'completed' },
+  { title: 'Design system', date: '01 Sep 2022', grade: '90/100', status: 'completed' },
+  { title: 'User persona', date: '03 Sep 2022', grade: '0/100', status: 'todo' },
+  { title: 'Prototyping', date: '06 Sep 2022', grade: '0/100', status: 'todo' },
 ];
 
-// FIX: Explicitly typing AssignmentItem as a React.FC allows TypeScript to correctly handle React-specific props like `key` during JSX transformation, resolving the type error.
-const AssignmentItem: React.FC<typeof assignments[0]> = ({ title, date, grade, status, completed }) => (
-    <div className="flex items-center justify-between py-2">
-        <div className="flex items-center space-x-3">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${completed ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}>
-                {completed && <CheckIcon className="text-white w-3 h-3"/>}
-            </div>
-            <div>
-                <p className="font-medium text-sm">{title}</p>
-                <p className="text-xs text-gray-400">{date}</p>
-            </div>
-        </div>
-        <div>
-            <p className={`font-semibold text-sm ${status === 'Grade' ? 'text-gray-800' : 'text-gray-400'}`}>{grade}</p>
-            <p className="text-xs text-gray-400 text-right">{status}</p>
-        </div>
+const CheckboxIcon = ({ checked }: { checked: boolean }) => (
+    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${checked ? 'bg-black border-black' : 'border-gray-300'}`}>
+        {checked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
     </div>
 );
 
+
 const Assignments: React.FC = () => {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-gray-800">Assignments (12)</h3>
-            <div className="flex items-center space-x-2 text-xs text-cyan-600">
-                <div className="w-4 h-4 rounded bg-cyan-100 flex items-center justify-center">
-                    <CheckIcon className="w-2.5 h-2.5" />
-                </div>
-                <span>2/5 completed</span>
+    <div className="bg-white p-6 rounded-xl shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-800 mb-1">Assignments (12)</h3>
+      <p className="text-sm text-gray-500 mb-4">2/5 completed</p>
+      <div className="space-y-4">
+        {assignments.map((item, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="flex items-center">
+                <CheckboxIcon checked={item.status === 'completed'} />
+              <div className="ml-4">
+                <p className="font-semibold text-gray-800">{item.title}</p>
+                <p className="text-xs text-gray-500">{item.date}</p>
+              </div>
             </div>
-        </div>
-        <div className="space-y-2">
-            {assignments.map(item => <AssignmentItem key={item.title} {...item} />)}
-        </div>
+            <div>
+                <p className={`font-bold ${item.status === 'completed' ? 'text-gray-800' : 'text-gray-400'}`}>{item.grade}</p>
+                <p className={`text-xs text-right ${item.status === 'completed' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {item.status === 'completed' ? 'Grade' : 'To Do'}
+                </p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

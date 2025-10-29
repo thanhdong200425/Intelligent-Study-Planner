@@ -1,59 +1,61 @@
 import React, { useState } from 'react';
-import { HomeIcon, CalendarIcon, TaskIcon, HabitsIcon, AnalyticsIcon } from './icons/Icons';
+import { HomeIcon, CalendarIcon, CheckIcon, ChartBarIcon, AnalyticsIcon, ChevronLeftIcon } from './icons/Icons';
 
-// FIX: Explicitly typing NavItem as a React.FC with its props interface resolves the type error, as it allows TypeScript to correctly handle React-specific props like `key` during JSX transformation.
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
-  isActive: boolean;
+  active?: boolean;
   onClick: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick }) => (
-  <a
-    href="#"
-    onClick={(e) => {
-        e.preventDefault();
-        onClick();
-    }}
-    className={`flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-all duration-300 ${
-      isActive
-        ? 'bg-violet-100 text-violet-600 shadow-md'
-        : 'bg-white shadow-sm hover:shadow-md text-gray-700 hover:bg-slate-50'
+const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => (
+  <li
+    onClick={onClick}
+    className={`flex items-center p-3 my-1 rounded-lg cursor-pointer transition-colors ${
+      active
+        ? 'bg-indigo-50 text-indigo-600'
+        : 'text-gray-600 hover:bg-gray-200'
     }`}
   >
     {icon}
-    <span className="font-semibold">{label}</span>
-  </a>
+    <span className="ml-4 font-medium">{label}</span>
+  </li>
 );
+
 
 const Sidebar: React.FC = () => {
   const [activeItem, setActiveItem] = useState('Today');
-
+  
   const navItems = [
-    { label: 'Today', icon: <HomeIcon /> },
-    { label: 'Planner', icon: <CalendarIcon /> },
-    { label: 'Tasks', icon: <TaskIcon /> },
-    { label: 'Habits', icon: <HabitsIcon /> },
-    { label: 'Analytics', icon: <AnalyticsIcon /> },
+    { id: 'Today', icon: <HomeIcon />, label: 'Today' },
+    { id: 'Planner', icon: <CalendarIcon />, label: 'Planner' },
+    { id: 'Tasks', icon: <CheckIcon />, label: 'Tasks' },
+    { id: 'Habits', icon: <ChartBarIcon />, label: 'Habits' },
+    { id: 'Analytics', icon: <AnalyticsIcon />, label: 'Analytics' },
   ];
 
   return (
-    <aside className="w-64 bg-white p-6 border-r border-gray-200 hidden lg:block">
-      <div className="flex flex-col h-full">
-        <nav className="space-y-5 pt-10">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              isActive={activeItem === item.label}
-              onClick={() => setActiveItem(item.label)}
-            />
-          ))}
-        </nav>
-      </div>
-    </aside>
+    <div className="w-64 bg-white p-6 shrink-0 hidden md:flex flex-col justify-between border-r border-gray-200">
+        <div>
+            <nav>
+                <ul>
+                    {navItems.map((item) => (
+                        <NavItem
+                            key={item.id}
+                            icon={item.icon}
+                            label={item.label}
+                            active={activeItem === item.id}
+                            onClick={() => setActiveItem(item.id)}
+                        />
+                    ))}
+                </ul>
+            </nav>
+        </div>
+        <button className="flex items-center p-3 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+            <ChevronLeftIcon />
+            <span className="ml-4 font-medium">Collapse</span>
+        </button>
+    </div>
   );
 };
 

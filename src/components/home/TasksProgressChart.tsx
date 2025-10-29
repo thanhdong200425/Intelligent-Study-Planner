@@ -1,126 +1,82 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDownIcon } from './icons/Icons';
 
-// Data for the chart
-const data = [
-  { name: 'Mon', spent: 4 },
-  { name: 'Tue', spent: 3 },
-  { name: 'Wed', spent: 5 },
-  { name: 'Thu', spent: 2 },
-  { name: 'Fri', spent: 6 },
-  { name: 'Sat', spent: 3 },
-  { name: 'Sun', spent: 4 },
+const originalData = [
+  { name: 'M', planning: 3 },
+  { name: 'T', research: 4.2 },
+  { name: 'W', planning: 3, research: 3 },
+  { name: 'T', research: 3.2 },
+  { name: 'F', design: 3 },
+  { name: 'S', planning: 4.2 },
+  { name: 'S', design: 0 },
 ];
 
-const TimeSpentInfo = ({ time, label, percentage, bgColor, textColor }: { time: string, label: string, percentage: string, bgColor: string, textColor: string }) => (
-    <div>
-        <p className="text-sm text-gray-400">{label}</p>
-        <div className="flex items-center space-x-3 mt-1">
-            <p className="text-2xl font-bold text-gray-800">{time}</p>
-            <div className={`text-xs font-semibold px-2 py-0.5 rounded-full ${bgColor} ${textColor}`}>
-                {percentage}
-            </div>
-        </div>
-    </div>
-);
+const TaskProgressChart: React.FC = () => {
+  // Process data to handle stacked bar radius correctly and merge purple bars
+  const data = originalData
+    .filter(d => d.planning || d.research || d.design) // Filter out empty entries
+    .map(item => {
+      const purpleValue = item.planning || item.design || 0;
+      const yellowValue = item.research || 0;
 
-const TasksProgressChart: React.FC = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedRange, setSelectedRange] = useState('Weekly');
-  const dropdownContainerRef = useRef<HTMLDivElement>(null);
-  const ranges = ['Daily', 'Weekly', 'Monthly'];
-
-  const handleRangeSelect = (range: string) => {
-    setSelectedRange(range);
-    setIsDropdownOpen(false);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
+      return {
+        name: item.name,
+        // Value for the purple bar when it's at the bottom of a stack (no top radius)
+        purpleBottom: yellowValue > 0 ? purpleValue : 0,
+        // Value for the purple bar when it's standalone (has top radius)
+        purpleTop: yellowValue === 0 ? purpleValue : 0,
+        // Value for the yellow bar, which is always on top or standalone
+        yellowTop: yellowValue,
+      };
+    });
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-gray-800">Tasks Progress</h3>
-        <div className="relative" ref={dropdownContainerRef}>
-            <button 
-              onClick={() => setIsDropdownOpen(prev => !prev)}
-              className="flex items-center space-x-2 text-sm text-gray-700 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
-              aria-haspopup="listbox"
-              aria-expanded={isDropdownOpen}
-            >
-              <span>{selectedRange}</span>
-              <ChevronDownIcon className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl z-10 border border-gray-100 py-1" role="listbox">
-                    {ranges.map((range) => (
-                        <button
-                            key={range}
-                            onClick={() => handleRangeSelect(range)}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-slate-100"
-                            role="option"
-                            aria-selected={selectedRange === range}
-                        >
-                            {range}
-                        </button>
-                    ))}
+    <div className="bg-white p-6 rounded-xl shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Tasks Progress</h3>
+      <div style={{ width: '100%', height: 250 }}>
+        <ResponsiveContainer>
+          <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }} barGap={10} barCategoryGap="20%">
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280' }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280' }} />
+            <Tooltip cursor={{fill: 'rgba(239, 246, 255, 0.5)'}} contentStyle={{background: '#fff', border: '1px solid #ddd', borderRadius: '8px'}} />
+            
+            {/* Bar for the bottom part of a purple stack (sharp corners) */}
+            <Bar dataKey="purpleBottom" stackId="a" fill="#818CF8" />
+
+            {/* Bar for standalone purple bars (rounded corners) */}
+            <Bar dataKey="purpleTop" stackId="a" fill="#818CF8" radius={[8, 8, 0, 0]} />
+            
+            {/* Bar for yellow bars, always on top or standalone (rounded corners) */}
+            <Bar dataKey="yellowTop" stackId="a" fill="#ca8a04" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div>
+                <p className="text-sm text-gray-500">Time spent</p>
+                <div className="flex items-center justify-center gap-2">
+                    <p className="font-bold">18h</p>
+                    <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">120%</span>
                 </div>
-            )}
+            </div>
+            <div>
+                <p className="text-sm text-gray-500">Lesson Learnt</p>
+                 <div className="flex items-center justify-center gap-2">
+                    <p className="font-bold">15h</p>
+                    <span className="text-xs font-semibold bg-cyan-100 text-cyan-600 px-2 py-0.5 rounded-full">120%</span>
+                </div>
+            </div>
+            <div>
+                <p className="text-sm text-gray-500">Exams Passed</p>
+                <div className="flex items-center justify-center gap-2">
+                    <p className="font-bold">2h</p>
+                    <span className="text-xs font-semibold bg-green-100 text-green-600 px-2 py-0.5 rounded-full">100%</span>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Side: Chart */}
-        <div className="lg:w-3/4">
-          <div style={{ width: '100%', height: 250 }}>
-            <ResponsiveContainer>
-              <BarChart
-                data={data}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  left: -20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} unit="h" ticks={[0, 2, 4, 6, 8]} domain={[0, 8]} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(238, 242, 255, 0.6)' }}
-                  contentStyle={{ background: '#fff', border: '1px solid #ddd', borderRadius: '8px' }}
-                  formatter={(value: number) => [`${value} hours`, 'Spent']}
-                />
-                <Bar dataKey="spent" fill="#D1B077" radius={[10, 10, 10, 10]} barSize={16} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Right Side: Summary */}
-        <div className="lg:w-1/4 flex flex-col pt-1">
-          <div className="space-y-5">
-            <TimeSpentInfo time="18h" label="Time spent" percentage="120%" bgColor="bg-green-100" textColor="text-green-700" />
-            <TimeSpentInfo time="15h" label="Lesson Learnt" percentage="120%" bgColor="bg-green-100" textColor="text-green-700" />
-            <TimeSpentInfo time="2h" label="Exams Passed" percentage="100%" bgColor="bg-cyan-100" textColor="text-cyan-700" />
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
-export default TasksProgressChart;
+export default TaskProgressChart;

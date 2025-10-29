@@ -1,121 +1,126 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizIcon, ChevronDownIcon } from './icons/Icons';
+import React, { useState } from 'react';
 import AddTaskModal from './AddTaskModal';
 
 const days = [
-    { day: 'mon', date: 3 },
-    { day: 'tue', date: 4, active: true },
-    { day: 'wed', date: 5 },
-    { day: 'thu', date: 6 },
-    { day: 'fri', date: 7 },
-    { day: 'sat', date: 8 },
+  { num: 3, day: 'mon' },
+  { num: 4, day: 'tue' },
+  { num: 5, day: 'wed' },
+  { num: 6, day: 'thu' },
+  { num: 7, day: 'fri' },
+  { num: 8, day: 'sat' },
 ];
 
-const scheduleItems = [
-    { time: '10:00am - 12:00pm', title: 'UI Motion', color: 'border-[#4AD09F]' },
-    { time: '12:00pm - 01:00pm', title: 'UI Design', color: 'border-[#E5B873]' },
-];
-
-const months = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
-    'July', 'August', 'September', 'October', 'November', 'December'
+// Sample tasks for the day
+const initialTasks = [
+    { title: 'UI Motion', startTime: '09:00', endTime: '10:00' },
+    { title: 'Learn English', startTime: '11:00', endTime: '12:00' },
 ];
 
 const Schedule: React.FC = () => {
-  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState('September');
-  const monthDropdownRef = useRef<HTMLDivElement>(null);
-  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(4);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tasks, setTasks] = useState(initialTasks);
 
-  const handleMonthSelect = (month: string) => {
-    setSelectedMonth(month);
-    setIsMonthDropdownOpen(false);
+  const handleAddTask = (task: { title: string; startTime: string; endTime: string }) => {
+    setTasks(prevTasks => [...prevTasks, task].sort((a, b) => a.startTime.localeCompare(b.startTime)));
   };
+  
+  // Schedule display settings
+  const startHour = 9;
+  const endHour = 14; 
+  const hourHeight = 60; // pixels per hour
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (monthDropdownRef.current && !monthDropdownRef.current.contains(event.target as Node)) {
-        setIsMonthDropdownOpen(false);
-      }
-    };
-    if (isMonthDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMonthDropdownOpen]);
+  // Generate hours from start to end inclusive for a complete grid
+  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
 
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return 0;
+    return h * 60 + m;
+  };
 
   return (
     <>
-      <div className="bg-white p-6 rounded-2xl shadow-sm">
+      <div className="bg-white p-6 rounded-xl shadow-sm">
         <div className="flex justify-between items-center mb-4">
-          <div className="relative" ref={monthDropdownRef}>
-              <button 
-                onClick={() => setIsMonthDropdownOpen(prev => !prev)}
-                className="flex items-center space-x-1.5 text-gray-800 hover:text-violet-700 transition-colors group"
-                aria-haspopup="listbox"
-                aria-expanded={isMonthDropdownOpen}
-              >
-                <h3 className="text-lg font-bold">{selectedMonth}</h3>
-                <ChevronDownIcon className={`w-5 h-5 text-gray-500 group-hover:text-violet-700 transition-transform duration-200 ${isMonthDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isMonthDropdownOpen && (
-                  <div className="absolute left-0 mt-2 w-40 bg-white rounded-lg shadow-xl z-10 border border-gray-100 py-1 max-h-60 overflow-y-auto" role="listbox">
-                      {months.map((month) => (
-                          <button
-                              key={month}
-                              onClick={() => handleMonthSelect(month)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-slate-100"
-                              role="option"
-                              aria-selected={selectedMonth === month}
-                          >
-                              {month}
-                          </button>
-                      ))}
-                  </div>
-              )}
-          </div>
-          <button onClick={() => setIsAddTaskModalOpen(true)} className="text-sm font-medium text-violet-600 bg-violet-100 px-3 py-1.5 rounded-lg hover:bg-violet-200 transition-all duration-200">+ Add Task</button>
+          <h3 className="text-lg font-semibold text-gray-800">September</h3>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className={`text-sm font-semibold transition-all duration-200 px-3 py-1 rounded-lg ${
+              isModalOpen
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'text-indigo-600 hover:bg-indigo-100'
+            }`}
+          >
+            + Add Task
+          </button>
         </div>
-        
-        <div className="flex justify-around mb-6">
-          {days.map(d => (
-            <div key={d.date} className="text-center">
-              <p className="text-xs text-gray-400 capitalize">{d.day}</p>
-              <button className={`w-8 h-8 mt-1 rounded-full text-sm font-semibold flex items-center justify-center ${d.active ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}`}>
-                {d.date}
-              </button>
+        <div className="flex justify-between mb-6">
+          {days.map(({ num, day }) => (
+            <div
+              key={num}
+              onClick={() => setSelectedDay(num)}
+              className={`text-center cursor-pointer p-2 rounded-lg ${
+                selectedDay === num ? 'bg-black text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <p className="font-bold">{num}</p>
+              <p className="text-xs uppercase text-gray-500">{day}</p>
             </div>
           ))}
         </div>
-        
-        <div className="space-y-4">
-          {scheduleItems.map(item => (
-              <div key={item.title} className="flex items-center">
-                  <div className="w-24 text-xs text-right text-gray-400 pr-4">
-                      <p>{item.time.split(' - ')[0]}</p>
-                      <p>{item.time.split(' - ')[1]}</p>
-                  </div>
-                  <div className={`flex-1 p-4 rounded-lg bg-white shadow-sm border-l-4 ${item.color}`}>
-                      <div className="flex justify-between items-start">
-                          <div>
-                              <p className="font-semibold">{item.title}</p>
-                              <p className="text-xs text-gray-500">{item.time}</p>
-                          </div>
-                          <button className="text-gray-400 hover:text-gray-600">
-                            <MoreHorizIcon />
-                          </button>
-                      </div>
-                  </div>
+
+        <div className="relative" style={{ height: `${(endHour - startHour) * hourHeight}px` }}>
+          {/* Render timeline hours and lines with precise positioning */}
+          {hours.map(hour => {
+            const topPosition = (hour - startHour) * hourHeight;
+            return (
+              <div
+                key={hour}
+                className="absolute w-full"
+                style={{ top: `${topPosition}px` }}
+              >
+                <div className="ml-16 border-t border-gray-200"></div>
+                <p className="absolute top-0 left-0 w-16 -translate-y-1/2 text-right pr-4 text-xs text-gray-400">
+                  {`${hour.toString().padStart(2, '0')}:00`}
+                </p>
               </div>
-          ))}
+            );
+          })}
+
+          {/* Render tasks */}
+          {tasks.map((task, index) => {
+            const startMinutes = timeToMinutes(task.startTime);
+            const endMinutes = timeToMinutes(task.endTime);
+
+            if (startMinutes === 0 || endMinutes === 0 || endMinutes <= startMinutes) return null;
+
+            const top = ((startMinutes - startHour * 60) / 60) * hourHeight;
+            const durationMinutes = endMinutes - startMinutes;
+            const height = (durationMinutes / 60) * hourHeight;
+
+            return (
+              <div
+                key={index}
+                className="absolute bg-gray-800 text-white p-3 rounded-lg"
+                style={{
+                  top: `${top}px`,
+                  height: `${height}px`,
+                  left: '72px', // width of time label (w-16 = 64px) + some margin
+                  right: '0px',
+                }}
+              >
+                <p className="font-semibold text-sm">{task.title}</p>
+                <p className="text-xs text-gray-300">{task.startTime} - {task.endTime}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
       <AddTaskModal 
-        isOpen={isAddTaskModalOpen}
-        onClose={() => setIsAddTaskModalOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleAddTask}
       />
     </>
   );

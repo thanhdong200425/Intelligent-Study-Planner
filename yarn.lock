@@ -4901,7 +4901,7 @@ react@19.1.0:
 
 recharts@^3.3.0:
   version "3.3.0"
-  resolved "https://registry.npmjs.org/recharts/-/recharts-3.3.0.tgz"
+  resolved "https://registry.yarnpkg.com/recharts/-/recharts-3.3.0.tgz#e3ad562fe0544456fe0b07440c68d0ba1f7ab7bc"
   integrity sha512-Vi0qmTB0iz1+/Cz9o5B7irVyUjX2ynvEgImbgMt/3sKRREcUM07QiYjS1QpAVrkmVlXqy5gykq4nGWMz9AS4Rg==
   dependencies:
     "@reduxjs/toolkit" "1.x.x || 2.x.x"

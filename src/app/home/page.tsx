@@ -1,8 +1,48 @@
-// src/app/page.tsx
-import Dashboard from "@/components/home/Dashboard";
+"use client";
 
-export default function HomePage() {
+import Sidebar from "../../components/home/Sidebar";
+import Header from "../../components/home/Header";
+import StatCard from "../../components/home/StatCard";
+import TasksProgressChart from "../../components/home/TasksProgressChart";
+import InterestChart from "../../components/home/InterestChart";
+import ProductivityChart from "../../components/home/ProductivityChart";
+import Schedule from "../../components/home/Schedule";
+import Assignments from "../../components/home/Assignments";
+import { TimeIcon, BookIcon, ChartBarIcon } from "../../components/home/icons/Icons";
+
+
+export default function Home() {
   return (
-    <Dashboard />
+    <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main content area */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <StatCard icon={<TimeIcon />} title="Hours Spent" value="54 hours" bgColor="bg-yellow-100" iconColor="text-yellow-500" />
+                <StatCard icon={<BookIcon />} title="Courses" value="02" bgColor="bg-green-100" iconColor="text-green-500" />
+                <StatCard icon={<ChartBarIcon />} title="Test Results" value="82%" bgColor="bg-blue-100" iconColor="text-blue-500" />
+              </div>
+
+              <TasksProgressChart />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InterestChart />
+                <ProductivityChart />
+              </div>
+            </div>
+
+            {/* Right sidebar content */}
+            <div className="lg:col-span-1 space-y-6">
+              <Schedule />
+              <Assignments />
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
