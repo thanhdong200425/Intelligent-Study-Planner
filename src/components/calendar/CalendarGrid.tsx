@@ -11,8 +11,8 @@ import {
   DragOverlay,
   DragStartEvent,
 } from '@dnd-kit/core';
-import { CalendarTimeBlock } from './CalendarTimeBlock';
-import { DroppableTimeSlot } from './DroppableTimeSlot';
+import CalendarTimeBlock from './CalendarTimeBlock';
+import DroppableTimeSlot from './DroppableTimeSlot';
 import { ContextMenu, ContextMenuItem } from '@/components/ui/ContextMenu';
 import { FocusSessionModal } from '@/components/timer/FocusSessionModal';
 import { Clock } from 'lucide-react';
@@ -24,7 +24,7 @@ interface CalendarGridProps {
   onClickTimeBlock?: (id: string) => void;
 }
 
-export const CalendarGrid: React.FC<CalendarGridProps> = ({
+const CalendarGrid: React.FC<CalendarGridProps> = ({
   weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }),
   onTimeBlockUpdate,
   onTimeBlockDelete,
@@ -305,3 +305,5 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     </DndContext>
   );
 };
+
+export default CalendarGrid;

@@ -3,7 +3,7 @@
 import { TimeBlock } from '@/types';
 import { useEffect, useState } from 'react';
 import { WeeklySummary } from '../analytics/WeeklySummary';
-import { ModernCalendarGrid } from '../calendar/ModernCalendarGrid';
+import { ModernCalendarGrid } from '@/components';
 import { DataEntryTabs } from '../data-entry/DataEntryTabs';
 import { HabitTracker } from '../habits';
 import { startOfWeek } from 'date-fns';

@@ -22,7 +22,7 @@ interface WeekPlannerPanelProps {
   onPlanGenerated: () => void;
 }
 
-export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
+const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
   currentWeek,
   onWeekChange,
   onPlanGenerated,
@@ -193,3 +193,5 @@ export const WeekPlannerPanel: React.FC<WeekPlannerPanelProps> = ({
     </div>
   );
 };
+
+export default WeekPlannerPanel;

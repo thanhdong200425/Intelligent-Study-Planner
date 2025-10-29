@@ -1,6 +1,6 @@
 import { HeaderBar } from '../../components/layout/HeaderBar';
 import { SidebarNav } from "../../components/layout/SidebarNav";
-import { PlannerCalendar } from "../../components/calendar/PlannerCalendar";
+import { PlannerCalendar } from "@/components";
 import { UpcomingEvents } from '../../components/panels/UpcomingEvents';
 import { StudyGoals } from '../../components/panels/StudyGoals';
 import { HabitTracker } from '../../components/habits/HabitTracker';

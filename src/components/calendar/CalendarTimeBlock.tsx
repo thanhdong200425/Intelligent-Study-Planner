@@ -16,7 +16,7 @@ interface CalendarTimeBlockProps {
   onClick?: () => void;
 }
 
-export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
+const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
   timeBlock,
   task,
   course,
@@ -32,14 +32,14 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
 
   const style = transform
     ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: isDragging ? 1000 : 1,
-      }
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      zIndex: isDragging ? 1000 : 1,
+    }
     : {};
 
   const duration = Math.round(
     (timeBlock?.endTime?.getTime() - timeBlock?.startTime?.getTime()) /
-      (1000 * 60)
+    (1000 * 60)
   );
   const startTime = format(timeBlock.startTime, 'HH:mm');
   const endTime = format(timeBlock.endTime, 'HH:mm');
@@ -52,9 +52,8 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
         {...listeners}
         {...attributes}
         onContextMenu={onRightClick}
-        className={`absolute inset-x-0 bg-green-100 border border-green-300 rounded-sm p-1 cursor-move group ${
-          isDragging ? 'opacity-50' : ''
-        }`}
+        className={`absolute inset-x-0 bg-green-100 border border-green-300 rounded-sm p-1 cursor-move group ${isDragging ? 'opacity-50' : ''
+          }`}
       >
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-1'>
@@ -88,9 +87,8 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
         {...listeners}
         {...attributes}
         onContextMenu={onRightClick}
-        className={`absolute inset-x-0 bg-gray-100 border border-gray-300 rounded-sm p-1 cursor-move group ${
-          isDragging ? 'opacity-50' : ''
-        }`}
+        className={`absolute inset-x-0 bg-gray-100 border border-gray-300 rounded-sm p-1 cursor-move group ${isDragging ? 'opacity-50' : ''
+          }`}
       >
         <div className='flex items-center justify-between'>
           <span className='text-xs font-medium text-gray-700'>
@@ -129,9 +127,8 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
       {...attributes}
       onContextMenu={onRightClick}
       onClick={onClick}
-      className={`absolute inset-x-0 border rounded-sm p-1 cursor-move group ${
-        isDragging ? 'opacity-50' : ''
-      } ${timeBlock.completed ? 'opacity-75' : ''}`}
+      className={`absolute inset-x-0 border rounded-sm p-1 cursor-move group ${isDragging ? 'opacity-50' : ''
+        } ${timeBlock.completed ? 'opacity-75' : ''}`}
     >
       <div className='flex items-center justify-between'>
         <div className='flex-1 min-w-0'>
@@ -201,3 +198,5 @@ export const CalendarTimeBlock: React.FC<CalendarTimeBlockProps> = ({
     </div>
   );
 };
+
+export default CalendarTimeBlock;
