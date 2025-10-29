@@ -3,14 +3,14 @@
 import { Button, ButtonProps } from '@heroui/react';
 
 interface BaseButtonProps extends ButtonProps {
-  isValid: boolean;
-  isLoading: boolean;
-  content: string;
+  isValid?: boolean;
+  isLoading?: boolean;
+  content?: string;
 }
 
 const BaseButton: React.FC<BaseButtonProps> = ({
-  isValid,
-  isLoading,
+  isValid = true,
+  isLoading = false,
   className,
   content,
   ...props

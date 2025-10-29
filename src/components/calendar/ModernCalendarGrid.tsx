@@ -9,7 +9,7 @@ interface ModernCalendarGridProps {
   weekStart?: Date;
 }
 
-export const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
+const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
   weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }),
 }) => {
   const [currentWeek, setCurrentWeek] = useState(weekStart);
@@ -93,9 +93,8 @@ export const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
                 >
                   <div className='text-sm font-medium text-gray-600'>{day}</div>
                   <div
-                    className={`text-lg font-semibold mt-1 ${
-                      isToday ? 'text-blue-600' : 'text-gray-900'
-                    }`}
+                    className={`text-lg font-semibold mt-1 ${isToday ? 'text-blue-600' : 'text-gray-900'
+                      }`}
                   >
                     {format(date, 'd')}
                   </div>
@@ -122,9 +121,8 @@ export const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
                   return (
                     <div
                       key={`${dayIndex}-${hour}`}
-                      className={`relative border-b border-r border-gray-50 h-12 transition-colors hover:bg-blue-50/30 cursor-pointer ${
-                        isPastHour ? 'bg-gray-50/30' : ''
-                      } ${isCurrentHour ? 'bg-blue-50/50' : ''}`}
+                      className={`relative border-b border-r border-gray-50 h-12 transition-colors hover:bg-blue-50/30 cursor-pointer ${isPastHour ? 'bg-gray-50/30' : ''
+                        } ${isCurrentHour ? 'bg-blue-50/50' : ''}`}
                     >
                       {/* Sample time blocks */}
                       {hour === 9 && dayIndex === 1 && (
@@ -159,3 +157,5 @@ export const ModernCalendarGrid: React.FC<ModernCalendarGridProps> = ({
     </div>
   );
 };
+
+export default ModernCalendarGrid;
