@@ -37,7 +37,7 @@ const Item: React.FC<MenuItem> = ({ icon: Icon, ...props }) => {
     );
 }
 
-export function SidebarNav() {
+export default function SidebarNav() {
     const [collapsed, setCollapsed] = useState(false);
 
     return (

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 
 interface AddTaskModalProps {
@@ -26,7 +27,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
     setEndTime('');
     onClose();
   };
-  
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -36,8 +37,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
   const handleTimeInput = (currentValue: string, previousValue: string, setter: (value: string) => void) => {
     // Allows backspace to work naturally.
     if (currentValue.length < previousValue.length) {
-        setter(currentValue);
-        return;
+      setter(currentValue);
+      return;
     }
 
     // Get only digits from the current input value.
@@ -45,32 +46,32 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
 
     // Limit to 4 digits (HHMM).
     if (digits.length > 4) {
-        digits = digits.slice(0, 4);
+      digits = digits.slice(0, 4);
     }
-    
+
     // Validate hours part.
     if (digits.length >= 2) {
-        let hours = parseInt(digits.slice(0, 2), 10);
-        if (hours > 23) {
-            digits = '23' + digits.slice(2);
-        }
+      let hours = parseInt(digits.slice(0, 2), 10);
+      if (hours > 23) {
+        digits = '23' + digits.slice(2);
+      }
     }
-    
+
     // Validate minutes part.
     if (digits.length === 4) {
-        let minutes = parseInt(digits.slice(2, 4), 10);
-        if (minutes > 59) {
-            digits = digits.slice(0, 2) + '59';
-        }
+      let minutes = parseInt(digits.slice(2, 4), 10);
+      if (minutes > 59) {
+        digits = digits.slice(0, 2) + '59';
+      }
     }
 
     // Format the final value
     let formattedValue = digits;
     if (digits.length > 2) {
-        formattedValue = `${digits.slice(0, 2)}:${digits.slice(2)}`;
+      formattedValue = `${digits.slice(0, 2)}:${digits.slice(2)}`;
     } else if (digits.length === 2 && currentValue.endsWith(':')) {
-        // This is the main fix: if user types a colon after 2 digits, keep it.
-        formattedValue = `${digits}:`;
+      // This is the main fix: if user types a colon after 2 digits, keep it.
+      formattedValue = `${digits}:`;
     }
 
     setter(formattedValue);
@@ -78,13 +79,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
 
 
   return (
-    <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-        onClick={handleBackdropClick}
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      onClick={handleBackdropClick}
     >
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md mx-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Add New Task</h2>
-        
+
         <div className="space-y-6">
           <div>
             <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -99,7 +100,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
               className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="start-time" className="block text-sm font-medium text-gray-700 mb-2">
@@ -121,14 +122,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
                 End Time
               </label>
               <div className="relative">
-                  <input
-                    type="text"
-                    id="end-time"
-                    value={endTime}
-                    onChange={(e) => handleTimeInput(e.target.value, endTime, setEndTime)}
-                    placeholder="__:__"
-                    className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                  />
+                <input
+                  type="text"
+                  id="end-time"
+                  value={endTime}
+                  onChange={(e) => handleTimeInput(e.target.value, endTime, setEndTime)}
+                  placeholder="__:__"
+                  className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                />
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { Input, Button } from '@heroui/react';
 import { Bell, CalendarDays, Search } from 'lucide-react';
 
-export function HeaderBar() {
+export default function HeaderBar() {
     return (
         <header className="bg-white border-b border-gray-200 px-8 pt-4 pb-4 rounded-t-xl sticky top-0 z-10">
             <div className="flex items-center justify-between h-12">
