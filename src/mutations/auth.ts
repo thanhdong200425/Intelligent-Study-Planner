@@ -91,7 +91,6 @@ export const useVerifyRegisterMutation = () => {
         })
       );
       router.push('/');
-      dispatch(setTemporaryEmail(null));
     },
     onError: (error: Error) => {
       addToast({
