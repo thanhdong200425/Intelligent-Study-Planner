@@ -1,9 +1,4 @@
-import { HeaderBar } from '../../components/layout/HeaderBar';
-import { SidebarNav } from "../../components/layout/SidebarNav";
-import { PlannerCalendar } from "@/components";
-import { UpcomingEvents } from '../../components/panels/UpcomingEvents';
-import { StudyGoals } from '../../components/panels/StudyGoals';
-import { HabitTracker } from '../../components/habits/HabitTracker';
+import { HeaderBar, SidebarNav, PlannerCalendar, UpcomingEvents, StudyGoals } from "@/components";
 
 export default function PlannerPage() {
     return (
