@@ -4,10 +4,9 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Input, Button, addToast } from '@heroui/react';
 import { Plus } from 'lucide-react';
-import { CourseApiService } from '@/services/courseApi';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Course } from '@/types';
 import { BaseButton } from '../buttons';
+import { useCreateCourseMutation } from '@/mutations';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AddCourseFormData {
     name: string;
@@ -30,7 +29,8 @@ const PRESET_COLORS = [
 ];
 
 export const AddCourseForm: React.FC = () => {
-    const [selectedColor, setSelectedColor] = useState('#3b82f6');
+    const defaultColor = PRESET_COLORS[0];
+    const [selectedColor, setSelectedColor] = useState(defaultColor);
     const queryClient = useQueryClient();
 
     const {
@@ -38,22 +38,20 @@ export const AddCourseForm: React.FC = () => {
         handleSubmit,
         reset,
         setValue,
-        formState: { errors },
+        formState: { errors, isValid },
     } = useForm<AddCourseFormData>({
         defaultValues: {
             name: '',
-            color: '#3b82f6',
+            color: defaultColor,
         },
     });
 
-    const createMutation = useMutation({
-        mutationFn: (data: { name: string; color: string }) =>
-            CourseApiService.createCourse(data),
+    const { mutate: createCourse, isPending } = useCreateCourseMutation({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] });
-            reset({ name: '', color: '#3b82f6' });
-            setSelectedColor('#3b82f6');
-            setValue('color', '#3b82f6');
+            reset({ name: '', color: defaultColor });
+            setSelectedColor(defaultColor);
+            setValue('color', defaultColor);
             addToast({
                 title: 'Course added successfully',
                 color: 'success',
@@ -73,7 +71,7 @@ export const AddCourseForm: React.FC = () => {
     });
 
     const onSubmit = (data: AddCourseFormData) => {
-        createMutation.mutate({
+        createCourse({
             name: data.name.trim(),
             color: selectedColor,
         });
@@ -172,8 +170,8 @@ export const AddCourseForm: React.FC = () => {
                 {/* Submit button */}
                 <BaseButton
                     type="submit"
-                    isValid={createMutation.isPending}
-                    isLoading={createMutation.isPending}
+                    isValid={isValid}
+                    isLoading={isPending}
                     content="Add Course"
                     startContent={<Plus className="w-4 h-4" />}
                 />

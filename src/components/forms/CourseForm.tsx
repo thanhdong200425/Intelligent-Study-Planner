@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { addToast, Input } from '@heroui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import CourseApiService from '@/services/courseApi';
+import { createCourse } from '@/services/courseApi';
 
 interface CourseFormProps {
   onSubmit?: (course: Partial<Course>) => void;
@@ -51,9 +51,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({ onCancel }) => {
 
   const queryClient = useQueryClient();
 
-  const createCourse = useMutation({
+  const createCourseMutation = useMutation({
     mutationFn: (data: SubmitData) => {
-      return CourseApiService.createCourse(data);
+      return createCourse(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
@@ -81,7 +81,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({ onCancel }) => {
 
   return (
     <form
-      onSubmit={handleSubmit(data => createCourse.mutate(data))}
+      onSubmit={handleSubmit(data => createCourseMutation.mutate(data))}
       className='space-y-4'
     >
       <Controller

@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api';
+import apiClient from '@/lib/api';
 import { Course } from '@/types';
 
 export interface CreateCourseRequest {
@@ -8,70 +8,53 @@ export interface CreateCourseRequest {
 
 export type UpdateCourseRequest = Partial<CreateCourseRequest>;
 
-export class CourseApiService {
-  private static readonly BASE_PATH = '/courses';
+const endpoint = {
+  courses: '/courses',
+};
 
-  /**
-   * Get all courses for the authenticated user
-   */
-  static async getCourses(): Promise<Course[]> {
-    try {
-      const response = await apiClient.get<Course[]>(
-        CourseApiService.BASE_PATH
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch courses:', error);
-      throw new Error('Failed to fetch courses');
-    }
+export const getCourses = async (): Promise<Course[]> => {
+  try {
+    const response = await apiClient.get<Course[]>(endpoint.courses);
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Failed to fetch courses');
   }
+};
 
-  /**
-   * Create a new course
-   */
-  static async createCourse(data: CreateCourseRequest): Promise<Course> {
-    try {
-      const response = await apiClient.post<Course>(
-        CourseApiService.BASE_PATH,
-        data
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to create course:', error);
-      throw new Error('Failed to create course');
-    }
+export const createCourse = async (
+  data: CreateCourseRequest
+): Promise<Course> => {
+  try {
+    const response = await apiClient.post<Course>(endpoint.courses, data);
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Failed to create course');
   }
+};
 
-  /**
-   * Update an existing course
-   */
-  static async updateCourse(
-    id: number,
-    data: UpdateCourseRequest
-  ): Promise<Course> {
-    try {
-      const response = await apiClient.put<Course>(
-        `${CourseApiService.BASE_PATH}/${id}`,
-        data
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update course:', error);
-      throw new Error('Failed to update course');
-    }
+export const updateCourse = async (
+  id: number,
+  data: UpdateCourseRequest
+): Promise<Course> => {
+  try {
+    const response = await apiClient.put<Course>(
+      `${endpoint.courses}/${id}`,
+      data
+    );
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Failed to update course');
   }
+};
 
-  /**
-   * Delete a course
-   */
-  static async deleteCourse(id: number): Promise<void> {
-    try {
-      await apiClient.delete(`${CourseApiService.BASE_PATH}/${id}`);
-    } catch (error) {
-      console.error('Failed to delete course:', error);
-      throw new Error('Failed to delete course');
-    }
+export const deleteCourse = async (id: number): Promise<void> => {
+  try {
+    await apiClient.delete(`${endpoint.courses}/${id}`);
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Failed to delete course');
   }
-}
-
-export default CourseApiService;
+};
