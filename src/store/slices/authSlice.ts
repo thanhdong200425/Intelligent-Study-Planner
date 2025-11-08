@@ -12,6 +12,7 @@ export interface AuthState {
   user: User | null;
   error: string | null;
   redirectTo: string | null;
+  accessToken: string | null;
 }
 
 const initialState: AuthState = {
@@ -20,6 +21,7 @@ const initialState: AuthState = {
   user: null,
   error: null,
   redirectTo: null,
+  accessToken: null,
 };
 
 const authSlice = createSlice({
@@ -32,24 +34,33 @@ const authSlice = createSlice({
     clearError: state => {
       state.error = null;
     },
-    setUser: (state, action: PayloadAction<User | null>) => {
-      state.user = action.payload;
-      state.isAuthenticated = !!action.payload;
-    },
-    setAuthData: (state, action: PayloadAction<{ user: User }>) => {
+    setAuthData: (
+      state,
+      action: PayloadAction<{ user: User; accessToken: string }>
+    ) => {
       state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
       state.isAuthenticated = true;
       state.error = null;
+    },
+    setAccessToken: (state, action: PayloadAction<string>) => {
+      state.accessToken = action.payload;
     },
     clearAuth: state => {
       state.isAuthenticated = false;
       state.user = null;
+      state.accessToken = null;
       state.error = null;
       state.redirectTo = null;
     },
   },
 });
 
-export const { setRedirectTo, clearError, setUser, setAuthData, clearAuth } =
-  authSlice.actions;
+export const {
+  setRedirectTo,
+  clearError,
+  setAccessToken,
+  setAuthData,
+  clearAuth,
+} = authSlice.actions;
 export default authSlice.reducer;

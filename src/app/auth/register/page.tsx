@@ -4,16 +4,19 @@ import { useAppSelector } from '@/store/hooks';
 import { Form, Input, Link } from '@heroui/react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BaseButton, BaseDivider } from '@/components';
 import { useRegisterMutation } from '@/mutations';
 import { AuthFormProps } from '@/components/auth/AuthForm';
+import { setTemporaryEmail } from '@/store/slices/appSlice';
+import { useDispatch } from 'react-redux';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const temporaryEmail = useAppSelector(state => state.app.temporaryEmail);
+  const dispatch = useDispatch();
 
   const {
     control,
@@ -44,6 +47,11 @@ export default function RegisterPage() {
     }
   };
 
+  const handleEditEmail = useCallback(() => {
+    dispatch(setTemporaryEmail(''));
+    router.push('/auth');
+  }, [dispatch, router]);
+
   return (
     <div className='min-h-screen w-full bg-slate-50 flex items-center justify-center p-6'>
       <div className='w-full max-w-md'>
@@ -69,7 +77,7 @@ export default function RegisterPage() {
                     size='sm'
                     underline='hover'
                     className='hover:cursor-pointer'
-                    onPress={() => router.push('/auth')}
+                    onPress={handleEditEmail}
                   >
                     Edit
                   </Link>
