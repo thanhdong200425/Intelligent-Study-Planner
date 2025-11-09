@@ -17,6 +17,7 @@ export interface Deadline {
 }
 
 export type TaskType = 'reading' | 'coding' | 'writing' | 'pset';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
 export interface Task {
   id: string;
@@ -27,6 +28,7 @@ export interface Task {
   deadlineId?: string;
   completed?: boolean;
   actualMinutes?: number;
+  priority?: TaskPriority;
 }
 
 export interface AvailabilityWindow {

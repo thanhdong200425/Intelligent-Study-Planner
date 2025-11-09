@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Task, Course, Deadline, TaskType } from '@/types';
+import { Task, Course, Deadline, TaskType, TaskPriority } from '@/types';
 import { TaskStorage, CourseStorage, DeadlineStorage } from '@/lib/storage';
 import { Controller, useForm } from 'react-hook-form';
 import { Input, Select, SelectItem, Button, addToast } from '@heroui/react';
@@ -29,6 +29,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
       type: 'reading',
       estimateMinutes: 60,
       deadlineId: '',
+      priority: 'medium' as TaskPriority,
     },
     mode: 'onBlur',
   });
@@ -58,6 +59,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
       type: data.type,
       estimateMinutes: data.estimateMinutes,
       deadlineId: data.deadlineId || undefined,
+      priority: data.priority || 'medium',
     };
 
     TaskStorage.add(task);
@@ -100,6 +102,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
     { value: 'coding', label: 'Coding' },
     { value: 'writing', label: 'Writing' },
     { value: 'pset', label: 'Problem Set' },
+  ];
+
+  const priorityOptions = [
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
   ];
 
   const availableDeadlines = deadlines.filter(
@@ -199,6 +207,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel }) => {
             errorMessage={errors.estimateMinutes?.message}
             size='sm'
           />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name='priority'
+        render={({ field }) => (
+          <Select
+            {...field}
+            placeholder='Select priority'
+            label='Priority'
+            defaultSelectedKeys={['medium']}
+          >
+            {priorityOptions.map(priority => (
+              <SelectItem key={priority.value}>{priority.label}</SelectItem>
+            ))}
+          </Select>
         )}
       />
 
