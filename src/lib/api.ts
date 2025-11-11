@@ -41,6 +41,7 @@ const shouldSkipAuth = (config: AxiosRequestConfig): boolean => {
 export const apiClient: AxiosInstance = axios.create({
   baseURL,
   withCredentials: true,
+  timeout: 8000,
 });
 
 apiClient.interceptors.request.use(

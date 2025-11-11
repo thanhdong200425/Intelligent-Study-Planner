@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Task } from '@/types';
 import { CheckSquare, Clock, AlertCircle, ListTodo } from 'lucide-react';
@@ -48,18 +46,18 @@ export const TaskStatsCards: React.FC<TaskStatsCardsProps> = ({ tasks }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
           <div
             key={index}
-            className="bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4"
+            className='bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4'
           >
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm text-[#4a5565]">{stat.label}</p>
-                <p className="text-2xl font-normal text-[#101828]">
+            <div className='flex items-center justify-between'>
+              <div className='flex flex-col gap-1'>
+                <p className='text-sm text-[#4a5565]'>{stat.label}</p>
+                <p className='text-2xl font-normal text-[#101828]'>
                   {stat.value}
                 </p>
               </div>
@@ -75,4 +73,3 @@ export const TaskStatsCards: React.FC<TaskStatsCardsProps> = ({ tasks }) => {
     </div>
   );
 };
-
