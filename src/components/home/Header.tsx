@@ -1,11 +1,11 @@
 import React from 'react';
-import { CalendarIcon, BellIcon } from './icons/Icons';
+import { PlannerIcon, BellIcon } from './icons/Icons';
 
 const Header: React.FC = () => {
   return (
     <header className="bg-white p-4 flex justify-between items-center border-b border-gray-200">
       <div className="flex items-center text-gray-600">
-        <CalendarIcon />
+        <PlannerIcon />
         <span className="ml-2 font-semibold">Monday, 4th September</span>
       </div>
       <div className="flex items-center space-x-4">

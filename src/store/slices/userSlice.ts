@@ -1,21 +1,20 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import UserApiService, { type UserProfile, type UpdateUserRequest } from '@/services/userApi';
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
+// Extend UserProfile from API service to include additional fields if needed
+export interface ExtendedUserProfile extends UserProfile {
   avatar?: string;
-  role: string;
-  preferences: {
+  role?: string;
+  preferences?: {
     theme: 'light' | 'dark' | 'system';
     language: string;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserState {
-  profile: UserProfile | null;
+  profile: ExtendedUserProfile | null;
   isLoading: boolean;
   error: string | null;
   isUpdating: boolean;
@@ -33,13 +32,8 @@ export const fetchUserProfile = createAsyncThunk(
   'user/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      // This would typically make an API call to fetch user profile
-      // For now, we'll simulate it
-      const response = await fetch('/api/user/profile');
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-      return await response.json();
+      const profile = await UserApiService.getProfile();
+      return profile as ExtendedUserProfile;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch user profile');
     }
@@ -49,21 +43,10 @@ export const fetchUserProfile = createAsyncThunk(
 // Async thunk for updating user profile
 export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
-  async (profileData: Partial<UserProfile>, { rejectWithValue }) => {
+  async (profileData: UpdateUserRequest, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profileData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user profile');
-      }
-
-      return await response.json();
+      const updatedProfile = await UserApiService.updateProfile(profileData);
+      return updatedProfile as ExtendedUserProfile;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update user profile');
     }
@@ -74,7 +57,7 @@ export const updateUserProfile = createAsyncThunk(
 export const updateUserPreferences = createAsyncThunk(
   'user/updateUserPreferences',
   async (
-    preferences: Partial<UserProfile['preferences']>,
+    preferences: Partial<ExtendedUserProfile['preferences']>,
     { rejectWithValue, getState }
   ) => {
     try {
@@ -90,18 +73,8 @@ export const updateUserPreferences = createAsyncThunk(
         ...preferences,
       };
 
-      const response = await fetch('/api/user/preferences', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedPreferences),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user preferences');
-      }
-
+      // Note: If backend has a separate preferences endpoint, update this
+      // For now, we'll update preferences locally
       return updatedPreferences;
     } catch (error: any) {
       return rejectWithValue(
@@ -115,7 +88,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setProfile: (state, action: PayloadAction<UserProfile | null>) => {
+    setProfile: (state, action: PayloadAction<ExtendedUserProfile | null>) => {
       state.profile = action.payload;
     },
     clearUser: state => {
@@ -127,7 +100,7 @@ const userSlice = createSlice({
     },
     updateProfileLocally: (
       state,
-      action: PayloadAction<Partial<UserProfile>>
+      action: PayloadAction<Partial<ExtendedUserProfile>>
     ) => {
       if (state.profile) {
         state.profile = { ...state.profile, ...action.payload };

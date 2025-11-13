@@ -88,3 +88,14 @@ export interface TimerSession {
   isActive: boolean;
   actualMinutes: number;
 }
+
+export interface UserProfile {
+  fullName: string;
+  email: string;
+  location: string;
+  bio: string;
+  focusDuration: number;
+  breakDuration: number;
+  dailyGoal: number;
+  joinedDate: string;
+}
