@@ -1,6 +1,7 @@
 import apiClient from '@/lib/api';
 import { Task } from '@/types';
 import { sendRequestFromServer } from './serverActions';
+import { TaskFormData } from '@/components/forms/TaskForm';
 
 const endpoint = '/tasks';
 
@@ -28,10 +29,12 @@ export const handleToggleCompleteStatus = async (
   }
 };
 
-// export const addTask = async (taskData: Task): Promise<Task> => {
-//   try {
-//   } catch (err) {
-//     console.log('Error adding task: ', err);
-//     throw err;
-//   }
-// };
+export const createTask = async (task: TaskFormData): Promise<Task> => {
+  try {
+    const response = await apiClient.post(endpoint, task);
+    return response.data;
+  } catch (err) {
+    console.log('Error creating task: ', err);
+    throw err;
+  }
+}

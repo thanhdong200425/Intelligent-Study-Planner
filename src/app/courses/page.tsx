@@ -15,8 +15,6 @@ export default function CoursesPage() {
     queryFn: getCourses,
   });
 
-  console.log('Fetched courses: ', JSON.stringify(courses, null, 2));
-
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) return courses;
     return courses.filter(course =>

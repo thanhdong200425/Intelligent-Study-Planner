@@ -8,12 +8,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourses } from '@/services/courseApi';
 import apiClient from '@/lib/api';
 import { X } from 'lucide-react';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createTask } from '@/services';
+import { useCreateTaskMutation } from '@/mutations';
 
 interface TaskFormProps {
   onSubmit?: (task: Task) => void;
   onCancel?: () => void;
   onClose?: () => void;
 }
+
+const formSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  courseId: z.number().optional(),
+  type: z.enum(['reading', 'coding', 'writing', 'pset', 'other']),
+  estimateMinutes: z.number().min(1, 'Estimate must be at least 1 minute'),
+  priority: z.enum(['low', 'medium', 'high', 'unknown']).optional(),
+})
 
 const getTaskTypeEmoji = (type: TaskType): string => {
   switch (type) {
@@ -50,7 +62,7 @@ const priorities: TaskPriority[] = ['low', 'medium', 'high'];
 
 const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
   const queryClient = useQueryClient();
-  const { data: courses = [] } = useQuery({
+  const { data: courses = [], isPending } = useQuery({
     queryKey: ['courses'],
     queryFn: getCourses,
   });
@@ -61,59 +73,36 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
     reset,
     formState: { errors },
     watch,
-  } = useForm<Partial<Task>>({
+  } = useForm<Task>({
     defaultValues: {
       title: '',
-      courseId: '',
       type: 'reading',
       priority: 'medium',
       estimateMinutes: 60,
     },
     mode: 'onSubmit',
+    resolver: zodResolver(formSchema),
   });
 
-  const createTaskMutation = useMutation({
-    mutationFn: async (data: Partial<Task>) => {
-      const response = await apiClient.post('/tasks', {
-        title: data.title,
-        courseId: parseInt(data.courseId as string),
-        type: data.type,
-        priority: data.priority,
-        estimateMinutes: data.estimateMinutes,
-      });
-      return response.data;
-    },
-    onSuccess: data => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      addToast({
-        title: 'Task added successfully',
-        color: 'success',
-        timeout: 2000,
-        shouldShowTimeoutProgress: true,
-      });
+  const createTaskMutation = useCreateTaskMutation({
+    onSuccess: () => {
       reset({
         title: '',
-        courseId: '',
-        type: 'reading',
-        priority: 'medium',
+        courseId: undefined,
+        type: 'coding',
+        priority: 'low',
         estimateMinutes: 60,
       });
-      onSubmit?.(data);
-    },
-    onError: error => {
-      console.error('Failed to create task:', error);
-      addToast({
-        title: 'Failed to add task',
-        color: 'danger',
-        timeout: 2000,
-        shouldShowTimeoutProgress: true,
-      });
-    },
-  });
+    }
+  })
 
-  const onSubmitHandler = (data: Partial<Task>) => {
+  const onSubmitHandler = (data: TaskFormData) => {
     createTaskMutation.mutate(data);
   };
+
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className='bg-white  relative rounded-[10px] w-full py-2'>
@@ -337,4 +326,5 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
   );
 };
 
+export type TaskFormData = z.infer<typeof formSchema>;
 export default TaskForm;

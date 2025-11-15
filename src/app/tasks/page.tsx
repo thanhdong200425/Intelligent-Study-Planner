@@ -5,7 +5,7 @@ import { TaskFilters, TaskFilter } from '@/components/tasks/TaskFilters';
 import { TaskCard } from '@/components/tasks/TaskCard';
 // import { Input, Button } from '@heroui/react';
 import { Search, Plus, Clock } from 'lucide-react';
-import { TaskForm } from '@/components/forms/TaskForm';
+import { TaskForm } from '@/components/forms';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react';
 import { TaskModal, HeaderBar, TaskList } from '@/components';
 import { getAllTasks } from '@/services';

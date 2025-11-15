@@ -19,6 +19,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@heroui/react": "^2.8.3",
+    "@hookform/resolvers": "^5.2.2",
     "@internationalized/date": "^3.9.0",
     "@reduxjs/toolkit": "^2.9.0",
     "@tanstack/react-query": "^5.85.6",
@@ -34,7 +35,8 @@
     "react-hook-form": "^7.62.0",
     "react-redux": "^9.2.0",
     "recharts": "^3.3.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
