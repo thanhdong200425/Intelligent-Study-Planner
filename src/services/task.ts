@@ -1,40 +1,13 @@
 import apiClient from '@/lib/api';
 import { Task } from '@/types';
-import { cookies } from 'next/headers';
-import { refreshAccessTokenForServer } from './auth';
+import { sendRequestFromServer } from './serverActions';
 
 const endpoint = '/tasks';
 
 export const getAllTasks = async (): Promise<Task[]> => {
   try {
-    // Get the cookie from the incoming request
-    const cookieStore = await cookies();
-    const cookieName = process.env.COOKIE_NAME;
-    if (!cookieName) throw new Error('COOKIE_NAME is not set');
-    const clientCookie = cookieStore.get(cookieName);
-    if (!clientCookie) throw new Error('Client cookie not found');
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}${endpoint}`,
-      {
-        headers: {
-          Cookie: `${cookieName}=${clientCookie.value}`,
-        },
-        credentials: 'include',
-      }
-    );
-    if (response.status === 401) {
-      const { accessToken } = await refreshAccessTokenForServer();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}${endpoint}`,
-        {
-          headers: {
-            Cookie: `=${clientCookie.value}`,
-          },
-        }
-      );
-    }
-    const data = await response.json();
-    return data;
+    const response = await sendRequestFromServer(endpoint);
+    return response;
   } catch (err) {
     console.log('Error fetching tasks: ', err);
     return [];

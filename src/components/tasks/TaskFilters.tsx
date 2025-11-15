@@ -8,7 +8,7 @@ export type TaskFilter = 'all' | 'priority' | 'course';
 
 interface TaskFiltersProps {
   activeFilter: TaskFilter;
-  onFilterChange: (filter: TaskFilter) => void;
+  onFilterChange?: (filter: TaskFilter) => void;
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -22,17 +22,17 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   ];
 
   return (
-    <div className="bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#101828]" />
-          <span className="text-sm text-[#101828]">Filter by:</span>
+    <div className='bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4'>
+      <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-2'>
+          <Filter className='w-4 h-4 text-[#101828]' />
+          <span className='text-sm text-[#101828]'>Filter by:</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {filters.map(filter => (
             <Button
               key={filter.key}
-              size="sm"
+              size='sm'
               variant={activeFilter === filter.key ? 'solid' : 'bordered'}
               color={activeFilter === filter.key ? 'default' : 'default'}
               className={
@@ -50,4 +50,3 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
     </div>
   );
 };
-

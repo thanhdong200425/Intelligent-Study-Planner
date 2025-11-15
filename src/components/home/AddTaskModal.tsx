@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 
 interface AddTaskModalProps {
@@ -7,7 +7,11 @@ interface AddTaskModalProps {
   onSave: (task: { title: string; startTime: string; endTime: string }) => void;
 }
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) => {
+const AddTaskModal: React.FC<AddTaskModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+}) => {
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -34,7 +38,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
     }
   };
 
-  const handleTimeInput = (currentValue: string, previousValue: string, setter: (value: string) => void) => {
+  const handleTimeInput = (
+    currentValue: string,
+    previousValue: string,
+    setter: (value: string) => void
+  ) => {
     // Allows backspace to work naturally.
     if (currentValue.length < previousValue.length) {
       setter(currentValue);
@@ -77,74 +85,86 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSave }) 
     setter(formattedValue);
   };
 
-
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'
       onClick={handleBackdropClick}
     >
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md mx-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Add New Task</h2>
+      <div className='bg-white p-8 rounded-xl shadow-lg w-full max-w-md mx-4'>
+        <h2 className='text-2xl font-bold text-gray-800 mb-6'>Add New Task</h2>
 
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <div>
-            <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor='task-title'
+              className='block text-sm font-medium text-gray-700 mb-2'
+            >
               Task Title
             </label>
             <input
-              type="text"
-              id="task-title"
+              type='text'
+              id='task-title'
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Work on the design system"
-              className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              onChange={e => setTitle(e.target.value)}
+              placeholder='e.g., Work on the design system'
+              className='w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors'
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className='grid grid-cols-2 gap-4'>
             <div>
-              <label htmlFor="start-time" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor='start-time'
+                className='block text-sm font-medium text-gray-700 mb-2'
+              >
                 Start Time
               </label>
-              <div className="relative">
+              <div className='relative'>
                 <input
-                  type="text"
-                  id="start-time"
+                  type='text'
+                  id='start-time'
                   value={startTime}
-                  onChange={(e) => handleTimeInput(e.target.value, startTime, setStartTime)}
-                  placeholder="__:__"
-                  className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                  onChange={e =>
+                    handleTimeInput(e.target.value, startTime, setStartTime)
+                  }
+                  placeholder='__:__'
+                  className='w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors'
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="end-time" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor='end-time'
+                className='block text-sm font-medium text-gray-700 mb-2'
+              >
                 End Time
               </label>
-              <div className="relative">
+              <div className='relative'>
                 <input
-                  type="text"
-                  id="end-time"
+                  type='text'
+                  id='end-time'
                   value={endTime}
-                  onChange={(e) => handleTimeInput(e.target.value, endTime, setEndTime)}
-                  placeholder="__:__"
-                  className="w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                  onChange={e =>
+                    handleTimeInput(e.target.value, endTime, setEndTime)
+                  }
+                  placeholder='__:__'
+                  className='w-full bg-white text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors'
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end space-x-3">
+        <div className='mt-8 flex justify-end space-x-3'>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+            className='px-6 py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors'
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+            className='px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors'
           >
             Add Task
           </button>
