@@ -14,7 +14,6 @@ import { createTask } from '@/services';
 import { useCreateTaskMutation } from '@/mutations';
 
 interface TaskFormProps {
-  onSubmit?: (task: Task) => void;
   onCancel?: () => void;
   onClose?: () => void;
 }
@@ -25,7 +24,7 @@ const formSchema = z.object({
   type: z.enum(['reading', 'coding', 'writing', 'pset', 'other']),
   estimateMinutes: z.number().min(1, 'Estimate must be at least 1 minute'),
   priority: z.enum(['low', 'medium', 'high', 'unknown']).optional(),
-})
+});
 
 const getTaskTypeEmoji = (type: TaskType): string => {
   switch (type) {
@@ -57,10 +56,21 @@ const getTaskTypeLabel = (type: TaskType): string => {
   }
 };
 
-const taskTypes: TaskType[] = ['reading', 'coding', 'writing', 'pset'];
-const priorities: TaskPriority[] = ['low', 'medium', 'high'];
+const taskTypes: { key: TaskType; label: string; emoji: string }[] = [
+  { key: 'reading', label: 'Reading', emoji: '📖' },
+  { key: 'coding', label: 'Coding', emoji: '💻' },
+  { key: 'writing', label: 'Writing', emoji: '✍️' },
+  { key: 'pset', label: 'Pset', emoji: '📝' },
+  { key: 'other', label: 'Other', emoji: '📋' },
+];
+const priorities: { key: TaskPriority; label: string }[] = [
+  { key: 'low', label: 'Low' },
+  { key: 'medium', label: 'Medium' },
+  { key: 'high', label: 'High' },
+  { key: 'unknown', label: 'Unknown' },
+];
 
-const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
   const queryClient = useQueryClient();
   const { data: courses = [], isPending } = useQuery({
     queryKey: ['courses'],
@@ -93,8 +103,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
         priority: 'low',
         estimateMinutes: 60,
       });
-    }
-  })
+    },
+  });
 
   const onSubmitHandler = (data: TaskFormData) => {
     createTaskMutation.mutate(data);
@@ -103,6 +113,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
   if (isPending) {
     return <div>Loading...</div>;
   }
+
+  const courseId = watch('courseId');
 
   return (
     <div className='bg-white  relative rounded-[10px] w-full py-2'>
@@ -155,26 +167,21 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
           {/* Course */}
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-neutral-950 leading-[14px]'>
-              Course *
+              Course
             </label>
             <Controller
               control={control}
               name='courseId'
-              rules={{
-                required: {
-                  value: true,
-                  message: 'Course is required',
-                },
-              }}
               render={({ field }) => (
                 <Select
-                  {...field}
+                  items={courses}
                   placeholder='Select a course'
+                  isClearable
                   className='w-full'
                   selectedKeys={field.value ? [field.value.toString()] : []}
                   onSelectionChange={keys => {
                     const selected = Array.from(keys)[0];
-                    field.onChange(selected?.toString() || '');
+                    field.onChange(Number(selected) || undefined);
                   }}
                   classNames={{
                     trigger:
@@ -184,11 +191,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
                   errorMessage={errors.courseId?.message}
                   isInvalid={!!errors.courseId}
                 >
-                  {courses.map(course => (
+                  {course => (
                     <SelectItem key={course.id.toString()}>
                       {course.name}
                     </SelectItem>
-                  ))}
+                  )}
                 </Select>
               )}
             />
@@ -206,24 +213,45 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
                 name='type'
                 render={({ field }) => (
                   <Select
-                    {...field}
+                    items={taskTypes}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={keys => {
                       const selected = Array.from(keys)[0] as TaskType;
                       field.onChange(selected || 'reading');
                     }}
                     className='w-full'
+                    isClearable={true}
                     classNames={{
                       trigger:
                         'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
                       value: 'text-sm text-neutral-950',
                     }}
+                    renderValue={items => {
+                      return items.map(item => {
+                        const taskType = taskTypes.find(
+                          t => t.key === item.data?.key
+                        );
+                        return (
+                          <div
+                            key={item.key}
+                            className='flex items-center gap-2'
+                          >
+                            <span className='text-sm text-neutral-950'>
+                              {taskType?.emoji}
+                            </span>
+                            <span className='text-sm text-neutral-950'>
+                              {taskType?.label}
+                            </span>
+                          </div>
+                        );
+                      });
+                    }}
                   >
-                    {taskTypes.map(type => (
-                      <SelectItem key={type}>
-                        {getTaskTypeEmoji(type)} {getTaskTypeLabel(type)}
+                    {type => (
+                      <SelectItem key={type.key}>
+                        {type.emoji} {type.label}
                       </SelectItem>
-                    ))}
+                    )}
                   </Select>
                 )}
               />
@@ -253,8 +281,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onCancel, onClose }) => {
                     }}
                   >
                     {priorities.map(priority => (
-                      <SelectItem key={priority}>
-                        {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                      <SelectItem key={priority.key}>
+                        {priority.label}
                       </SelectItem>
                     ))}
                   </Select>

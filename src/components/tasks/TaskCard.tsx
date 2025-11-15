@@ -8,7 +8,7 @@ import { Clock, MoreVertical } from 'lucide-react';
 interface TaskCardProps {
   task: Task;
   course?: Course;
-  onToggleComplete: (task: Task) => void;
+  onToggleComplete?: (task: Task) => void;
   onEdit?: (task: Task) => void;
   onDelete?: (task: Task) => void;
 }
@@ -88,7 +88,7 @@ const formatTime = (minutes: number): string => {
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   course,
-  onToggleComplete,
+  onToggleComplete = () => {},
   onEdit,
   onDelete,
 }) => {
@@ -101,12 +101,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         task.completed ? 'opacity-60' : ''
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
+      <div className='flex items-start justify-between gap-4'>
+        <div className='flex items-start gap-4 flex-1 min-w-0'>
           <Checkbox
             isSelected={task.completed}
             onValueChange={() => onToggleComplete(task)}
-            className="mt-1"
+            className='mt-1'
             classNames={{
               base: 'min-w-4',
               wrapper: task.completed
@@ -114,7 +114,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 : 'bg-[#f3f3f5] border-[rgba(0,0,0,0.1)]',
             }}
           />
-          <div className="flex-1 min-w-0">
+          <div className='flex-1 min-w-0'>
             <h3
               className={`text-base font-normal text-[#101828] mb-2 ${
                 task.completed ? 'line-through' : ''
@@ -122,12 +122,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             >
               {task.title}
             </h3>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className='flex flex-wrap items-center gap-2'>
               {/* Task Type Badge */}
               <Chip
-                variant="bordered"
-                size="sm"
-                className="border-[rgba(0,0,0,0.1)] text-xs"
+                variant='bordered'
+                size='sm'
+                className='border-[rgba(0,0,0,0.1)] text-xs'
               >
                 {getTaskTypeEmoji(task.type)} {getTaskTypeLabel(task.type)}
               </Chip>
@@ -135,8 +135,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               {/* Priority Badge */}
               {task.priority && (
                 <Chip
-                  variant="bordered"
-                  size="sm"
+                  variant='bordered'
+                  size='sm'
                   className={`${priorityStyles.bg} ${priorityStyles.border} ${priorityStyles.text} text-xs border-[0.8px]`}
                 >
                   {priorityStyles.label}
@@ -146,16 +146,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               {/* Course Badge */}
               {course && (
                 <Chip
-                  variant="bordered"
-                  size="sm"
-                  className="text-xs"
+                  variant='bordered'
+                  size='sm'
+                  className='text-xs'
                   style={{
                     borderColor: courseColor,
                     color: courseColor,
                   }}
                   startContent={
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className='w-3 h-3 rounded-full'
                       style={{ backgroundColor: courseColor }}
                     />
                   }
@@ -165,8 +165,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               )}
 
               {/* Time Estimate */}
-              <div className="flex items-center gap-1 text-xs text-[#4a5565]">
-                <Clock className="w-3 h-3" />
+              <div className='flex items-center gap-1 text-xs text-[#4a5565]'>
+                <Clock className='w-3 h-3' />
                 <span>{formatTime(task.estimateMinutes)}</span>
               </div>
             </div>
@@ -176,18 +176,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {/* More Options Button */}
         <Button
           isIconOnly
-          variant="light"
-          size="sm"
-          className="min-w-9 h-8"
+          variant='light'
+          size='sm'
+          className='min-w-9 h-8'
           onPress={() => {
             // Handle menu actions
             if (onEdit) onEdit(task);
           }}
         >
-          <MoreVertical className="w-4 h-4 text-gray-600" />
+          <MoreVertical className='w-4 h-4 text-gray-600' />
         </Button>
       </div>
     </div>
   );
 };
-

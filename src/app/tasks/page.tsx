@@ -3,7 +3,6 @@ import SidebarNav from '@/components/layout/SidebarNav';
 import { TaskStatsCards } from '@/components/tasks/TaskStatsCards';
 import { TaskFilters, TaskFilter } from '@/components/tasks/TaskFilters';
 import { TaskCard } from '@/components/tasks/TaskCard';
-// import { Input, Button } from '@heroui/react';
 import { Search, Plus, Clock } from 'lucide-react';
 import { TaskForm } from '@/components/forms';
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react';
@@ -37,7 +36,7 @@ export default async function TasksPage() {
             {/* Task List */}
             <TaskList
               tasks={allTasks}
-              handleToggleComplete={handleToggleComplete}
+              // handleToggleComplete={handleToggleComplete}
             />
           </div>
         </main>

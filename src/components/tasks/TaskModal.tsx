@@ -12,13 +12,9 @@ import TaskForm from '@/components/forms/TaskForm';
 
 interface TaskModalProps {
   title?: string;
-  handleAddTask?: (data?: any) => void;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({
-  title = 'Add task',
-  handleAddTask,
-}) => {
+const TaskModal: React.FC<TaskModalProps> = ({ title = 'Add task' }) => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   return (
     <>
@@ -40,7 +36,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
         <ModalContent>
           <ModalHeader>Add New Task</ModalHeader>
           <ModalBody>
-            <TaskForm onSubmit={handleAddTask} />
+            <TaskForm />
           </ModalBody>
         </ModalContent>
       </Modal>

@@ -12,8 +12,6 @@ export const refreshAccessTokenForServer = async (): Promise<{
   const cookieStore = await cookies();
   const cookieValues = cookieStore.toString();
 
-  console.log('Cookies sent for refresh:', cookieValues);
-
   const baseURL = process.env.NEXT_PUBLIC_SERVER_URL;
   if (!baseURL) throw new Error('NEXT_PUBLIC_SERVER_URL is not set');
 

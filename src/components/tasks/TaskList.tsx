@@ -4,13 +4,13 @@ import { TaskCard } from './TaskCard';
 interface TaskListProps {
   tasks: Task[];
   searchQuery?: string;
-  handleToggleComplete: (task: Task) => void;
+  handleToggleComplete?: (task: Task) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
   searchQuery,
-  handleToggleComplete,
+  handleToggleComplete = () => {},
 }) => {
   if (tasks.length === 0) {
     return (
@@ -27,11 +27,7 @@ const TaskList: React.FC<TaskListProps> = ({
   return (
     <>
       {tasks.map(task => (
-        <TaskCard
-          key={task.id}
-          task={task}
-          onToggleComplete={handleToggleComplete}
-        />
+        <TaskCard key={task.id} task={task} />
       ))}
     </>
   );
