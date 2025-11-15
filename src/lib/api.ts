@@ -86,7 +86,7 @@ apiClient.interceptors.response.use(
         })
           .then(token => {
             originalRequest.headers['Authorization'] = `Bearer ${token}`;
-            return axios(originalRequest);
+            return apiClient(originalRequest);
           })
           .catch(err => {
             return Promise.reject(err);
@@ -103,7 +103,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
         processQueue(null, accessToken);
 
-        return axios(originalRequest);
+        return apiClient(originalRequest);
       } catch (err) {
         store.dispatch(clearAuth());
         processQueue(err, null);
