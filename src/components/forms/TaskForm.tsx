@@ -103,6 +103,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
         priority: 'low',
         estimateMinutes: 60,
       });
+      onClose?.();
     },
   });
 
@@ -118,25 +119,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
 
   return (
     <div className='bg-white  relative rounded-[10px] w-full py-2'>
-      {/* Close Button */}
-      {onClose && (
-        <button
-          type='button'
-          onClick={onClose}
-          className='absolute right-4 top-4 opacity-70 hover:opacity-100 transition-opacity rounded-sm w-4 h-4 flex items-center justify-center'
-          aria-label='Close'
-        >
-          <X className='w-4 h-4 text-neutral-950' />
-        </button>
-      )}
-
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmitHandler)} className='px-6 pb-6'>
         <div className='flex flex-col gap-4'>
           {/* Task Title */}
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-neutral-950 leading-3.5'>
-              Task Title *
+              Task Title
             </label>
             <Controller
               control={control}
@@ -150,6 +139,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
               render={({ field }) => (
                 <Input
                   {...field}
+                  required
                   placeholder='Enter task title'
                   className='w-full'
                   classNames={{
@@ -331,16 +321,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
 
         {/* Buttons */}
         <div className='flex gap-2 justify-end mt-8'>
-          {onCancel && (
-            <Button
-              type='button'
-              onPress={onCancel}
-              variant='bordered'
-              className='bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[8px] h-[36px] px-4 min-w-[75px]'
-            >
-              <span className='text-sm text-neutral-950'>Cancel</span>
-            </Button>
-          )}
           <Button
             type='submit'
             isLoading={createTaskMutation.isPending}

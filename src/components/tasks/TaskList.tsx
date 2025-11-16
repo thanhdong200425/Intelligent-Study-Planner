@@ -1,18 +1,25 @@
+'use client';
+
 import { Task } from '@/types';
 import { TaskCard } from './TaskCard';
+import { getAllTasks } from '@/services';
+import { useQuery } from '@tanstack/react-query';
 
 interface TaskListProps {
-  tasks: Task[];
   searchQuery?: string;
   handleToggleComplete?: (task: Task) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
-  tasks,
   searchQuery,
   handleToggleComplete = () => {},
 }) => {
-  if (tasks.length === 0) {
+  const { data: tasks } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: getAllTasks,
+  });
+
+  if (!tasks || tasks.length === 0) {
     return (
       <div className='bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-8 text-center'>
         <p className='text-gray-500'>

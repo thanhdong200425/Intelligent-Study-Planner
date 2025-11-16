@@ -7,8 +7,8 @@ const endpoint = '/tasks';
 
 export const getAllTasks = async (): Promise<Task[]> => {
   try {
-    const response = await sendRequestFromServer(endpoint);
-    return response;
+    const response = await apiClient.get(endpoint);
+    return response.data;
   } catch (err) {
     console.log('Error fetching tasks: ', err);
     return [];
@@ -37,4 +37,14 @@ export const createTask = async (task: TaskFormData): Promise<Task> => {
     console.log('Error creating task: ', err);
     throw err;
   }
-}
+};
+
+export const deleteTask = async (taskId: number): Promise<boolean> => {
+  try {
+    const response = await apiClient.delete(`${endpoint}/${taskId}`);
+    return response.data;
+  } catch (err) {
+    console.log('Error creating task: ', err);
+    throw err;
+  }
+};

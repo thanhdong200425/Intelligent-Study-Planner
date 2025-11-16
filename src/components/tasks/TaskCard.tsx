@@ -2,15 +2,25 @@
 
 import React from 'react';
 import { Task, Course, TaskType, TaskPriority } from '@/types';
-import { Checkbox, Button, Chip } from '@heroui/react';
-import { Clock, MoreVertical } from 'lucide-react';
+import {
+  Checkbox,
+  Button,
+  Chip,
+  addToast,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import { Clock, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import {
+  useDeleteTaskMutation,
+  useToggleCompleteTaskMutation,
+} from '@/mutations';
 
 interface TaskCardProps {
   task: Task;
   course?: Course;
-  onToggleComplete?: (task: Task) => void;
-  onEdit?: (task: Task) => void;
-  onDelete?: (task: Task) => void;
 }
 
 const getTaskTypeEmoji = (type: TaskType): string => {
@@ -85,15 +95,32 @@ const formatTime = (minutes: number): string => {
   return `${mins} min`;
 };
 
-export const TaskCard: React.FC<TaskCardProps> = ({
-  task,
-  course,
-  onToggleComplete = () => {},
-  onEdit,
-  onDelete,
-}) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
   const priorityStyles = getPriorityStyles(task.priority);
   const courseColor = course?.color || '#3b82f6';
+
+  const { mutate: toggleComplete } = useToggleCompleteTaskMutation({});
+  const { mutate: deleteTask } = useDeleteTaskMutation({});
+
+  const onToggleComplete = (task: Task) => {
+    if (!task.id) {
+      addToast({
+        title: 'Task not found',
+        description: "Sorry, we couldn't find the task you were looking for.",
+        color: 'danger',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      return;
+    }
+    toggleComplete(task.id);
+  };
+
+  const onDeleteTask = (taskId: number) => {
+    deleteTask(taskId);
+  };
+
+  if (!task) return null;
 
   return (
     <div
@@ -173,19 +200,45 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
 
-        {/* More Options Button */}
-        <Button
-          isIconOnly
-          variant='light'
-          size='sm'
-          className='min-w-9 h-8'
-          onPress={() => {
-            // Handle menu actions
-            if (onEdit) onEdit(task);
-          }}
-        >
-          <MoreVertical className='w-4 h-4 text-gray-600' />
-        </Button>
+        {/* More Options Dropdown */}
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              variant='light'
+              size='sm'
+              className='min-w-9 h-8'
+              aria-label='More options'
+            >
+              <MoreVertical className='w-4 h-4 text-gray-600' />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label='Task actions'
+            onAction={key => {
+              // if (key === 'edit' && onEdit) {
+              //   onEdit(task);
+              // } else if (key === 'delete' && onDelete) {
+              onDeleteTask(task.id!);
+              // }
+            }}
+          >
+            <DropdownItem
+              key='edit'
+              startContent={<Edit className='w-4 h-4' />}
+            >
+              Edit
+            </DropdownItem>
+            <DropdownItem
+              key='delete'
+              className='text-danger'
+              color='danger'
+              startContent={<Trash2 className='w-4 h-4' />}
+            >
+              Delete
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </div>
     </div>
   );

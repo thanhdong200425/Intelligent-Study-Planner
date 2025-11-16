@@ -1,11 +1,11 @@
 'use client';
 
-import { Input, Button } from '@heroui/react';
+import { Button, Input } from '@heroui/react';
 import { Bell, CalendarDays, Search } from 'lucide-react';
 
 interface HeaderBarProps {
   title: string;
-  description: string;
+  description?: string;
   children?: React.ReactNode;
 }
 

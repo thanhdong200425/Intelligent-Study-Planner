@@ -1,18 +1,22 @@
+'use client';
+
 import React from 'react';
-import { Task } from '@/types';
 import { CheckSquare, Clock, AlertCircle, ListTodo } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { getAllTasks } from '@/services';
 
-interface TaskStatsCardsProps {
-  tasks: Task[];
-}
+export const TaskStatsCards: React.FC = () => {
+  const { data: tasks } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: getAllTasks,
+  });
 
-export const TaskStatsCards: React.FC<TaskStatsCardsProps> = ({ tasks }) => {
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.completed).length;
-  const inProgressTasks = tasks.filter(t => !t.completed).length;
-  const highPriorityTasks = tasks.filter(
-    t => !t.completed && t.priority === 'high'
-  ).length;
+  const totalTasks = tasks ? tasks.length : 0;
+  const completedTasks = tasks ? tasks.filter(t => t.completed).length : 0;
+  const inProgressTasks = tasks ? tasks.filter(t => !t.completed).length : 0;
+  const highPriorityTasks = tasks
+    ? tasks.filter(t => !t.completed && t.priority === 'high').length
+    : 0;
 
   const stats = [
     {

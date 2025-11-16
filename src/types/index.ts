@@ -20,7 +20,7 @@ export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
 export interface Task {
-  id?: string;
+  id?: number;
   title: string;
   courseId?: number;
   type: TaskType;

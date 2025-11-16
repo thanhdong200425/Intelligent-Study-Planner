@@ -36,7 +36,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ title = 'Add task' }) => {
         <ModalContent>
           <ModalHeader>Add New Task</ModalHeader>
           <ModalBody>
-            <TaskForm />
+            <TaskForm onClose={() => setIsAddTaskModalOpen(false)} />
           </ModalBody>
         </ModalContent>
       </Modal>
