@@ -11,9 +11,10 @@ import { X } from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTask } from '@/services';
-import { useCreateTaskMutation } from '@/mutations';
+import { useCreateTaskMutation, useUpdateTaskMutation } from '@/mutations';
 
 interface TaskFormProps {
+  task?: Task;
   onCancel?: () => void;
   onClose?: () => void;
 }
@@ -70,7 +71,8 @@ const priorities: { key: TaskPriority; label: string }[] = [
   { key: 'unknown', label: 'Unknown' },
 ];
 
-const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
+  const isEditMode = !!task;
   const queryClient = useQueryClient();
   const { data: courses = [], isPending } = useQuery({
     queryKey: ['courses'],
@@ -81,14 +83,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
   } = useForm<Task>({
     defaultValues: {
-      title: '',
-      type: 'reading',
-      priority: 'medium',
-      estimateMinutes: 60,
+      title: task?.title || '',
+      courseId: task?.courseId,
+      type: task?.type || 'reading',
+      priority: task?.priority || 'medium',
+      estimateMinutes: task?.estimateMinutes || 60,
     },
     mode: 'onSubmit',
     resolver: zodResolver(formSchema),
@@ -107,9 +110,22 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
     },
   });
 
+  const updateTaskMutation = useUpdateTaskMutation({
+    onSuccess: () => {
+      onClose?.();
+    },
+  });
+
   const onSubmitHandler = (data: TaskFormData) => {
-    createTaskMutation.mutate(data);
+    if (isEditMode && task?.id) {
+      updateTaskMutation.mutate({ taskId: task.id, data });
+    } else {
+      createTaskMutation.mutate(data);
+    }
   };
+
+  const isSubmitting =
+    createTaskMutation.isPending || updateTaskMutation.isPending;
 
   if (isPending) {
     return <div>Loading...</div>;
@@ -323,10 +339,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ onCancel, onClose }) => {
         <div className='flex gap-2 justify-end mt-8'>
           <Button
             type='submit'
-            isLoading={createTaskMutation.isPending}
+            isLoading={isSubmitting}
+            isDisabled={!isDirty || isSubmitting}
             className='bg-[#101828] text-white rounded-[8px] h-[36px] px-4 min-w-[89px]'
           >
-            <span className='text-sm text-white'>Add Task</span>
+            <span className='text-sm text-white'>
+              {isEditMode ? 'Update Task' : 'Add Task'}
+            </span>
           </Button>
         </div>
       </form>

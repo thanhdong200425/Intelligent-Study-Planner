@@ -1,5 +1,10 @@
 import { TaskFormData } from '@/components/forms/TaskForm';
-import { createTask, deleteTask, handleToggleCompleteStatus } from '@/services';
+import {
+  createTask,
+  deleteTask,
+  handleToggleCompleteStatus,
+  updateTask,
+} from '@/services';
 import { Task } from '@/types';
 import { addToast } from '@heroui/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -79,6 +84,37 @@ export const useToggleCompleteTaskMutation = ({
         shouldShowTimeoutProgress: true,
       });
       console.error('Failed to complete task:', error);
+      onError?.(error);
+    },
+  });
+};
+
+export const useUpdateTaskMutation = ({
+  onSuccess,
+  onError,
+}: MutationProps) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, data }: { taskId: number; data: TaskFormData }) =>
+      updateTask(taskId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      addToast({
+        title: 'Task updated successfully',
+        color: 'success',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      onSuccess?.();
+    },
+    onError: error => {
+      addToast({
+        title: 'Failed to update task',
+        color: 'danger',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      console.error('Failed to update task:', error);
       onError?.(error);
     },
   });

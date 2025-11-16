@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, Course, TaskType, TaskPriority } from '@/types';
 import {
   Checkbox,
@@ -11,12 +11,17 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
 } from '@heroui/react';
 import { Clock, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import {
   useDeleteTaskMutation,
   useToggleCompleteTaskMutation,
 } from '@/mutations';
+import TaskForm from '@/components/forms/TaskForm';
 
 interface TaskCardProps {
   task: Task;
@@ -96,6 +101,7 @@ const formatTime = (minutes: number): string => {
 };
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const priorityStyles = getPriorityStyles(task.priority);
   const courseColor = course?.color || '#3b82f6';
 
@@ -123,123 +129,140 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
   if (!task) return null;
 
   return (
-    <div
-      className={`bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4 ${
-        task.completed ? 'opacity-60' : ''
-      }`}
-    >
-      <div className='flex items-start justify-between gap-4'>
-        <div className='flex items-start gap-4 flex-1 min-w-0'>
-          <Checkbox
-            isSelected={task.completed}
-            onValueChange={() => onToggleComplete(task)}
-            className='mt-1'
-            classNames={{
-              base: 'min-w-4',
-              wrapper: task.completed
-                ? 'bg-[#030213] border-[#030213]'
-                : 'bg-[#f3f3f5] border-[rgba(0,0,0,0.1)]',
-            }}
-          />
-          <div className='flex-1 min-w-0'>
-            <h3
-              className={`text-base font-normal text-[#101828] mb-2 ${
-                task.completed ? 'line-through' : ''
-              }`}
-            >
-              {task.title}
-            </h3>
-            <div className='flex flex-wrap items-center gap-2'>
-              {/* Task Type Badge */}
-              <Chip
-                variant='bordered'
-                size='sm'
-                className='border-[rgba(0,0,0,0.1)] text-xs'
+    <>
+      <div
+        className={`bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4 ${
+          task.completed ? 'opacity-60' : ''
+        }`}
+      >
+        <div className='flex items-start justify-between gap-4'>
+          <div className='flex items-start gap-4 flex-1 min-w-0'>
+            <Checkbox
+              isSelected={task.completed}
+              onValueChange={() => onToggleComplete(task)}
+              className='mt-1'
+              classNames={{
+                base: 'min-w-4',
+                wrapper: task.completed
+                  ? 'bg-[#030213] border-[#030213]'
+                  : 'bg-[#f3f3f5] border-[rgba(0,0,0,0.1)]',
+              }}
+            />
+            <div className='flex-1 min-w-0'>
+              <h3
+                className={`text-base font-normal text-[#101828] mb-2 ${
+                  task.completed ? 'line-through' : ''
+                }`}
               >
-                {getTaskTypeEmoji(task.type)} {getTaskTypeLabel(task.type)}
-              </Chip>
-
-              {/* Priority Badge */}
-              {task.priority && (
+                {task.title}
+              </h3>
+              <div className='flex flex-wrap items-center gap-2'>
+                {/* Task Type Badge */}
                 <Chip
                   variant='bordered'
                   size='sm'
-                  className={`${priorityStyles.bg} ${priorityStyles.border} ${priorityStyles.text} text-xs border-[0.8px]`}
+                  className='border-[rgba(0,0,0,0.1)] text-xs'
                 >
-                  {priorityStyles.label}
+                  {getTaskTypeEmoji(task.type)} {getTaskTypeLabel(task.type)}
                 </Chip>
-              )}
 
-              {/* Course Badge */}
-              {course && (
-                <Chip
-                  variant='bordered'
-                  size='sm'
-                  className='text-xs'
-                  style={{
-                    borderColor: courseColor,
-                    color: courseColor,
-                  }}
-                  startContent={
-                    <div
-                      className='w-3 h-3 rounded-full'
-                      style={{ backgroundColor: courseColor }}
-                    />
-                  }
-                >
-                  {course.name}
-                </Chip>
-              )}
+                {/* Priority Badge */}
+                {task.priority && (
+                  <Chip
+                    variant='bordered'
+                    size='sm'
+                    className={`${priorityStyles.bg} ${priorityStyles.border} ${priorityStyles.text} text-xs border-[0.8px]`}
+                  >
+                    {priorityStyles.label}
+                  </Chip>
+                )}
 
-              {/* Time Estimate */}
-              <div className='flex items-center gap-1 text-xs text-[#4a5565]'>
-                <Clock className='w-3 h-3' />
-                <span>{formatTime(task.estimateMinutes)}</span>
+                {/* Course Badge */}
+                {course && (
+                  <Chip
+                    variant='bordered'
+                    size='sm'
+                    className='text-xs'
+                    style={{
+                      borderColor: courseColor,
+                      color: courseColor,
+                    }}
+                    startContent={
+                      <div
+                        className='w-3 h-3 rounded-full'
+                        style={{ backgroundColor: courseColor }}
+                      />
+                    }
+                  >
+                    {course.name}
+                  </Chip>
+                )}
+
+                {/* Time Estimate */}
+                <div className='flex items-center gap-1 text-xs text-[#4a5565]'>
+                  <Clock className='w-3 h-3' />
+                  <span>{formatTime(task.estimateMinutes)}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* More Options Dropdown */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              isIconOnly
-              variant='light'
-              size='sm'
-              className='min-w-9 h-8'
-              aria-label='More options'
+          {/* More Options Dropdown */}
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                variant='light'
+                size='sm'
+                className='min-w-9 h-8'
+                aria-label='More options'
+              >
+                <MoreVertical className='w-4 h-4 text-gray-600' />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label='Task actions'
+              onAction={key => {
+                if (key === 'edit') {
+                  setIsEditModalOpen(true);
+                } else if (key === 'delete') {
+                  onDeleteTask(task.id!);
+                }
+              }}
             >
-              <MoreVertical className='w-4 h-4 text-gray-600' />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label='Task actions'
-            onAction={key => {
-              // if (key === 'edit' && onEdit) {
-              //   onEdit(task);
-              // } else if (key === 'delete' && onDelete) {
-              onDeleteTask(task.id!);
-              // }
-            }}
-          >
-            <DropdownItem
-              key='edit'
-              startContent={<Edit className='w-4 h-4' />}
-            >
-              Edit
-            </DropdownItem>
-            <DropdownItem
-              key='delete'
-              className='text-danger'
-              color='danger'
-              startContent={<Trash2 className='w-4 h-4' />}
-            >
-              Delete
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+              <DropdownItem
+                key='edit'
+                startContent={<Edit className='w-4 h-4' />}
+              >
+                Edit
+              </DropdownItem>
+              <DropdownItem
+                key='delete'
+                className='text-danger'
+                color='danger'
+                startContent={<Trash2 className='w-4 h-4' />}
+              >
+                Delete
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
       </div>
-    </div>
+
+      {/* Edit Task Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        size='2xl'
+        scrollBehavior='inside'
+      >
+        <ModalContent>
+          <ModalHeader>Edit Task</ModalHeader>
+          <ModalBody>
+            <TaskForm task={task} onClose={() => setIsEditModalOpen(false)} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };

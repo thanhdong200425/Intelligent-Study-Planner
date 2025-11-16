@@ -39,6 +39,19 @@ export const createTask = async (task: TaskFormData): Promise<Task> => {
   }
 };
 
+export const updateTask = async (
+  taskId: number,
+  task: TaskFormData
+): Promise<Task> => {
+  try {
+    const response = await apiClient.put(`${endpoint}/${taskId}`, task);
+    return response.data;
+  } catch (err) {
+    console.log('Error updating task: ', err);
+    throw err;
+  }
+};
+
 export const deleteTask = async (taskId: number): Promise<boolean> => {
   try {
     const response = await apiClient.delete(`${endpoint}/${taskId}`);
