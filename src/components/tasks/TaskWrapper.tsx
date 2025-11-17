@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { TaskStatsCards } from '@/components/tasks/TaskStatsCards';
-import { TaskFilters, TaskFilter } from '@/components/tasks/TaskFilters';
+import { TaskFilter } from '@/components/tasks/TaskSort';
 import TaskList from '@/components/tasks/TaskList';
+import TaskSort from '@/components/tasks/TaskSort';
 
 type SortOrder = 'asc' | 'desc';
 
@@ -24,11 +25,13 @@ const TaskWrapper = () => {
   return (
     <>
       <TaskStatsCards />
-      <TaskFilters
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        sortOrder={sortOrder}
-      />
+      <div>
+        <TaskSort
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+          sortOrder={sortOrder}
+        />
+      </div>
       <TaskList activeFilter={activeFilter} sortOrder={sortOrder} />
     </>
   );

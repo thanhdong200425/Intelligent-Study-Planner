@@ -6,13 +6,13 @@ import { Filter, ArrowUp, ArrowDown } from 'lucide-react';
 
 export type TaskFilter = 'all' | 'priority' | 'course';
 
-interface TaskFiltersProps {
+interface TaskSortProps {
   activeFilter: TaskFilter;
   onFilterChange?: (filter: TaskFilter) => void;
   sortOrder?: 'asc' | 'desc';
 }
 
-export const TaskFilters: React.FC<TaskFiltersProps> = ({
+const TaskSort: React.FC<TaskSortProps> = ({
   activeFilter,
   onFilterChange = () => {},
   sortOrder = 'desc',
@@ -41,7 +41,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
       <div className='flex items-center gap-4'>
         <div className='flex items-center gap-2'>
           <Filter className='w-4 h-4 text-[#101828]' />
-          <span className='text-sm text-[#101828]'>Filter by:</span>
+          <span className='text-sm text-[#101828]'>Sort by:</span>
         </div>
         <div className='flex items-center gap-2'>
           {filters.map(filter => (
@@ -68,3 +68,5 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
     </div>
   );
 };
+
+export default TaskSort;

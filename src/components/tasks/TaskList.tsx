@@ -4,7 +4,7 @@ import { Task } from '@/types';
 import { TaskCard } from './TaskCard';
 import { getAllTasks } from '@/services';
 import { useMemo } from 'react';
-import { TaskFilter } from './TaskFilters';
+import { TaskFilter } from './TaskSort';
 import { useQuery } from '@tanstack/react-query';
 
 const priorityRank: Record<string, number> = {

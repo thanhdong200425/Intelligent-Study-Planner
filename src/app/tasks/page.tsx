@@ -7,7 +7,11 @@ export default function TasksPage() {
       <SidebarNav />
       <div className='flex-1 flex flex-col overflow-hidden'>
         {/* Header */}
-        <HeaderBar title='Tasks'>
+        <HeaderBar
+          title='Tasks'
+          isShowSearchBar={false}
+          isShowNotification={false}
+        >
           <TaskModal />
         </HeaderBar>
 
