@@ -31,17 +31,13 @@ const App: React.FC = () => {
       },
     });
 
-  /** --------------------------------------------------
-   * 2. Fetch user profile bằng React Query v5 (KHÔNG onSuccess)
-   * -------------------------------------------------- */
+  /**Fetch user profile**/
   const profileQuery = useQuery({
     queryKey: ['userProfile'],
     queryFn: UserApiService.getProfile,
   });
 
-  /** --------------------------------------------------
-   * 3. Đồng bộ dữ liệu API vào form khi fetch thành công
-   * -------------------------------------------------- */
+  /**Đồng bộ dữ liệu API vào form khi fetch thành công**/
   useEffect(() => {
     if (!profileQuery.data) return;
 
@@ -76,9 +72,7 @@ const App: React.FC = () => {
     });
   }, [profileQuery.data, reset]);
 
-  /** --------------------------------------------------
-   * 4. Mutation cập nhật user (React Query)
-   * -------------------------------------------------- */
+  /** Mutation cập nhật user (React Query)**/
   const updateMutation = useMutation({
     mutationKey: ['updateUser'],
     mutationFn: async (payload: UpdateUserRequest) =>
@@ -86,7 +80,7 @@ const App: React.FC = () => {
 
     onSuccess: () => {
       addToast({
-        title: 'Lưu thông tin thành công!',
+        title: 'Information saved successfully!',
         color: 'success',
         timeout: 2000,
       });
@@ -94,15 +88,13 @@ const App: React.FC = () => {
 
     onError: () => {
       addToast({
-        title: 'Cập nhật thất bại. Vui lòng thử lại.',
+        title: 'Update failed. Please try again.',
         color: 'danger',
       });
     },
   });
 
-  /** --------------------------------------------------
-   * 5. Submit cập nhật thông tin
-   * -------------------------------------------------- */
+  /**Submit cập nhật thông tin**/
   const onSubmit = (values: UserProfile) => {
     const updateData: UpdateUserRequest = {
       fullName: values.fullName,
@@ -112,9 +104,7 @@ const App: React.FC = () => {
     updateMutation.mutate(updateData);
   };
 
-  /** --------------------------------------------------
-   * 6. Lưu location + bio tạm vào localStorage
-   * -------------------------------------------------- */
+  /**Lưu location + bio tạm vào localStorage**/
   const watchLocation = watch('location');
   const watchBio = watch('bio');
 
@@ -158,7 +148,7 @@ const App: React.FC = () => {
                   type="submit"
                   isLoading={updateMutation.isPending}
                 >
-                  {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                  {updateMutation.isPending ? 'Saving...' : 'Save changes'}
                 </Button>
               </div>
             </div>
