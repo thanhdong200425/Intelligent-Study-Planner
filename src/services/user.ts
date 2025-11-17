@@ -1,23 +1,22 @@
 // src/api/userApi.ts
 import { apiClient } from '@/lib/api';
-
-export interface UserProfile {
-  id: number;
-  email: string;
-  name: string | null;
-}
+import type { UserProfile } from '@/types';
 
 export interface UpdateUserRequest {
-  name?: string;
+  fullName?: string;
   email?: string;
-  password?: string;
+  location?: string;
+  bio?: string;
+  focusDuration?: number;
+  breakDuration?: number;
+  dailyGoal?: number;
 }
 
 export class UserApiService {
   private static readonly BASE_PATH = '/auth';
 
   /**
-   * Lấy thông tin user hiện tại
+   * Fetch current user profile
    */
   static async getProfile(): Promise<UserProfile> {
     try {
@@ -26,13 +25,13 @@ export class UserApiService {
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      throw new Error('Không thể tải thông tin người dùng');
+      console.error('Failed to fetch user profile:', error);
+      throw new Error('Unable to load user profile');
     }
   }
 
   /**
-   * Cập nhật thông tin user
+   * Update user profile
    */
   static async updateProfile(data: UpdateUserRequest): Promise<UserProfile> {
     try {
@@ -42,8 +41,8 @@ export class UserApiService {
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      throw new Error('Không thể cập nhật thông tin người dùng');
+      console.error('Failed to update user profile:', error);
+      throw new Error('Unable to update user profile');
     }
   }
 }

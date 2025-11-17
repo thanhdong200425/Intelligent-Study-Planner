@@ -35,7 +35,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => (
 
 
 const Sidebar: React.FC = () => {
-  const [activeItem, setActiveItem] = useState('Profile');
+  const [activeItem, setActiveItem] = useState('Today');
   
   const navItems = [
     { id: 'Today', icon: <HomeIcon />, label: 'Today' },

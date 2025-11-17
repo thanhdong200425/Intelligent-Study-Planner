@@ -98,4 +98,7 @@ export interface UserProfile {
   breakDuration: number;
   dailyGoal: number;
   joinedDate: string;
+  updatedAt?: string;
+  createdAt?: string;
+
 }

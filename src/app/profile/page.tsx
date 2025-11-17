@@ -1,169 +1,168 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import Sidebar from '../../components/home/Sidebar';
 import ProfileHeader from '../../components/home/ProfileHeader';
 import ProfileDetails from '../../components/home/ProfileDetails';
 import StudyPreferences from '../../components/home/StudyPreference';
-import { type UserProfile } from '../../types';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { fetchUserProfile, updateUserProfile } from '../../store/slices/userSlice';
-import type { UpdateUserRequest } from '../../services/userApi';
+
+import { useForm } from 'react-hook-form';
+import { addToast, Button } from '@heroui/react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import UserApiService, { type UpdateUserRequest } from '@/services/user';
+import type { UserProfile } from '../../types';
 
 const App: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { profile: backendProfile, isLoading, error, isUpdating } = useAppSelector(
-    state => state.user
-  );
+  /** react-hook-form **/
+  const { register, control, setValue, handleSubmit, reset, watch } =
+    useForm<UserProfile>({
+      defaultValues: {
+        fullName: '',
+        email: '',
+        location: '',
+        bio: '',
+        focusDuration: 25,
+        breakDuration: 5,
+        dailyGoal: 4,
+        joinedDate: '',
+        createdAt: '',
+        updatedAt: '',
+      },
+    });
 
-  // Local state for UI - maps backend data to UI format
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    fullName: '',
-    email: '',
-    location: '',
-    bio: '',
-    focusDuration: 25,
-    breakDuration: 5,
-    dailyGoal: 4,
-    joinedDate: ''
+  /** --------------------------------------------------
+   * 2. Fetch user profile bằng React Query v5 (KHÔNG onSuccess)
+   * -------------------------------------------------- */
+  const profileQuery = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: UserApiService.getProfile,
   });
 
-  // Load temporary fields from localStorage on mount
+  /** --------------------------------------------------
+   * 3. Đồng bộ dữ liệu API vào form khi fetch thành công
+   * -------------------------------------------------- */
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLocation = localStorage.getItem('user_profile_location');
-      const savedBio = localStorage.getItem('user_profile_bio');
-      if (savedLocation || savedBio) {
-        setUserProfile(prev => ({
-          ...prev,
-          location: savedLocation || prev.location,
-          bio: savedBio || prev.bio,
-        }));
-      }
-    }
-  }, []);
+    if (!profileQuery.data) return;
 
-  // Fetch user profile on mount
-  useEffect(() => {
-    dispatch(fetchUserProfile());
-  }, [dispatch]);
-
-  // Map backend profile to UI profile format
-  useEffect(() => {
-    if (backendProfile) {
-      // Load temporary fields from localStorage if available
-      const savedLocation = typeof window !== 'undefined' 
+    const savedLocation =
+      typeof window !== 'undefined'
         ? localStorage.getItem('user_profile_location') || ''
         : '';
-      const savedBio = typeof window !== 'undefined'
+
+    const savedBio =
+      typeof window !== 'undefined'
         ? localStorage.getItem('user_profile_bio') || ''
         : '';
 
-      setUserProfile({
-        fullName: backendProfile.name || '',
-        email: backendProfile.email || '',
-        location: savedLocation, // Load from localStorage (not synced with backend)
-        bio: savedBio, // Load from localStorage (not synced with backend)
-        focusDuration: 25, // Default value, can be extended later
-        breakDuration: 5, // Default value, can be extended later
-        dailyGoal: 4, // Default value, can be extended later
-        joinedDate: backendProfile.createdAt 
-          ? `Joined ${new Date(backendProfile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-          : ''
-      });
-    }
-  }, [backendProfile]);
+    const d = profileQuery.data;
 
-  // Handle save changes
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  
-  const handleSave = async () => {
+    reset({
+      fullName: d.fullName || '',
+      email: d.email || d.email || '',
+      location: savedLocation,
+      bio: savedBio,
+      focusDuration: d.focusDuration ?? 25,
+      breakDuration: d.breakDuration ?? 5,
+      dailyGoal: d.dailyGoal ?? 4,
+      joinedDate: d.createdAt
+        ? `Tham gia ${new Date(d.createdAt).toLocaleDateString('vi-VN', {
+            month: 'short',
+            year: 'numeric',
+          })}`
+        : '',
+      createdAt: d.createdAt ?? '',
+      updatedAt: d.updatedAt ?? '',
+    });
+  }, [profileQuery.data, reset]);
+
+  /** --------------------------------------------------
+   * 4. Mutation cập nhật user (React Query)
+   * -------------------------------------------------- */
+  const updateMutation = useMutation({
+    mutationKey: ['updateUser'],
+    mutationFn: async (payload: UpdateUserRequest) =>
+      UserApiService.updateProfile(payload),
+
+    onSuccess: () => {
+      addToast({
+        title: 'Lưu thông tin thành công!',
+        color: 'success',
+        timeout: 2000,
+      });
+    },
+
+    onError: () => {
+      addToast({
+        title: 'Cập nhật thất bại. Vui lòng thử lại.',
+        color: 'danger',
+      });
+    },
+  });
+
+  /** --------------------------------------------------
+   * 5. Submit cập nhật thông tin
+   * -------------------------------------------------- */
+  const onSubmit = (values: UserProfile) => {
     const updateData: UpdateUserRequest = {
-      name: userProfile.fullName,
-      email: userProfile.email,
+      fullName: values.fullName,
+      email: values.email,
     };
 
-    try {
-      await dispatch(updateUserProfile(updateData)).unwrap();
-      setSaveSuccess(true);
-      // Hide success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to update profile:', err);
-      // Error is already in Redux state
+    updateMutation.mutate(updateData);
+  };
+
+  /** --------------------------------------------------
+   * 6. Lưu location + bio tạm vào localStorage
+   * -------------------------------------------------- */
+  const watchLocation = watch('location');
+  const watchBio = watch('bio');
+
+  useEffect(() => {
+    if (watchLocation !== undefined) {
+      localStorage.setItem('user_profile_location', watchLocation);
     }
-  };
+  }, [watchLocation]);
 
-  // Update local state when user edits
-  const handleProfileChange = (updates: Partial<UserProfile>) => {
-    setUserProfile(prev => {
-      const updated = { ...prev, ...updates };
-      
-      // Save location and bio to localStorage (temporary storage, not synced with backend)
-      if (typeof window !== 'undefined') {
-        if ('location' in updates) {
-          localStorage.setItem('user_profile_location', updated.location || '');
-        }
-        if ('bio' in updates) {
-          localStorage.setItem('user_profile_bio', updated.bio || '');
-        }
-      }
-      
-      return updated;
-    });
-  };
-
-  if (isLoading && !backendProfile) {
-    return (
-      <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
-        <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl">
-            <div className="flex items-center justify-center h-64">
-              <p className="text-slate-500">Đang tải thông tin người dùng...</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (watchBio !== undefined) {
+      localStorage.setItem('user_profile_bio', watchBio);
+    }
+  }, [watchBio]);
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
       <Sidebar />
+
       <main className="flex-1 p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
           <ProfileHeader />
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              {error}
+
+          {/* Form cập nhật */}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="mt-8 space-y-8">
+              <ProfileDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+              />
+
+              <StudyPreferences
+                control={control}
+/>
+
+
+              <div className="flex justify-end gap-4">
+                <Button
+                  color="primary"
+                  type="submit"
+                  isLoading={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </Button>
+              </div>
             </div>
-          )}
-          {saveSuccess && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-              ✅ Đã lưu thành công! (Chỉ tên và email được lưu vào server. Location và Bio được lưu tạm trên trình duyệt)
-            </div>
-          )}
-          <div className="mt-8 space-y-8">
-            <ProfileDetails
-              userProfile={userProfile}
-              setUserProfile={handleProfileChange}
-            />
-            <StudyPreferences
-              userProfile={userProfile}
-              setUserProfile={handleProfileChange}
-            />
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={handleSave}
-                disabled={isUpdating}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </button>
-            </div>
-          </div>
+          </form>
         </div>
       </main>
     </div>

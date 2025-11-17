@@ -1,7 +1,6 @@
-
-import React from 'react';
-
-import { SearchIcon, BellIcon } from './icons/Icons';
+import React from "react";
+import { Input, Button } from "@heroui/react";
+import { SearchIcon, BellIcon } from "./icons/Icons";
 
 const ProfileHeader: React.FC = () => {
   return (
@@ -10,18 +9,26 @@ const ProfileHeader: React.FC = () => {
         <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
         <p className="text-slate-500 mt-1">Manage your account and preferences</p>
       </div>
+
       <div className="flex items-center space-x-4 mt-4 md:mt-0">
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search settings..."
-            className="pl-10 pr-4 py-2 w-full md:w-auto bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-        </div>
-        <button className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition">
-          <BellIcon />
-        </button>
+        {/* Search Input - HeroUI */}
+        <Input
+          placeholder="Search settings..."
+          startContent={<SearchIcon className="w-5 h-5 text-slate-400" />}
+          className="w-full md:w-64"
+          radius="lg"
+          size="md"
+        />
+
+        {/* Notification Button - HeroUI */}
+        <Button
+          isIconOnly
+          variant="light"
+          radius="full"
+          className="text-slate-500 hover:text-slate-800"
+        >
+          <BellIcon className="w-6 h-6" />
+        </Button>
       </div>
     </header>
   );
