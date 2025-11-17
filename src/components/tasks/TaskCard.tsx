@@ -148,7 +148,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
                   : 'bg-[#f3f3f5] border-[rgba(0,0,0,0.1)]',
               }}
             />
-            <div className='flex-1 min-w-0'>
+            <div
+              className='flex-1 min-w-0'
+              onClick={() => setIsEditModalOpen(true)}
+            >
               <h3
                 className={`text-base font-normal text-[#101828] mb-2 ${
                   task.completed ? 'line-through' : ''
