@@ -20,10 +20,9 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   const filters: { key: TaskFilter; label: string }[] = [
     { key: 'all', label: 'All Tasks' },
     { key: 'priority', label: 'Priority' },
-    { key: 'course', label: 'Course' },
   ];
 
-  const sortableFilters: TaskFilter[] = ['priority', 'course'];
+  const sortableFilters: TaskFilter[] = ['priority'];
 
   const getSortIcon = (filterKey: TaskFilter) => {
     if (activeFilter !== filterKey || !sortableFilters.includes(filterKey)) {

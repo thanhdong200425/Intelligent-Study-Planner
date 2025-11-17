@@ -54,17 +54,6 @@ const TaskList: React.FC<TaskListProps> = ({
         });
     }
 
-    if (activeFilter === 'course') {
-      return tasks
-        .filter(task => !!task.courseId)
-        .sort((a, b) => {
-          const courseA = a.courseId ?? 0;
-          const courseB = b.courseId ?? 0;
-          const comparison = courseA - courseB;
-          return sortOrder === 'asc' ? comparison : -comparison;
-        });
-    }
-
     return tasks;
   }, [tasks, activeFilter, sortOrder]);
 
