@@ -1,9 +1,7 @@
 import SidebarNav from '@/components/layout/SidebarNav';
-import { TaskStatsCards } from '@/components/tasks/TaskStatsCards';
-import { TaskFilters } from '@/components/tasks/TaskFilters';
-import { TaskModal, HeaderBar, TaskList } from '@/components';
+import { TaskModal, HeaderBar, TaskWrapper } from '@/components';
 
-export default async function TasksPage() {
+export default function TasksPage() {
   return (
     <div className='flex h-screen bg-gray-50 text-gray-800 font-sans'>
       <SidebarNav />
@@ -16,14 +14,7 @@ export default async function TasksPage() {
         {/* Main Content */}
         <main className='flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-8'>
           <div className='max-w-7xl mx-auto space-y-6'>
-            {/* Statistics Cards */}
-            <TaskStatsCards />
-
-            {/* Filters */}
-            <TaskFilters activeFilter={'all'} />
-
-            {/* Task List */}
-            <TaskList />
+            <TaskWrapper />
           </div>
         </main>
       </div>

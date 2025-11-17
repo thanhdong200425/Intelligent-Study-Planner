@@ -2,24 +2,40 @@
 
 import React from 'react';
 import { Button } from '@heroui/react';
-import { Filter } from 'lucide-react';
+import { Filter, ArrowUp, ArrowDown } from 'lucide-react';
 
 export type TaskFilter = 'all' | 'priority' | 'course';
 
 interface TaskFiltersProps {
   activeFilter: TaskFilter;
   onFilterChange?: (filter: TaskFilter) => void;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
   activeFilter,
-  onFilterChange,
+  onFilterChange = () => {},
+  sortOrder = 'desc',
 }) => {
   const filters: { key: TaskFilter; label: string }[] = [
     { key: 'all', label: 'All Tasks' },
     { key: 'priority', label: 'Priority' },
     { key: 'course', label: 'Course' },
   ];
+
+  const sortableFilters: TaskFilter[] = ['priority', 'course'];
+
+  const getSortIcon = (filterKey: TaskFilter) => {
+    if (activeFilter !== filterKey || !sortableFilters.includes(filterKey)) {
+      return null;
+    }
+
+    return sortOrder === 'asc' ? (
+      <ArrowUp className='w-3.5 h-3.5' />
+    ) : (
+      <ArrowDown className='w-3.5 h-3.5' />
+    );
+  };
 
   return (
     <div className='bg-white border-[0.8px] border-[rgba(0,0,0,0.1)] rounded-[14px] p-4'>
@@ -42,7 +58,10 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
               }
               onPress={() => onFilterChange(filter.key)}
             >
-              {filter.label}
+              <span className='flex items-center gap-1'>
+                {filter.label}
+                {getSortIcon(filter.key)}
+              </span>
             </Button>
           ))}
         </div>
