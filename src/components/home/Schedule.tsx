@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 import AddTaskModal from './AddTaskModal';
 
@@ -12,8 +13,8 @@ const days = [
 
 // Sample tasks for the day
 const initialTasks = [
-    { title: 'UI Motion', startTime: '09:00', endTime: '10:00' },
-    { title: 'Learn English', startTime: '11:00', endTime: '12:00' },
+  { title: 'UI Motion', startTime: '09:00', endTime: '10:00' },
+  { title: 'Learn English', startTime: '11:00', endTime: '12:00' },
 ];
 
 const Schedule: React.FC = () => {
@@ -24,10 +25,10 @@ const Schedule: React.FC = () => {
   const handleAddTask = (task: { title: string; startTime: string; endTime: string }) => {
     setTasks(prevTasks => [...prevTasks, task].sort((a, b) => a.startTime.localeCompare(b.startTime)));
   };
-  
+
   // Schedule display settings
   const startHour = 9;
-  const endHour = 14; 
+  const endHour = 14;
   const hourHeight = 60; // pixels per hour
 
   // Generate hours from start to end inclusive for a complete grid
@@ -46,11 +47,10 @@ const Schedule: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-800">September</h3>
           <button
             onClick={() => setIsModalOpen(true)}
-            className={`text-sm font-semibold transition-all duration-200 px-3 py-1 rounded-lg ${
-              isModalOpen
+            className={`text-sm font-semibold transition-all duration-200 px-3 py-1 rounded-lg ${isModalOpen
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                 : 'text-indigo-600 hover:bg-indigo-100'
-            }`}
+              }`}
           >
             + Add Task
           </button>
@@ -60,9 +60,8 @@ const Schedule: React.FC = () => {
             <div
               key={num}
               onClick={() => setSelectedDay(num)}
-              className={`text-center cursor-pointer p-2 rounded-lg ${
-                selectedDay === num ? 'bg-black text-white' : 'hover:bg-gray-100'
-              }`}
+              className={`text-center cursor-pointer p-2 rounded-lg ${selectedDay === num ? 'bg-black text-white' : 'hover:bg-gray-100'
+                }`}
             >
               <p className="font-bold">{num}</p>
               <p className="text-xs uppercase text-gray-500">{day}</p>
@@ -117,7 +116,7 @@ const Schedule: React.FC = () => {
           })}
         </div>
       </div>
-      <AddTaskModal 
+      <AddTaskModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleAddTask}

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import BrandLogo from '@/components/auth/BrandLogo';
 import { OtpForm } from '@/components/auth';
 import { useAppSelector } from '@/store/hooks';
@@ -10,10 +10,11 @@ export default function VerifyCodePage() {
   const tempEmail = useAppSelector(state => state.app.temporaryEmail);
   const router = useRouter();
 
-  if (!tempEmail) {
-    router.push('');
-    return;
-  }
+  useEffect(() => {
+    if (!tempEmail) {
+      router.push('/');
+    }
+  }, [tempEmail, router]);
 
   return (
     <div className='min-h-screen w-full bg-slate-50 flex items-center justify-center p-6'>
@@ -30,7 +31,7 @@ export default function VerifyCodePage() {
           </p>
         </div>
 
-        <OtpForm email={tempEmail} />
+        <OtpForm email={tempEmail ?? ""} />
       </div>
     </div>
   );

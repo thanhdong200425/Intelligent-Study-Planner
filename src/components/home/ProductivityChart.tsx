@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 
@@ -32,26 +34,26 @@ const ProductivityChart: React.FC = () => {
         <ResponsiveContainer>
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <XAxis type="number" hide domain={[0, 100]} />
-            <YAxis 
-              type="category" 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
+            <YAxis
+              type="category"
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
               width={40}
               tick={renderYAxisTick}
             />
             <Bar dataKey="value" barSize={20} background={{ fill: '#F3F4F6', radius: 8 }}>
-                {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.value > 0 ? entry.color : 'transparent'} radius={8} />
-                ))}
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.value > 0 ? entry.color : 'transparent'} radius={8} />
+              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="flex justify-center items-center gap-4 mt-4 text-sm text-gray-600">
-          <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-2"></span>Design</div>
-          <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 mr-2"></span>Animation</div>
-          <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400 mr-2"></span>Research</div>
+        <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-2"></span>Design</div>
+        <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 mr-2"></span>Animation</div>
+        <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400 mr-2"></span>Research</div>
       </div>
     </div>
   );

@@ -16,17 +16,19 @@ export interface Deadline {
   completed?: boolean;
 }
 
-export type TaskType = 'reading' | 'coding' | 'writing' | 'pset';
+export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
 export interface Task {
-  id: string;
+  id?: number;
   title: string;
-  courseId: string;
+  courseId?: number;
   type: TaskType;
   estimateMinutes: number;
   deadlineId?: string;
   completed?: boolean;
   actualMinutes?: number;
+  priority?: TaskPriority;
 }
 
 export interface AvailabilityWindow {
@@ -90,15 +92,12 @@ export interface TimerSession {
 }
 
 export interface UserProfile {
-  fullName: string;
+  avatar: string | null;
+  name: string;
   email: string;
   location: string;
   bio: string;
   focusDuration: number;
   breakDuration: number;
   dailyGoal: number;
-  joinedDate: string;
-  updatedAt?: string;
-  createdAt?: string;
-
 }

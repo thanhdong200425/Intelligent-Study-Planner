@@ -1,71 +1,100 @@
-import React from "react";
-import { Controller } from "react-hook-form";
-import { Slider } from "@heroui/react";
+'use client';
+
+import React from 'react';
+import { Input, Switch } from '@heroui/react';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UserProfile } from '../../types';
 
 interface StudyPreferencesProps {
-  control: any;
+  register: UseFormRegister<UserProfile>;
+  soundEffects: boolean;
+  onSoundEffectsChange: (value: boolean) => void;
 }
 
-const StudyPreferences: React.FC<StudyPreferencesProps> = ({ control }) => {
+const StudyPreferences: React.FC<StudyPreferencesProps> = ({
+  register,
+  soundEffects,
+  onSoundEffectsChange,
+}) => {
   return (
-    <div>
-      <h3 className="font-semibold text-lg text-slate-900 mb-4">
-        Thói quen học tập
+    <div className='bg-white border border-gray-200 rounded-[14px] p-6'>
+      <h3 className='text-base font-normal text-gray-900 mb-2'>
+        Study Preferences
       </h3>
+      <p className='text-sm text-gray-600 mb-6'>
+        Customize your study sessions and learning habits
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Focus Duration */}
-        <Controller
-          name="focusDuration"
-          control={control}
-          render={({ field }) => (
-            <Slider
-              label="Thời gian tập trung (phút)"
-              value={field.value}
-              minValue={5}
-              maxValue={60}
-              step={5}
-              onChange={(val) => field.onChange(val)} // val là number
-              className="w-full"
+      <div className='space-y-6'>
+        {/* Three Inputs in a Row */}
+        <div className='grid grid-cols-3 gap-4'>
+          <div>
+            <label className='block text-sm font-medium text-gray-900 mb-2'>
+              Focus Duration (min)
+            </label>
+            <Input
+              {...register('focusDuration')}
+              type='number'
+              variant='flat'
+              radius='sm'
+              classNames={{
+                input: 'bg-gray-100',
+                inputWrapper: 'bg-gray-100 border-0',
+              }}
             />
-          )}
-        />
-
-        {/* Break Duration */}
-        <Controller
-          name="breakDuration"
-          control={control}
-          render={({ field }) => (
-            <Slider
-              label="Thời gian nghỉ ngơi (phút)"
-              value={field.value}
-              minValue={1}
-              maxValue={20}
-              step={1}
-              onChange={(val) => field.onChange(val)}
-              className="w-full"
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-900 mb-2'>
+              Break Duration (min)
+            </label>
+            <Input
+              {...register('breakDuration')}
+              type='number'
+              variant='flat'
+              radius='sm'
+              classNames={{
+                input: 'bg-gray-100',
+                inputWrapper: 'bg-gray-100 border-0',
+              }}
             />
-          )}
-        />
-
-        {/* Daily Goal */}
-        <Controller
-          name="dailyGoal"
-          control={control}
-          render={({ field }) => (
-            <Slider
-              label="Số phiên học mỗi ngày"
-              value={field.value}
-              minValue={1}
-              maxValue={10}
-              step={1}
-              onChange={(val) => field.onChange(val)}
-              className="w-full"
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-900 mb-2'>
+              Daily Goal (hours)
+            </label>
+            <Input
+              {...register('dailyGoal')}
+              type='number'
+              variant='flat'
+              radius='sm'
+              classNames={{
+                input: 'bg-gray-100',
+                inputWrapper: 'bg-gray-100 border-0',
+              }}
             />
-          )}
-        />
+          </div>
+        </div>
 
+        {/* Divider */}
+        <div className='h-px bg-gray-200' />
+
+        {/* Sound Effects Toggle */}
+        <div className='flex items-center justify-between'>
+          <div>
+            <p className='text-sm font-normal text-gray-900'>Sound Effects</p>
+            <p className='text-sm text-gray-600'>
+              Play sounds for timer and notifications
+            </p>
+          </div>
+          <Switch
+            isSelected={soundEffects}
+            onValueChange={onSoundEffectsChange}
+            size='sm'
+            classNames={{
+              wrapper: 'bg-gray-900',
+            }}
+          />
+        </div>
       </div>
     </div>
   );

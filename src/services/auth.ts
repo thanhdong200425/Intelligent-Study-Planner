@@ -1,5 +1,4 @@
 import apiClient from '@/lib/api';
-import { verify } from 'node:crypto';
 
 export interface AuthCredentials {
   email: string;
@@ -7,8 +6,7 @@ export interface AuthCredentials {
 }
 
 export interface LoginResponse {
-  sessionId: number;
-  absoluteSeconds: number;
+  accessToken: string;
   user: {
     id: number;
     email: string;
@@ -23,6 +21,7 @@ const endpoint = {
   verifyOtp: '/auth/register/verify-otp',
   login: '/auth/login',
   logout: '/auth/logout',
+  refresh: '/auth/refresh',
 };
 
 export const checkAuthMode = async (
@@ -50,7 +49,7 @@ export const register = async (data: AuthCredentials) => {
 export const verifyRegisterOtp = async (data: {
   email: string;
   otp: number;
-}) => {
+}): Promise<LoginResponse> => {
   try {
     const response = await apiClient.post(endpoint.verifyOtp, data);
     return response.data;
@@ -72,10 +71,22 @@ export const login = async (data: AuthCredentials): Promise<LoginResponse> => {
 
 export const logout = async () => {
   try {
-    const response = await apiClient.delete(endpoint.logout);
+    const response = await apiClient.post(endpoint.logout);
     return response.data;
   } catch (err: any) {
     console.log('Error: ', err);
     throw new Error(err.response?.data?.message || 'Logout failed');
+  }
+};
+
+export const refreshAccessToken = async (): Promise<{
+  accessToken: string;
+}> => {
+  try {
+    const response = await apiClient.post(endpoint.refresh);
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Token refresh failed');
   }
 };

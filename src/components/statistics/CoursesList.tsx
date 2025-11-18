@@ -2,7 +2,12 @@
 
 import React, { useState, useCallback } from 'react';
 import { Course } from '@/types';
-import { CourseApiService } from '@/services/courseApi';
+import {
+  getCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+} from '@/services/course';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Edit2, Plus, Save, X, Loader2 } from 'lucide-react';
 import {
@@ -32,12 +37,12 @@ export const CoursesList: React.FC = () => {
     error,
   } = useQuery({
     queryKey: ['courses'],
-    queryFn: CourseApiService.getCourses,
+    queryFn: getCourses,
   });
 
   // Create course mutation
   const createMutation = useMutation({
-    mutationFn: CourseApiService.createCourse,
+    mutationFn: createCourse,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       setEditForm({ name: '', color: '#3b82f6' });
@@ -56,7 +61,7 @@ export const CoursesList: React.FC = () => {
     }: {
       id: number;
       data: { name?: string; color?: string };
-    }) => CourseApiService.updateCourse(id, data),
+    }) => updateCourse(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       setEditingId(null);
@@ -70,7 +75,7 @@ export const CoursesList: React.FC = () => {
 
   // Delete course mutation
   const deleteMutation = useMutation({
-    mutationFn: CourseApiService.deleteCourse,
+    mutationFn: deleteCourse,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
     },

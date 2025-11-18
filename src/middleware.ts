@@ -16,7 +16,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  const sessionCookie = request.cookies.get('sid');
+  const cookieName = process.env.SESSION_COOKIE_NAME || 'jid';
+  const sessionCookie = request.cookies.get(cookieName);
 
   if (isPublicRoute || isPublicApiRoute) {
     // Check if session is exist or not, it session exist, redirect to home page

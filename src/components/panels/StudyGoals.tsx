@@ -28,7 +28,7 @@ function GoalRow({
     );
 }
 
-export function StudyGoals() {
+export default function StudyGoals() {
     return (
         <Card className="rounded-2xl">
             <CardHeader className="px-6 pt-6 pb-0 flex items-center justify-between">

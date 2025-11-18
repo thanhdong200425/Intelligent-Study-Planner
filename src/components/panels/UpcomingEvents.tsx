@@ -3,7 +3,7 @@ import { Card, CardHeader, CardBody, Button, Chip } from '@heroui/react';
 import { CalendarDays, Clock3, ExternalLink } from 'lucide-react';
 import { BaseButton } from '../buttons';
 
-export function UpcomingEvents() {
+export default function UpcomingEvents() {
     return (
         <Card className="rounded-2xl">
             <CardHeader className="flex items-center justify-between px-6 pt-6 pb-0">

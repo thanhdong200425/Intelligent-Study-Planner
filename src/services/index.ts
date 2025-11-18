@@ -1,2 +1,4 @@
 export * from './auth';
-export * from './courseApi';
+export * from './course';
+export * from './task';
+export * from './customViews';

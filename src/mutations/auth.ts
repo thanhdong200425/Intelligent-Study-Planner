@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@heroui/react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch } from '@/store/hooks';
 import { setTemporaryEmail } from '@/store/slices/appSlice';
 import {
   login,
@@ -32,6 +32,7 @@ export const useLoginMutation = () => {
       dispatch(
         setAuthData({
           user: data.user,
+          accessToken: data.accessToken,
         })
       );
 
@@ -79,7 +80,7 @@ export const useVerifyRegisterMutation = () => {
   return useMutation({
     mutationFn: (data: { email: string; otp: number }) =>
       verifyRegisterOtp(data),
-    onSuccess: data => {
+    onSuccess: (data: LoginResponse) => {
       addToast({
         title: 'Success',
         description: 'Verify successfully.',
@@ -88,10 +89,10 @@ export const useVerifyRegisterMutation = () => {
       dispatch(
         setAuthData({
           user: data.user,
+          accessToken: data.accessToken,
         })
       );
       router.push('/');
-      dispatch(setTemporaryEmail(null));
     },
     onError: (error: Error) => {
       addToast({

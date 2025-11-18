@@ -1,126 +1,219 @@
-import React from "react";
-import { Controller } from "react-hook-form";
-import { Input, Textarea, Avatar, Button } from "@heroui/react";
-import { CameraIcon, PlannerIcon, LocationIcon, EditIcon } from "./icons/Icons";
-import type { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
-import type { UserProfile } from "../../types";
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import { Input, Textarea, Button, Avatar, Tooltip } from '@heroui/react';
+import {
+  CameraIcon,
+  PlannerIcon,
+  LocationIcon,
+  EditIcon,
+} from '@/components/icons/Icons';
+import { BaseButton } from '@/components/buttons';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UserProfile } from '../../types';
+import { CheckIcon, InfoIcon } from 'lucide-react';
+import { getMonth, getYear } from 'date-fns';
+import { monthNames } from '@/utils';
 
 interface ProfileDetailsProps {
   register: UseFormRegister<UserProfile>;
-  control: Control<UserProfile>;
-  setValue: UseFormSetValue<UserProfile>;
+  name: string;
+  email: string;
+  location: string;
+  joinedDate: string;
+  onSave?: () => void;
 }
 
 const ProfileDetails: React.FC<ProfileDetailsProps> = ({
   register,
-  control,
-  setValue
+  name,
+  email,
+  location,
+  joinedDate,
+  onSave,
 }) => {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const joinedMonthYear = useMemo(() => {
+    const joinedMonth = getMonth(joinedDate) + 1;
+    const joinedYear = getYear(joinedDate);
+
+    return `${monthNames[joinedMonth]} ${joinedYear}`;
+  }, [joinedDate]);
+
+  // Center details next to avatar when name and location are absent
+  const isMinimalInfo = !name && !location;
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200">
-      <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6">
-        
-        {/* Avatar */}
-        <div className="relative">
-          <Avatar
-            radius="full"
-            size="lg"
-            className="w-24 h-24 text-2xl"
-            color="primary"
-          />
-          <Button
-            isIconOnly
-            radius="full"
-            size="sm"
-            variant="solid"
-            className="absolute bottom-0 right-0 bg-slate-800 text-white hover:bg-slate-700"
+    <div className='bg-white border border-gray-200 rounded-[14px] p-8'>
+      {/* Profile Header with Avatar and Edit Button */}
+      <div className='flex items-start justify-between mb-12'>
+        <div
+          className={`flex ${isMinimalInfo ? 'items-center' : 'items-start'} gap-6`}
+        >
+          {/* Avatar with Camera Button */}
+          <div className='relative'>
+            <Avatar
+              name={name}
+              size='lg'
+              radius='full'
+              className='w-24 h-24 text-2xl font-medium'
+              classNames={{
+                base: 'bg-linear-to-br from-blue-500 to-purple-600',
+                name: 'text-white',
+              }}
+            />
+            {isEditing ? (
+              <Button
+                isIconOnly
+                size='sm'
+                className='absolute bottom-0 right-0 bg-gray-900 min-w-8 h-8 rounded-full'
+              >
+                <CameraIcon className='w-4 h-4 text-white' />
+              </Button>
+            ) : null}
+          </div>
+
+          {/* User Info */}
+          <div
+            className={`flex flex-col gap-1 justify-center ${isMinimalInfo ? 'items-center text-center' : ''}`}
           >
-            <CameraIcon className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Basic Info */}
-        <div className="flex-1 text-center sm:text-left mt-4 sm:mt-0">
-          <Controller
-            name="fullName"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                label="Họ và tên"
-                className="mb-2"
-                size="sm"
-              />
+            {name && (
+              <h2 className='text-base font-normal text-gray-900'>{name}</h2>
             )}
-          />
-          <Controller
-            name="email"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                type="email"
-                label="Email"
-                className="mb-2"
-                size="sm"
-              />
-            )}
-          />
-
-          <div className="flex items-center justify-center sm:justify-start space-x-4 mt-2 text-sm text-slate-500">
-            <span className="flex items-center">
-              <PlannerIcon className="w-4 h-4 mr-1.5" />
-              {/** joinedDate chỉ đọc, user không sửa */}
-              <Controller
-                name="joinedDate"
-                control={control}
-                render={({ field }) => <span>{field.value}</span>}
-              />
-            </span>
-
-            <span className="flex items-center">
-              <LocationIcon className="w-4 h-4 mr-1.5" />
-              <Controller
-                name="location"
-                control={control}
-                render={({ field }) => <span>{field.value}</span>}
-              />
-            </span>
+            <h3 className='text-sm text-gray-600'>
+              {email || 'email@example.com'}
+            </h3>
+            <div className='flex items-center gap-4 mt-1'>
+              <span className='flex items-center text-sm text-gray-600'>
+                <PlannerIcon className='w-4 h-4 mr-1' />
+                {'Joined ' + joinedMonthYear}
+              </span>
+              {location && (
+                <span className='flex items-center text-sm text-gray-600'>
+                  <LocationIcon className='w-4 h-4 mr-1' />
+                  {location}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        <button className="mt-4 sm:mt-0 flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition">
-          <EditIcon className="w-4 h-4" />
-          <span>Chỉnh sửa</span>
-        </button>
+        {/* Edit Profile Button */}
+        <BaseButton
+          variant='bordered'
+          className='w-auto! bg-transparent! text-gray-900! border-gray-200 hover:bg-gray-50! flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition'
+          content={isEditing ? 'Save' : 'Edit Profile'}
+          startContent={
+            isEditing ? (
+              <CheckIcon className='w-4 h-4' />
+            ) : (
+              <EditIcon className='w-4 h-4' />
+            )
+          }
+          onPress={() => {
+            if (isEditing && onSave) {
+              onSave();
+            }
+            setIsEditing(!isEditing);
+          }}
+        />
       </div>
 
-      {/* More Editable Fields */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Controller
-          name="location"
-          control={control}
-          render={({ field }) => (
-            <Input {...field} label="Địa chỉ" size="sm" />
-          )}
-        />
+      {/* Divider */}
+      <div className='h-px bg-gray-200 mb-12' />
 
-        <div className="md:col-span-2">
-          <Controller
-            name="bio"
-            control={control}
-            render={({ field }) => (
-              <Textarea
-                {...field}
-                label="Giới thiệu bản thân"
-                className="h-28"
-              />
-            )}
+      {/* Editable Fields */}
+      <div className='space-y-4'>
+        {/* Full Name and Email Row */}
+        <div className='grid grid-cols-2 gap-4'>
+          <div>
+            <label className='block text-sm font-medium text-gray-900 mb-2'>
+              Full Name
+            </label>
+            <Input
+              {...register('name')}
+              disabled={!isEditing}
+              variant='flat'
+              radius='sm'
+              classNames={{
+                input: isEditing ? 'bg-white' : 'bg-gray-100',
+                inputWrapper: isEditing
+                  ? 'bg-white border-0'
+                  : 'bg-gray-100 border-0',
+              }}
+            />
+          </div>
+          <div>
+            <div className='flex  gap-2 items-center'>
+              <label className='block text-sm font-medium text-gray-900 mb-2'>
+                Email Address
+              </label>
+              <div>
+                <Tooltip content='Please contact us if you want to change your email address'>
+                  <InfoIcon className='w-4 h-4 text-gray-600' />
+                </Tooltip>
+              </div>
+            </div>
+            <Input
+              {...register('email')}
+              disabled={true}
+              type='email'
+              variant='flat'
+              radius='sm'
+              classNames={{
+                input: 'bg-gray-100',
+                inputWrapper: 'bg-gray-100 border-0',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className='block text-sm font-medium text-gray-900 mb-2'>
+            Location
+          </label>
+          <Input
+            {...register('location')}
+            variant='flat'
+            disabled={!isEditing}
+            radius='sm'
+            classNames={{
+              input: isEditing ? 'bg-white' : 'bg-gray-100',
+              inputWrapper: isEditing
+                ? 'bg-white border-0'
+                : 'bg-gray-100 border-0',
+            }}
           />
+        </div>
 
-          <p className="mt-1 text-xs text-amber-600">
-            ⚠️ Thông tin này chỉ lưu tạm thời trên trình duyệt và chưa được đồng bộ với server.
-          </p>
+        {/* Bio */}
+        <div>
+          <label className='block text-sm font-medium text-gray-900 mb-2'>
+            Bio
+          </label>
+          <Textarea
+            {...register('bio')}
+            variant='bordered'
+            radius='md'
+            disabled={!isEditing}
+            minRows={3}
+            classNames={{
+              input: isEditing ? 'bg-white' : 'bg-gray-100',
+              inputWrapper: isEditing
+                ? 'border-gray-200 bg-white'
+                : 'border-gray-200 bg-gray-100',
+            }}
+          />
         </div>
       </div>
     </div>
