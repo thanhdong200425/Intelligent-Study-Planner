@@ -2,7 +2,12 @@
 
 import React, { useState, useCallback } from 'react';
 import { Course } from '@/types';
-import { getCourses, createCourse, updateCourse, deleteCourse } from '@/services/courseApi';
+import {
+  getCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+} from '@/services/course';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Edit2, Plus, Save, X, Loader2 } from 'lucide-react';
 import {

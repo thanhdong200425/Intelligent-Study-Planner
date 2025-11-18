@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { SidebarNav, HeaderBar } from '@/components';
 import { AddCourseForm, CourseCard } from '@/components/courses';
 import { useQuery } from '@tanstack/react-query';
-import { getCourses } from '@/services/courseApi';
+import { getCourses } from '@/services/course';
 import { BookOpen } from 'lucide-react';
 
 export default function CoursesPage() {

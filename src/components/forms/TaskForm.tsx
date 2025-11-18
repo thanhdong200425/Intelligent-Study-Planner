@@ -5,7 +5,7 @@ import { Task, TaskType, TaskPriority } from '@/types';
 import { Controller, useForm } from 'react-hook-form';
 import { Input, Select, SelectItem, Button, addToast } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCourses } from '@/services/courseApi';
+import { getCourses } from '@/services/course';
 import apiClient from '@/lib/api';
 import { X } from 'lucide-react';
 import { z } from 'zod';

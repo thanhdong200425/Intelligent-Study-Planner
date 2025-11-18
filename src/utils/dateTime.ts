@@ -21,3 +21,18 @@ export const fromSeconds = (totalSeconds: number) => {
   const seconds = totalSeconds % 60;
   return { hours, minutes, seconds };
 };
+
+export const monthNames = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];

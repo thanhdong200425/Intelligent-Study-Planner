@@ -1,159 +1,128 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import SidebarNav from '@/components/layout/SidebarNav';
-import ProfileHeader from '../../components/home/ProfileHeader';
-import ProfileDetails from '../../components/home/ProfileDetails';
-import StudyPreferences from '../../components/home/StudyPreference';
+import HeaderBar from '@/components/layout/HeaderBar';
+import {
+  ProfileDetails,
+  StudyPreferences,
+  NotificationSettings,
+  ProfileStats,
+} from '@/components/home';
 
 import { useForm } from 'react-hook-form';
-import { addToast, Button } from '@heroui/react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import UserApiService, { type UpdateUserRequest } from '@/services/user';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile, type UpdateUserRequest } from '@/services/user';
+import { useUpdateProfileMutation } from '@/mutations/user';
 import type { UserProfile } from '../../types';
+import { da } from 'date-fns/locale';
 
-const App: React.FC = () => {
-  /** react-hook-form **/
-  const { register, control, setValue, handleSubmit, reset, watch } =
-    useForm<UserProfile>({
-      defaultValues: {
-        fullName: '',
-        email: '',
-        location: '',
-        bio: '',
-        focusDuration: 25,
-        breakDuration: 5,
-        dailyGoal: 4,
-        joinedDate: '',
-        createdAt: '',
-        updatedAt: '',
-      },
-    });
-
-  /**Fetch user profile**/
-  const profileQuery = useQuery({
+const ProfilePage: React.FC = () => {
+  const { data, isLoading, error } = useQuery({
     queryKey: ['userProfile'],
-    queryFn: UserApiService.getProfile,
+    queryFn: getProfile,
   });
 
-  /**Đồng bộ dữ liệu API vào form khi fetch thành công**/
+  const { register, reset, getValues, setValue } = useForm<UserProfile>({
+    defaultValues: {
+      avatar: data?.avatar || null,
+      name: data?.name || '',
+      email: data?.email || '',
+      location: '',
+      bio: '',
+      focusDuration: 25,
+      breakDuration: 5,
+      dailyGoal: 4,
+    },
+  });
+
+  const [soundEffects, setSoundEffects] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [weeklyReport, setWeeklyReport] = useState(true);
+
   useEffect(() => {
-    if (!profileQuery.data) return;
+    if (!data) return;
 
-    const savedLocation =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('user_profile_location') || ''
-        : '';
-
-    const savedBio =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('user_profile_bio') || ''
-        : '';
-
-    const d = profileQuery.data;
+    const savedLocation = localStorage.getItem('user_profile_location') || '';
+    const savedBio = localStorage.getItem('user_profile_bio') || '';
 
     reset({
-      fullName: d.fullName || '',
-      email: d.email || d.email || '',
+      avatar: data.avatar || null,
+      name: data.name || '',
+      email: data.email || '',
       location: savedLocation,
       bio: savedBio,
-      focusDuration: d.focusDuration ?? 25,
-      breakDuration: d.breakDuration ?? 5,
-      dailyGoal: d.dailyGoal ?? 4,
-      joinedDate: d.createdAt
-        ? `Tham gia ${new Date(d.createdAt).toLocaleDateString('vi-VN', {
-            month: 'short',
-            year: 'numeric',
-          })}`
-        : '',
-      createdAt: d.createdAt ?? '',
-      updatedAt: d.updatedAt ?? '',
     });
-  }, [profileQuery.data, reset]);
+    // eslint-disable-next-line
+  }, [data]);
 
-  /** Mutation cập nhật user (React Query)**/
-  const updateMutation = useMutation({
-    mutationKey: ['updateUser'],
-    mutationFn: async (payload: UpdateUserRequest) =>
-      UserApiService.updateProfile(payload),
+  const { mutate: updateProfile } = useUpdateProfileMutation({});
 
-    onSuccess: () => {
-      addToast({
-        title: 'Information saved successfully!',
-        color: 'success',
-        timeout: 2000,
-      });
-    },
-
-    onError: () => {
-      addToast({
-        title: 'Update failed. Please try again.',
-        color: 'danger',
-      });
-    },
-  });
-
-  /**Submit cập nhật thông tin**/
   const onSubmit = (values: UserProfile) => {
     const updateData: UpdateUserRequest = {
-      fullName: values.fullName,
+      name: values.name,
       email: values.email,
     };
 
-    updateMutation.mutate(updateData);
+    updateProfile(updateData);
   };
 
-  /**Lưu location + bio tạm vào localStorage**/
-  const watchLocation = watch('location');
-  const watchBio = watch('bio');
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  useEffect(() => {
-    if (watchLocation !== undefined) {
-      localStorage.setItem('user_profile_location', watchLocation);
-    }
-  }, [watchLocation]);
+  if (error) {
+    return <div>Error loading profile.</div>;
+  }
 
-  useEffect(() => {
-    if (watchBio !== undefined) {
-      localStorage.setItem('user_profile_bio', watchBio);
-    }
-  }, [watchBio]);
+  const locationValue = getValues('location');
+  const bioValue = getValues('bio');
+  const nameValue = getValues('name');
+  const emailValue = getValues('email');
 
   return (
-    <div className='flex min-h-screen bg-slate-50 font-sans text-slate-800'>
+    <div className='flex min-h-screen bg-gray-50'>
       <SidebarNav />
 
-      <main className='flex-1 p-4 sm:p-6 lg:p-8'>
-        <div className='mx-auto max-w-4xl'>
-          <ProfileHeader />
+      <main className='flex-1 overflow-y-auto'>
+        <HeaderBar
+          title='Profile'
+          description='Manage your account and preferences'
+          isShowSearchBar={false}
+          isShowNotification={true}
+        />
 
-          {/* Form cập nhật */}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className='mt-8 space-y-8'>
-              <ProfileDetails
-                register={register}
-                control={control}
-                setValue={setValue}
-              />
+        <div className='px-8 py-6 max-w-4xl mx-auto space-y-6'>
+          <ProfileDetails
+            register={register}
+            name={nameValue}
+            email={emailValue}
+            location={locationValue}
+            joinedDate={data?.createdAt || ''}
+          />
 
-              <StudyPreferences control={control} />
+          <StudyPreferences
+            register={register}
+            soundEffects={soundEffects}
+            onSoundEffectsChange={setSoundEffects}
+          />
 
-              <div className='flex justify-end gap-4'>
-                <Button
-                  color='primary'
-                  type='submit'
-                  isLoading={updateMutation.isPending}
-                >
-                  {updateMutation.isPending ? 'Saving...' : 'Save changes'}
-                </Button>
-              </div>
-            </div>
-          </form>
+          <NotificationSettings
+            emailNotifications={emailNotifications}
+            pushNotifications={pushNotifications}
+            weeklyReport={weeklyReport}
+            onEmailChange={setEmailNotifications}
+            onPushChange={setPushNotifications}
+            onWeeklyReportChange={setWeeklyReport}
+          />
+
+          <ProfileStats />
         </div>
       </main>
     </div>
   );
 };
 
-export default App;
+export default ProfilePage;

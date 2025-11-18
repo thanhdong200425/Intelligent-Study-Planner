@@ -92,15 +92,12 @@ export interface TimerSession {
 }
 
 export interface UserProfile {
-  fullName: string;
+  avatar: string | null;
+  name: string;
   email: string;
   location: string;
   bio: string;
   focusDuration: number;
   breakDuration: number;
   dailyGoal: number;
-  joinedDate: string;
-  updatedAt?: string;
-  createdAt?: string;
-
 }
