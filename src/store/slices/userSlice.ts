@@ -1,21 +1,22 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { UserProfile } from '@/types';
+import type { UpdateUserRequest } from '@/services/user';
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
+// FE UserProfile + extra fields
+export interface ExtendedUserProfile extends UserProfile {
+  emailAddress?: string;
+  createdAt?: string;
+  updatedAt?: string;
   avatar?: string;
-  role: string;
-  preferences: {
+  role?: string;
+  preferences?: {
     theme: 'light' | 'dark' | 'system';
     language: string;
   };
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface UserState {
-  profile: UserProfile | null;
+  profile: ExtendedUserProfile | null;
   isLoading: boolean;
   error: string | null;
   isUpdating: boolean;
@@ -28,85 +29,63 @@ const initialState: UserState = {
   isUpdating: false,
 };
 
-// Async thunk for fetching user profile
+/* ===========================================================
+    REMOVE ALL API LOGIC — asyncThunk now acts as local actions
+   =========================================================== */
+
+// Fake fetch (no API call)
 export const fetchUserProfile = createAsyncThunk(
   'user/fetchUserProfile',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      // This would typically make an API call to fetch user profile
-      // For now, we'll simulate it
-      const response = await fetch('/api/user/profile');
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-      return await response.json();
+      const state = getState() as any;
+      // Return local Redux state only
+      return state.user.profile;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch user profile');
+      return rejectWithValue('Failed to load user profile');
     }
   }
 );
 
-// Async thunk for updating user profile
+// Fake update (no API call)
 export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
-  async (profileData: Partial<UserProfile>, { rejectWithValue }) => {
+  async (profileData: UpdateUserRequest, { rejectWithValue, getState }) => {
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profileData),
-      });
+      const state = getState() as any;
+      const current = state.user.profile;
 
-      if (!response.ok) {
-        throw new Error('Failed to update user profile');
-      }
-
-      return await response.json();
+      return {
+        ...current,
+        ...profileData,
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update user profile');
+      return rejectWithValue('Failed to update user profile');
     }
   }
 );
 
-// Async thunk for updating user preferences
+// Update preferences locally
 export const updateUserPreferences = createAsyncThunk(
   'user/updateUserPreferences',
   async (
-    preferences: Partial<UserProfile['preferences']>,
+    preferences: Partial<ExtendedUserProfile['preferences']>,
     { rejectWithValue, getState }
   ) => {
     try {
       const state = getState() as any;
-      const currentProfile = state.user.profile;
+      const current = state.user.profile;
 
-      if (!currentProfile) {
+      if (!current) {
         throw new Error('No user profile found');
       }
 
-      const updatedPreferences = {
-        ...currentProfile.preferences,
+      return {
+        ...current.preferences,
         ...preferences,
       };
-
-      const response = await fetch('/api/user/preferences', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedPreferences),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user preferences');
-      }
-
-      return updatedPreferences;
     } catch (error: any) {
-      return rejectWithValue(
-        error.message || 'Failed to update user preferences'
-      );
+      return rejectWithValue('Failed to update user preferences');
     }
   }
 );
@@ -115,7 +94,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setProfile: (state, action: PayloadAction<UserProfile | null>) => {
+    setProfile: (state, action: PayloadAction<ExtendedUserProfile | null>) => {
       state.profile = action.payload;
     },
     clearUser: state => {
@@ -127,7 +106,7 @@ const userSlice = createSlice({
     },
     updateProfileLocally: (
       state,
-      action: PayloadAction<Partial<UserProfile>>
+      action: PayloadAction<Partial<ExtendedUserProfile>>
     ) => {
       if (state.profile) {
         state.profile = { ...state.profile, ...action.payload };
@@ -135,58 +114,45 @@ const userSlice = createSlice({
     },
   },
   extraReducers: builder => {
-    // Fetch user profile
+    // Fake fetch
     builder
       .addCase(fetchUserProfile.pending, state => {
         state.isLoading = true;
-        state.error = null;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
+        // Không thay đổi dữ liệu — chỉ giữ nguyên
         state.profile = action.payload;
-        state.error = null;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });
 
-    // Update user profile
+    // Fake update
     builder
       .addCase(updateUserProfile.pending, state => {
         state.isUpdating = true;
-        state.error = null;
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.isUpdating = false;
         state.profile = action.payload;
-        state.error = null;
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.isUpdating = false;
         state.error = action.payload as string;
       });
 
-    // Update user preferences
-    builder
-      .addCase(updateUserPreferences.pending, state => {
-        state.isUpdating = true;
-        state.error = null;
-      })
-      .addCase(updateUserPreferences.fulfilled, (state, action) => {
-        state.isUpdating = false;
-        if (state.profile) {
-          state.profile.preferences = action.payload;
-        }
-        state.error = null;
-      })
-      .addCase(updateUserPreferences.rejected, (state, action) => {
-        state.isUpdating = false;
-        state.error = action.payload as string;
-      });
+    // Update preferences locally
+    builder.addCase(updateUserPreferences.fulfilled, (state, action) => {
+      if (state.profile) {
+        state.profile.preferences = action.payload;
+      }
+    });
   },
 });
 
 export const { setProfile, clearUser, clearError, updateProfileLocally } =
   userSlice.actions;
+
 export default userSlice.reducer;
