@@ -121,31 +121,28 @@ const App: React.FC = () => {
   }, [watchBio]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
+    <div className='flex min-h-screen bg-slate-50 font-sans text-slate-800'>
       <SidebarNav />
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-4xl">
+      <main className='flex-1 p-4 sm:p-6 lg:p-8'>
+        <div className='mx-auto max-w-4xl'>
           <ProfileHeader />
 
           {/* Form cập nhật */}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="mt-8 space-y-8">
+            <div className='mt-8 space-y-8'>
               <ProfileDetails
                 register={register}
                 control={control}
                 setValue={setValue}
               />
 
-              <StudyPreferences
-                control={control}
-/>
+              <StudyPreferences control={control} />
 
-
-              <div className="flex justify-end gap-4">
+              <div className='flex justify-end gap-4'>
                 <Button
-                  color="primary"
-                  type="submit"
+                  color='primary'
+                  type='submit'
                   isLoading={updateMutation.isPending}
                 >
                   {updateMutation.isPending ? 'Saving...' : 'Save changes'}

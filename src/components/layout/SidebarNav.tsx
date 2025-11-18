@@ -11,6 +11,7 @@ import {
   Timer,
   ChevronsLeft,
   BookOpen,
+  User,
 } from 'lucide-react';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -35,6 +36,7 @@ const menuItems: MenuItem[] = [
     label: 'Analytics',
     collapsed: false,
   },
+  { href: '/profile', icon: User, label: 'Profile', collapsed: false },
 ];
 
 const Item: React.FC<MenuItem & { isActive?: boolean }> = ({
