@@ -34,19 +34,15 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({
 
 interface NotificationSettingsProps {
   emailNotifications: boolean;
-  pushNotifications: boolean;
   weeklyReport: boolean;
   onEmailChange: (value: boolean) => void;
-  onPushChange: (value: boolean) => void;
   onWeeklyReportChange: (value: boolean) => void;
 }
 
 const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   emailNotifications,
-  pushNotifications,
   weeklyReport,
   onEmailChange,
-  onPushChange,
   onWeeklyReportChange,
 }) => {
   return (
@@ -67,13 +63,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         />
 
         <div className='h-px bg-gray-200' />
-
-        <NotificationToggle
-          title='Push Notifications'
-          description='Get real-time notifications for upcoming tasks'
-          isSelected={pushNotifications}
-          onValueChange={onPushChange}
-        />
 
         <div className='h-px bg-gray-200' />
 

@@ -37,16 +37,44 @@ const ProfilePage: React.FC = () => {
     },
   });
 
-  const [soundEffects, setSoundEffects] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [weeklyReport, setWeeklyReport] = useState(true);
+  const [soundEffects, setSoundEffects] = useState<boolean>(false);
+  const [emailNotifications, setEmailNotifications] = useState<boolean>(false);
+  const [weeklyReport, setWeeklyReport] = useState<boolean>(false);
+
+  const handleSoundEffectsChange = async (value: boolean) => {
+    if (value) {
+      // Request notification permission when enabling sound effects
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          setSoundEffects(true);
+          localStorage.setItem('sound_effects_enabled', 'true');
+        } else {
+          // User denied permission, don't enable sound effects
+          setSoundEffects(false);
+          localStorage.setItem('sound_effects_enabled', 'false');
+        }
+      } else {
+        // Browser doesn't support notifications
+        setSoundEffects(value);
+        localStorage.setItem('sound_effects_enabled', String(value));
+      }
+    } else {
+      // Turning off sound effects
+      setSoundEffects(false);
+      localStorage.setItem('sound_effects_enabled', 'false');
+    }
+  };
 
   useEffect(() => {
     if (!data) return;
 
     const savedLocation = localStorage.getItem('user_profile_location') || '';
     const savedBio = localStorage.getItem('user_profile_bio') || '';
+    const savedSoundEffects =
+      localStorage.getItem('sound_effects_enabled') === 'true';
+
+    setSoundEffects(savedSoundEffects);
 
     reset({
       avatar: data.avatar || null,
@@ -59,6 +87,21 @@ const ProfilePage: React.FC = () => {
   }, [data]);
 
   const { mutate: updateProfile } = useUpdateProfileMutation({});
+
+  const handleSave = () => {
+    const values = getValues();
+
+    // Save bio and location to localStorage
+    localStorage.setItem('user_profile_location', values.location || '');
+    localStorage.setItem('user_profile_bio', values.bio || '');
+
+    // Send name update to server
+    const updateData: UpdateUserRequest = {
+      name: values.name,
+    };
+
+    updateProfile(updateData);
+  };
 
   const onSubmit = (values: UserProfile) => {
     const updateData: UpdateUserRequest = {
@@ -101,20 +144,19 @@ const ProfilePage: React.FC = () => {
             email={emailValue}
             location={locationValue}
             joinedDate={data?.createdAt || ''}
+            onSave={handleSave}
           />
 
           <StudyPreferences
             register={register}
             soundEffects={soundEffects}
-            onSoundEffectsChange={setSoundEffects}
+            onSoundEffectsChange={handleSoundEffectsChange}
           />
 
           <NotificationSettings
             emailNotifications={emailNotifications}
-            pushNotifications={pushNotifications}
             weeklyReport={weeklyReport}
             onEmailChange={setEmailNotifications}
-            onPushChange={setPushNotifications}
             onWeeklyReportChange={setWeeklyReport}
           />
 

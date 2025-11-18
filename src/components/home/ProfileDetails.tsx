@@ -21,6 +21,7 @@ interface ProfileDetailsProps {
   email: string;
   location: string;
   joinedDate: string;
+  onSave?: () => void;
 }
 
 const ProfileDetails: React.FC<ProfileDetailsProps> = ({
@@ -29,6 +30,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({
   email,
   location,
   joinedDate,
+  onSave,
 }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const joinedMonthYear = useMemo(() => {
@@ -117,7 +119,12 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({
               <EditIcon className='w-4 h-4' />
             )
           }
-          onPress={() => setIsEditing(!isEditing)}
+          onPress={() => {
+            if (isEditing && onSave) {
+              onSave();
+            }
+            setIsEditing(!isEditing);
+          }}
         />
       </div>
 
