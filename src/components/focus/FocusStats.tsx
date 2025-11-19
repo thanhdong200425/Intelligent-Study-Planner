@@ -38,4 +38,3 @@ export const FocusStats: React.FC<FocusStatsProps> = ({
     </div>
   );
 };
-

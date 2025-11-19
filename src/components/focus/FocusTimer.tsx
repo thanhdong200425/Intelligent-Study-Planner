@@ -6,17 +6,24 @@ import { RotateCcw, Settings, Play, Pause } from 'lucide-react';
 import { formatTime, toSeconds, fromSeconds } from '@/utils';
 import { FocusStats } from './FocusStats';
 import { useCreateTimerSessionMutation } from '@/mutations';
+import FocusSettingsModal from './FocusSettingsModal';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
 export const FocusTimer: React.FC = () => {
+  const [timerDurations, setTimerDurations] = useState({
+    focus: 25,
+    break: 5,
+    long_break: 15,
+  });
+
   const defaultTime = useMemo(() => {
     return {
-      focus: { minutes: 25, seconds: 0 },
-      break: { minutes: 5, seconds: 0 },
-      long_break: { minutes: 15, seconds: 0 },
+      focus: { minutes: timerDurations.focus, seconds: 0 },
+      break: { minutes: timerDurations.break, seconds: 0 },
+      long_break: { minutes: timerDurations.long_break, seconds: 0 },
     };
-  }, []);
+  }, [timerDurations]);
 
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -29,6 +36,7 @@ export const FocusTimer: React.FC = () => {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const { mutate: createTimerSession } = useCreateTimerSessionMutation({});
 
@@ -74,6 +82,13 @@ export const FocusTimer: React.FC = () => {
     setActiveMode(mode);
     resetToModeDefault(mode);
   };
+
+  // Reset timer when durations change
+  useEffect(() => {
+    if (!isRunning) {
+      resetToModeDefault(activeMode);
+    }
+  }, [timerDurations, activeMode, isRunning, resetToModeDefault]);
 
   // Timer countdown
   useEffect(() => {
@@ -151,6 +166,7 @@ export const FocusTimer: React.FC = () => {
         </div>
         {/* Settings Icon - Positioned on the right */}
         <button
+          onClick={() => setIsSettingsModalOpen(true)}
           className='absolute right-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors'
           aria-label='Settings'
         >
@@ -235,6 +251,14 @@ export const FocusTimer: React.FC = () => {
         sessionsToday={completedSessions}
         timeFocused={totalFocusTime}
         cyclesComplete={Math.floor(completedSessions / 4)} // Assuming 4 focus sessions = 1 cycle
+      />
+
+      {/* Settings Modal */}
+      <FocusSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        timerDurations={timerDurations}
+        onTimerDurationsChange={setTimerDurations}
       />
     </div>
   );
