@@ -84,10 +84,11 @@ export interface WeeklySummary {
 
 export interface TimerSession {
   id: string;
-  timeBlockId: string;
-  startTime: Date;
-  endTime?: Date;
-  isActive: boolean;
+  type: 'focus' | 'break' | 'long_break';
+  taskId: number | null;
+  timeBlockId: number | null;
+  startTime: string;
+  endTime?: string;
   actualMinutes: number;
 }
 

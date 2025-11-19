@@ -27,9 +27,9 @@ const menuItems: MenuItem[] = [
   { href: '/', icon: Clock, label: 'Today', collapsed: false },
   { href: '/planner', icon: LayoutGrid, label: 'Planner', collapsed: false },
   { href: '/tasks', icon: ListTodo, label: 'Tasks', collapsed: false },
+  { href: '/session', icon: Timer, label: 'Focus', collapsed: false },
   { href: '/?tab=habits', icon: Calendar, label: 'Habits', collapsed: false },
   { href: '/courses', icon: BookOpen, label: 'Courses', collapsed: false },
-  { href: '/session', icon: Timer, label: 'Session', collapsed: false },
   {
     href: '/?tab=analytics',
     icon: BarChart2,
