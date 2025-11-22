@@ -17,13 +17,13 @@ export const useAmbientPreset = () => {
     setIsLoaded(true);
   }, []);
 
-  // Listen for changes to the preset (when other components update it)
   useEffect(() => {
     const handleStorageChange = () => {
       const updated = localStorage.getItem(STORAGE_KEY);
       setSelectedPreset(updated);
     };
 
+    // Listen for changes to the preset (when other components update it)
     window.addEventListener('storage', handleStorageChange);
 
     // Also listen for custom event for same-tab updates
