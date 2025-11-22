@@ -8,7 +8,12 @@ import { playTimerEndSound } from '@/utils/sounds';
 import { FocusStats } from './FocusStats';
 import { useCreateTimerSessionMutation } from '@/mutations';
 import FocusSettingsModal from './FocusSettingsModal';
-import { useTimerSettings, useTimerPreferences } from '@/hooks';
+import {
+  useTimerSettings,
+  useTimerPreferences,
+  useAmbientSound,
+  useAmbientPreset,
+} from '@/hooks';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -27,6 +32,10 @@ export const FocusTimer: React.FC = () => {
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
+
+  // Play ambient sound only when timer is running
+  useAmbientSound(selectedAmbientPreset, isRunning);
 
   const { mutate: createTimerSession } = useCreateTimerSessionMutation({});
 

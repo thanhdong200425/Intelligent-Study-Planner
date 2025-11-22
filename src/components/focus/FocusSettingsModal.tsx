@@ -11,7 +11,7 @@ import {
 } from '@heroui/react';
 import { Volume2, Moon, X, Music2 } from 'lucide-react';
 import { BaseButton } from '../buttons';
-import { useTimerPreferences } from '@/hooks';
+import { useTimerPreferences, useAmbientPreset } from '@/hooks';
 
 interface TimerDurations {
   focus: number;
@@ -30,6 +30,8 @@ interface FocusSettingsModalProps {
 // DONE: Remove the scroll bar
 // DONE: Save timer durations to local storage and load on mount, update when changed
 // DONE: Add function for timer sounds and dark mode
+// DONE: Add function for quick presets
+// TODO: Add function for Spotify integration
 
 const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   isOpen,
@@ -55,12 +57,11 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   const quickPresets = [
     { id: 'ocean', label: '🌊 Ocean Waves' },
     { id: 'rain', label: '🌧️ Rain Sounds' },
-    { id: 'fireplace', label: '🔥 Fireplace' },
+    { id: 'ambient', label: '🌌 Deep Ambient' },
     { id: 'forest', label: '🌲 Forest Birds' },
   ];
 
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
-
+  const { selectedPreset, updatePreset } = useAmbientPreset();
   return (
     <Modal
       isOpen={isOpen}
@@ -247,27 +248,30 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                   <div className='border-t border-gray-100 pt-[17px] flex flex-col gap-3'>
                     <p className='text-sm text-[#4a5565]'>Quick Presets</p>
                     <div className='grid grid-cols-2 gap-2 h-20'>
-                      {quickPresets.map(preset => (
-                        <Button
-                          key={preset.id}
-                          variant='flat'
-                          className={`h-10 justify-start px-4 py-2 ${
-                            selectedPreset === preset.id
-                              ? 'bg-gray-200 text-[#364153]'
-                              : 'bg-gray-100 text-[#364153] hover:bg-gray-200'
-                          }`}
-                          radius='lg'
-                          onPress={() =>
-                            setSelectedPreset(
-                              selectedPreset === preset.id ? null : preset.id
-                            )
-                          }
-                        >
-                          <span className='text-sm whitespace-pre-wrap'>
-                            {preset.label}
-                          </span>
-                        </Button>
-                      ))}
+                      {quickPresets.map(preset => {
+                        const isSelected = selectedPreset === preset.id;
+                        return (
+                          <Button
+                            key={preset.id}
+                            variant='flat'
+                            className={`h-10 justify-start px-4 py-2 transition-all ${
+                              isSelected
+                                ? 'bg-black text-white border-2 border-black'
+                                : 'bg-gray-100 text-[#364153] hover:bg-gray-200 border-2 border-transparent'
+                            }`}
+                            radius='lg'
+                            onPress={() =>
+                              updatePreset(
+                                selectedPreset === preset.id ? null : preset.id
+                              )
+                            }
+                          >
+                            <span className='text-sm whitespace-pre-wrap'>
+                              {preset.label}
+                            </span>
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
 
