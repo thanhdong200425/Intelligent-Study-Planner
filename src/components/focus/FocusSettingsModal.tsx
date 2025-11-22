@@ -12,6 +12,10 @@ import {
 import { Volume2, Moon, X, Music2 } from 'lucide-react';
 import { BaseButton } from '../buttons';
 import { useAmbientPreset, TimerPreferences } from '@/hooks';
+import { baseURL } from '@/lib/api';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { disconnectSpotify } from '@/store/slices/spotifySlice';
 
 interface TimerDurations {
   focus: number;
@@ -33,8 +37,9 @@ interface FocusSettingsModalProps {
 // DONE: Save timer durations to local storage and load on mount, update when changed
 // DONE: Add function for timer sounds and dark mode
 // DONE: Add function for quick presets
+// DONE: The dark mode isn't work until user refresh the page
 // TODO: Add function for Spotify integration
-// BUG: The dark mode isn't work until user refresh the page
+// Add routes for authorization to request user grant access to Spotify, then request access token
 
 const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   isOpen,
@@ -66,6 +71,16 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   ];
 
   const { selectedPreset, updatePreset } = useAmbientPreset();
+  const dispatch = useDispatch();
+  const { isConnected } = useSelector((state: RootState) => state.spotify);
+
+  const handleSpotifyClick = () => {
+    if (isConnected) {
+      dispatch(disconnectSpotify());
+    } else {
+      window.location.href = `${baseURL}/spotify/auth/login`;
+    }
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -285,11 +300,18 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                       Spotify Integration
                     </p>
                     <Button
-                      className='bg-[#1db954] text-white h-11 relative'
+                      className={`${
+                        isConnected
+                          ? 'bg-red-500 text-white'
+                          : 'bg-[#1db954] text-white'
+                      } h-11 relative`}
                       radius='lg'
-                      startContent={<Music2 className='w-5 h-5' />}
+                      startContent={!isConnected && <Music2 className='w-5 h-5' />}
+                      onPress={handleSpotifyClick}
                     >
-                      <span className='text-sm'>Connect to Spotify</span>
+                      <span className='text-sm'>
+                        {isConnected ? 'Disconnect Spotify' : 'Connect to Spotify'}
+                      </span>
                     </Button>
                     <p className='text-xs text-[#6a7282] text-center leading-4'>
                       Play your favorite playlists during focus sessions
