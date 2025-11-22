@@ -306,11 +306,15 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                           : 'bg-[#1db954] text-white'
                       } h-11 relative`}
                       radius='lg'
-                      startContent={!isConnected && <Music2 className='w-5 h-5' />}
+                      startContent={
+                        !isConnected && <Music2 className='w-5 h-5' />
+                      }
                       onPress={handleSpotifyClick}
                     >
                       <span className='text-sm'>
-                        {isConnected ? 'Disconnect Spotify' : 'Connect to Spotify'}
+                        {isConnected
+                          ? 'Disconnect Spotify'
+                          : 'Connect to Spotify'}
                       </span>
                     </Button>
                     <p className='text-xs text-[#6a7282] text-center leading-4'>

@@ -59,7 +59,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
     // Validate hours part.
     if (digits.length >= 2) {
-      let hours = parseInt(digits.slice(0, 2), 10);
+      const hours = parseInt(digits.slice(0, 2), 10);
       if (hours > 23) {
         digits = '23' + digits.slice(2);
       }
@@ -67,7 +67,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
     // Validate minutes part.
     if (digits.length === 4) {
-      let minutes = parseInt(digits.slice(2, 4), 10);
+      const minutes = parseInt(digits.slice(2, 4), 10);
       if (minutes > 59) {
         digits = digits.slice(0, 2) + '59';
       }

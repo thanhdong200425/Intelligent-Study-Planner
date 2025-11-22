@@ -30,7 +30,7 @@ const spotifySlice = createSlice({
       state.error = action.payload;
       state.isLoading = false;
     },
-    disconnectSpotify: (state) => {
+    disconnectSpotify: state => {
       state.accessToken = null;
       state.isConnected = false;
       state.error = null;

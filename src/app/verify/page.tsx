@@ -31,7 +31,7 @@ export default function VerifyCodePage() {
           </p>
         </div>
 
-        <OtpForm email={tempEmail ?? ""} />
+        <OtpForm email={tempEmail ?? ''} />
       </div>
     </div>
   );

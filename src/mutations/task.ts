@@ -56,7 +56,7 @@ export const useToggleCompleteTaskMutation = ({
       queryClient.setQueryData<Task[]>(['tasks'], oldTasks => {
         if (!oldTasks) return [];
         return oldTasks.map(task =>
-          task.id === taskId ? { ...task, completed } : task
+          Number(task.id) === taskId ? { ...task, completed } : task
         );
       });
       if (completed) {

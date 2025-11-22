@@ -119,7 +119,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
       });
       return;
     }
-    toggleComplete(task.id);
+    // Convert string id to number for backend
+    const taskId = Number(task.id);
+    if (isNaN(taskId)) {
+      addToast({
+        title: 'Invalid task ID',
+        color: 'danger',
+        timeout: 1000,
+      });
+      return;
+    }
+    toggleComplete(taskId);
   };
 
   const onDeleteTask = (taskId: number) => {
@@ -229,7 +239,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
                 if (key === 'edit') {
                   setIsEditModalOpen(true);
                 } else if (key === 'delete') {
-                  onDeleteTask(task.id!);
+                  // Convert string id to number for backend
+                  const taskId = Number(task.id);
+                  if (!isNaN(taskId)) {
+                    onDeleteTask(taskId);
+                  }
                 }
               }}
             >

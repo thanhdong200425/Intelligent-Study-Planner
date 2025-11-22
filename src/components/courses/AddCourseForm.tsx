@@ -130,10 +130,11 @@ export const AddCourseForm: React.FC = () => {
                   key={color}
                   type='button'
                   onClick={() => handleColorSelect(color)}
-                  className={`w-10 h-10 rounded-[10px] transition-all ${selectedColor === color
-                    ? 'ring-4 ring-white ring-offset-2 ring-offset-gray-900'
-                    : ''
-                    }`}
+                  className={`w-10 h-10 rounded-[10px] transition-all ${
+                    selectedColor === color
+                      ? 'ring-4 ring-white ring-offset-2 ring-offset-gray-900'
+                      : ''
+                  }`}
                   style={{ backgroundColor: color }}
                   aria-label={`Select color ${color}`}
                 />

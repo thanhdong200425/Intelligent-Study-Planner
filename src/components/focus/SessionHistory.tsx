@@ -95,12 +95,10 @@ export const SessionHistory: React.FC = () => {
     <div className='bg-white border border-gray-100 rounded-2xl p-6'>
       {/* Header */}
       <div className='flex items-center justify-between mb-6'>
-        <h2 className='text-base font-normal text-gray-900'>Today&apos;s Sessions</h2>
-        <Button
-          size='sm'
-          radius='lg'
-          className='bg-black text-white h-9'
-        >
+        <h2 className='text-base font-normal text-gray-900'>
+          Today&apos;s Sessions
+        </h2>
+        <Button size='sm' radius='lg' className='bg-black text-white h-9'>
           View All
         </Button>
       </div>
@@ -150,4 +148,3 @@ export const SessionHistory: React.FC = () => {
     </div>
   );
 };
-

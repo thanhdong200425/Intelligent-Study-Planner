@@ -79,16 +79,18 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
     queryFn: getCourses,
   });
 
+  type TaskFormValues = z.infer<typeof formSchema>;
+
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isDirty },
     watch,
-  } = useForm<Task>({
+  } = useForm<TaskFormValues>({
     defaultValues: {
       title: task?.title || '',
-      courseId: task?.courseId,
+      courseId: task?.courseId ? Number(task.courseId) : undefined,
       type: task?.type || 'reading',
       priority: task?.priority || 'medium',
       estimateMinutes: task?.estimateMinutes || 60,
@@ -118,7 +120,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
 
   const onSubmitHandler = (data: TaskFormData) => {
     if (isEditMode && task?.id) {
-      updateTaskMutation.mutate({ taskId: task.id, data });
+      // Convert string id to number for backend
+      const taskId = Number(task.id);
+      if (isNaN(taskId)) {
+        addToast({
+          title: 'Invalid task ID',
+          color: 'danger',
+          timeout: 1000,
+        });
+        return;
+      }
+      updateTaskMutation.mutate({ taskId, data });
     } else {
       createTaskMutation.mutate(data);
     }

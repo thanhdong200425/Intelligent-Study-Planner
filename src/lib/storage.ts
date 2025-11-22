@@ -188,8 +188,16 @@ export const TimerSessionStorage = {
   getAll: (): TimerSession[] =>
     timerSessionsStore.map(session => ({
       ...session,
-      startTime: new Date(session.startTime),
-      endTime: session.endTime ? new Date(session.endTime) : undefined,
+      // Keep as string (ISO format) as per TimerSession type
+      startTime:
+        typeof session.startTime === 'string'
+          ? session.startTime
+          : new Date(session.startTime).toISOString(),
+      endTime: session.endTime
+        ? typeof session.endTime === 'string'
+          ? session.endTime
+          : new Date(session.endTime).toISOString()
+        : undefined,
     })),
   add: (session: TimerSession) => {
     timerSessionsStore = [...timerSessionsStore, session];
@@ -202,6 +210,8 @@ export const TimerSessionStorage = {
   remove: (id: string) => {
     timerSessionsStore = timerSessionsStore.filter(s => s.id !== id);
   },
-  getActive: (): TimerSession | undefined =>
-    TimerSessionStorage.getAll().find(s => s.isActive),
+  getActive: (): TimerSession | undefined => {
+    // Check if session has no endTime (active session)
+    return TimerSessionStorage.getAll().find(s => !s.endTime);
+  },
 };
