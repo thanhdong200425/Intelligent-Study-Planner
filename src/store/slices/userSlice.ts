@@ -3,11 +3,11 @@ import type { UserProfile } from '@/types';
 import type { UpdateUserRequest } from '@/services/user';
 
 // FE UserProfile + extra fields
-export interface ExtendedUserProfile extends UserProfile {
+export interface ExtendedUserProfile extends Omit<UserProfile, 'avatar'> {
   emailAddress?: string;
   createdAt?: string;
   updatedAt?: string;
-  avatar?: string;
+  avatar?: string | null; // Match UserProfile's avatar type
   role?: string;
   preferences?: {
     theme: 'light' | 'dark' | 'system';

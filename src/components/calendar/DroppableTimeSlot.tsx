@@ -21,8 +21,9 @@ const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`${className} ${isOver ? 'bg-blue-100 border-blue-300' : ''
-        } transition-colors`}
+      className={`${className} ${
+        isOver ? 'bg-blue-100 border-blue-300' : ''
+      } transition-colors`}
     >
       {children}
     </div>

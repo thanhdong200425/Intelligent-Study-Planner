@@ -40,4 +40,3 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({
 };
 
 export default ProfileStats;
-

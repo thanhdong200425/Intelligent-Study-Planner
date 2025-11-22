@@ -5,7 +5,8 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { is } from 'date-fns/locale';
 
 // Base URL can be configured via environment variable
-const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3030';
+export const baseURL =
+  process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3030';
 
 // Maintain an in-memory auth token to avoid localStorage usage
 const shouldSkipAuth = (config: AxiosRequestConfig): boolean => {

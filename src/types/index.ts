@@ -20,9 +20,9 @@ export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
 export interface Task {
-  id?: number;
+  id: string;
   title: string;
-  courseId?: number;
+  courseId?: string;
   type: TaskType;
   estimateMinutes: number;
   deadlineId?: string;
@@ -84,10 +84,11 @@ export interface WeeklySummary {
 
 export interface TimerSession {
   id: string;
-  timeBlockId: string;
-  startTime: Date;
-  endTime?: Date;
-  isActive: boolean;
+  type: 'focus' | 'break' | 'long_break';
+  taskId: number | null;
+  timeBlockId: number | null;
+  startTime: string;
+  endTime?: string;
   actualMinutes: number;
 }
 

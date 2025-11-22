@@ -41,10 +41,10 @@ export const TasksList: React.FC<TasksListProps> = ({
   });
 
   const handleEdit = (task: Task) => {
-    setEditingId(task.id);
+    setEditingId(task.id ?? null);
     setEditForm({
       title: task.title,
-      courseId: task.courseId,
+      courseId: task.courseId ?? '',
       type: task.type,
       estimateMinutes: task.estimateMinutes,
     });
@@ -325,7 +325,8 @@ export const TasksList: React.FC<TasksListProps> = ({
                       </select>
                     ) : (
                       <span className='text-sm text-gray-600'>
-                        {getCourse(task.courseId)?.name || 'Unknown Course'}
+                        {getCourse(task.courseId ?? '')?.name ||
+                          'Unknown Course'}
                       </span>
                     )}
                   </td>

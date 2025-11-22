@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CourseForm } from '@/components/forms/CourseForm';
 import { DeadlineForm } from '@/components/forms/DeadlineForm';
-import { TaskForm } from '@/components/forms/TaskForm';
+import { TaskForm } from '../forms';
 import { AvailabilityForm } from '@/components/forms/AvailabilityForm';
 import { Statistics } from '@/components/statistics/Statistics';
 import {
