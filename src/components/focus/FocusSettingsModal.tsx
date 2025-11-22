@@ -9,7 +9,9 @@ import {
   Button,
   Input,
 } from '@heroui/react';
-import { Volume2, Moon, Music, X, Music2 } from 'lucide-react';
+import { Volume2, Moon, X, Music2 } from 'lucide-react';
+import { BaseButton } from '../buttons';
+import { useTimerPreferences } from '@/hooks';
 
 interface TimerDurations {
   focus: number;
@@ -24,15 +26,18 @@ interface FocusSettingsModalProps {
   onTimerDurationsChange?: (durations: TimerDurations) => void;
 }
 
+// DONE: Add a ok button to persist settings
+// DONE: Remove the scroll bar
+// DONE: Save timer durations to local storage and load on mount, update when changed
+// DONE: Add function for timer sounds and dark mode
+
 const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   isOpen,
   onClose,
   timerDurations = { focus: 25, break: 5, long_break: 15 },
   onTimerDurationsChange,
 }) => {
-  const [timerSounds, setTimerSounds] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [ambientMusic, setAmbientMusic] = useState(false);
+  const { preferences, updatePreferences } = useTimerPreferences();
   const [durations, setDurations] = useState<TimerDurations>(timerDurations);
 
   // Update local state when prop changes
@@ -61,7 +66,7 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       size='lg'
-      scrollBehavior='inside'
+      scrollBehavior={undefined}
       classNames={{
         base: 'max-w-[500px]',
         body: 'p-0',
@@ -105,11 +110,15 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                       </div>
                     </div>
                     <Switch
-                      isSelected={timerSounds}
-                      onValueChange={setTimerSounds}
+                      isSelected={preferences.timerSounds}
+                      onValueChange={value =>
+                        updatePreferences({ timerSounds: value })
+                      }
                       size='sm'
                       classNames={{
-                        wrapper: timerSounds ? 'bg-[#030213]' : 'bg-[#cbced4]',
+                        wrapper: preferences.timerSounds
+                          ? 'bg-[#030213]'
+                          : 'bg-[#cbced4]',
                         thumb: 'bg-white',
                       }}
                     />
@@ -131,37 +140,15 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                       </div>
                     </div>
                     <Switch
-                      isSelected={darkMode}
-                      onValueChange={setDarkMode}
+                      isSelected={preferences.darkMode}
+                      onValueChange={value =>
+                        updatePreferences({ darkMode: value })
+                      }
                       size='sm'
                       classNames={{
-                        wrapper: darkMode ? 'bg-[#030213]' : 'bg-[#cbced4]',
-                        thumb: 'bg-white',
-                      }}
-                    />
-                  </div>
-
-                  {/* Ambient Music */}
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-3 flex-1'>
-                      <div className='w-5 h-5 flex items-center justify-center'>
-                        <Music className='w-5 h-5 text-gray-600' />
-                      </div>
-                      <div className='flex-1'>
-                        <p className='text-base font-normal text-[#101828]'>
-                          Ambient Music
-                        </p>
-                        <p className='text-sm text-[#6a7282]'>
-                          Background focus sounds
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      isSelected={ambientMusic}
-                      onValueChange={setAmbientMusic}
-                      size='sm'
-                      classNames={{
-                        wrapper: ambientMusic ? 'bg-[#030213]' : 'bg-[#cbced4]',
+                        wrapper: preferences.darkMode
+                          ? 'bg-[#030213]'
+                          : 'bg-[#cbced4]',
                         thumb: 'bg-white',
                       }}
                     />
@@ -299,6 +286,10 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                     <p className='text-xs text-[#6a7282] text-center leading-4'>
                       Play your favorite playlists during focus sessions
                     </p>
+                  </div>
+
+                  <div className='border-t border-gray-100 pt-[17px] flex flex-col gap-3'>
+                    <BaseButton onPress={onClose} content='OK' />
                   </div>
                 </div>
               </div>

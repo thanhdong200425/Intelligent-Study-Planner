@@ -3,7 +3,6 @@ import { SidebarNav, HeaderBar } from '@/components';
 import { FocusTimer } from '@/components/focus/FocusTimer';
 import { SessionHistory } from '@/components/focus/SessionHistory';
 
-// TODO: Complete the settings modal
 // TODO: Implement the start button logic
 
 export default function FocusPage() {
