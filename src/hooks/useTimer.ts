@@ -8,7 +8,7 @@ interface TimerSettings {
   long_break: number;
 }
 
-interface TimerPreferences {
+export interface TimerPreferences {
   timerSounds: boolean;
   darkMode: boolean;
 }

@@ -19,7 +19,7 @@ type TimerMode = 'focus' | 'break' | 'long_break';
 
 export const FocusTimer: React.FC = () => {
   const { settings: timerSettings, updateSettings } = useTimerSettings();
-  const { preferences } = useTimerPreferences();
+  const { preferences, updatePreferences } = useTimerPreferences();
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(
@@ -361,6 +361,8 @@ export const FocusTimer: React.FC = () => {
         onClose={() => setIsSettingsModalOpen(false)}
         timerDurations={timerSettings}
         onTimerDurationsChange={updateSettings}
+        preferences={preferences}
+        onPreferencesChange={updatePreferences}
       />
     </div>
   );

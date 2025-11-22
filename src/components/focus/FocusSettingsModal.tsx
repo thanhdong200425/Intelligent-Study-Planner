@@ -11,7 +11,7 @@ import {
 } from '@heroui/react';
 import { Volume2, Moon, X, Music2 } from 'lucide-react';
 import { BaseButton } from '../buttons';
-import { useTimerPreferences, useAmbientPreset } from '@/hooks';
+import { useAmbientPreset, TimerPreferences } from '@/hooks';
 
 interface TimerDurations {
   focus: number;
@@ -24,6 +24,8 @@ interface FocusSettingsModalProps {
   onClose: () => void;
   timerDurations?: TimerDurations;
   onTimerDurationsChange?: (durations: TimerDurations) => void;
+  preferences: TimerPreferences;
+  onPreferencesChange: (preferences: Partial<TimerPreferences>) => void;
 }
 
 // DONE: Add a ok button to persist settings
@@ -32,14 +34,16 @@ interface FocusSettingsModalProps {
 // DONE: Add function for timer sounds and dark mode
 // DONE: Add function for quick presets
 // TODO: Add function for Spotify integration
+// BUG: The dark mode isn't work until user refresh the page
 
 const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
   isOpen,
   onClose,
   timerDurations = { focus: 25, break: 5, long_break: 15 },
   onTimerDurationsChange,
+  preferences,
+  onPreferencesChange,
 }) => {
-  const { preferences, updatePreferences } = useTimerPreferences();
   const [durations, setDurations] = useState<TimerDurations>(timerDurations);
 
   // Update local state when prop changes
@@ -113,7 +117,7 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                     <Switch
                       isSelected={preferences.timerSounds}
                       onValueChange={value =>
-                        updatePreferences({ timerSounds: value })
+                        onPreferencesChange({ timerSounds: value })
                       }
                       size='sm'
                       classNames={{
@@ -143,7 +147,7 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
                     <Switch
                       isSelected={preferences.darkMode}
                       onValueChange={value =>
-                        updatePreferences({ darkMode: value })
+                        onPreferencesChange({ darkMode: value })
                       }
                       size='sm'
                       classNames={{
