@@ -6,6 +6,9 @@ import {
   StudyGoals,
 } from '@/components';
 
+// TODO: Allow user can create their own event type
+// TODO: When click into a event, show the event details by using modal
+
 export default function PlannerPage() {
   return (
     <div className='min-h-screen bg-gray-50 flex'>
