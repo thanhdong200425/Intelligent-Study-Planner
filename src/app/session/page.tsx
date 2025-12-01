@@ -1,9 +1,6 @@
 import React from 'react';
 import { SidebarNav, HeaderBar } from '@/components';
-import { FocusTimer } from '@/components/focus/FocusTimer';
-import { SessionHistory } from '@/components/focus/SessionHistory';
-
-// TODO: Implement the start button logic
+import FocusSessionWrapper from '@/components/focus/FocusSessionWrapper';
 
 export default function FocusPage() {
   return (
@@ -16,13 +13,7 @@ export default function FocusPage() {
           isShowNotification={true}
         />
         <main className='flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6 lg:p-8'>
-          <div className='max-w-7xl mx-auto space-y-6'>
-            {/* Timer Section */}
-            <FocusTimer />
-
-            {/* Session History Section */}
-            <SessionHistory />
-          </div>
+          <FocusSessionWrapper />
         </main>
       </div>
     </div>

@@ -29,6 +29,7 @@ export interface Task {
   completed?: boolean;
   actualMinutes?: number;
   priority?: TaskPriority;
+  course?: Course;
 }
 
 export interface AvailabilityWindow {
@@ -90,6 +91,7 @@ export interface TimerSession {
   startTime: string;
   endTime?: string;
   actualMinutes: number;
+  task?: Task;
 }
 
 export interface UserProfile {

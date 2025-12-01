@@ -14,10 +14,15 @@ import {
   useAmbientSound,
   useAmbientPreset,
 } from '@/hooks';
+import type { Task } from '@/types';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
-export const FocusTimer: React.FC = () => {
+interface FocusTimerProps {
+  selectedTask: Task | null;
+}
+
+export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const { settings: timerSettings, updateSettings } = useTimerSettings();
   const { preferences, updatePreferences } = useTimerPreferences();
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
@@ -52,7 +57,10 @@ export const FocusTimer: React.FC = () => {
     if (!isRunning) {
       createTimerSession({
         type: activeMode,
-        taskId: null,
+        taskId:
+          activeMode === 'focus' && selectedTask?.id
+            ? Number(selectedTask.id)
+            : null,
         timeBlockId: null,
         startTime: new Date().toISOString(),
       });
@@ -65,7 +73,7 @@ export const FocusTimer: React.FC = () => {
       }
       return next;
     });
-  }, [activeMode, createTimerSession, isRunning, startedAt]);
+  }, [activeMode, createTimerSession, isRunning, selectedTask?.id, startedAt]);
 
   const handleReset = () => {
     setIsRunning(false);
@@ -204,6 +212,51 @@ export const FocusTimer: React.FC = () => {
 
   return (
     <div className='bg-white border border-gray-100 rounded-2xl p-8'>
+      {/* Selected task info */}
+      <div className='bg-gray-50 border border-gray-200 rounded-[14px] p-4 mb-6'>
+        <p className='text-sm text-[#4a5565] mb-1'>Focusing on:</p>
+        {selectedTask ? (
+          <>
+            <p className='text-base text-[#101828] mb-3'>
+              {selectedTask.title}
+            </p>
+            <div className='flex flex-wrap items-center gap-2'>
+              <span className='inline-flex items-center justify-center rounded-lg border border-[rgba(0,0,0,0.1)] px-2 py-0.5 text-xs text-neutral-950'>
+                {/* Simple mirror of task type emoji/label */}
+                {selectedTask.type === 'reading'
+                  ? '📖 Reading'
+                  : selectedTask.type === 'coding'
+                    ? '💻 Coding'
+                    : selectedTask.type === 'writing'
+                      ? '✍️ Writing'
+                      : selectedTask.type === 'pset'
+                        ? '📝 Pset'
+                        : '📋 Task'}
+              </span>
+              {selectedTask.priority && (
+                <span className='inline-flex items-center justify-center rounded-lg border px-2 py-0.5 text-xs bg-[#fef9c2] border-[#fff085] text-[#a65f00]'>
+                  {selectedTask.priority === 'high'
+                    ? 'High'
+                    : selectedTask.priority === 'medium'
+                      ? 'Medium'
+                      : selectedTask.priority === 'low'
+                        ? 'Low'
+                        : 'Priority'}
+                </span>
+              )}
+              {selectedTask.course && (
+                <span className='inline-flex items-center justify-center rounded-lg border border-[rgba(0,0,0,0.1)] px-2 py-0.5 text-xs text-neutral-950'>
+                  {selectedTask.course.name}
+                </span>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className='text-sm text-gray-500'>
+            No task selected. Choose a task from the sidebar to focus on.
+          </p>
+        )}
+      </div>
       {/* Mode Tabs and Settings - Hide in dark mode when running */}
       {!isDarkModeActive && (
         <div className='relative flex items-center mb-8'>

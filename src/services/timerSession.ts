@@ -17,3 +17,13 @@ export const createTimerSession = async (
     throw err;
   }
 };
+
+export const getTodayTimerSessions = async (): Promise<TimerSession[]> => {
+  try {
+    const response = await apiClient.get(`${endpoint.timerSession}/today`);
+    return response.data;
+  } catch (err) {
+    console.log('Error fetching today timer sessions: ', err);
+    return [];
+  }
+};
