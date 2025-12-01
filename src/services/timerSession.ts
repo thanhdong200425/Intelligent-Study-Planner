@@ -18,6 +18,22 @@ export const createTimerSession = async (
   }
 };
 
+export const updateTimerSession = async (
+  id: number,
+  data: Partial<CreateTimerSessionData>
+): Promise<TimerSession> => {
+  try {
+    const response = await apiClient.patch(
+      `${endpoint.timerSession}/${id}`,
+      data
+    );
+    return response.data;
+  } catch (err) {
+    console.log('Error updating timer session: ', err);
+    throw err;
+  }
+};
+
 export const getTodayTimerSessions = async (): Promise<TimerSession[]> => {
   try {
     const response = await apiClient.get(`${endpoint.timerSession}/today`);

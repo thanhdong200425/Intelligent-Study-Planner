@@ -84,7 +84,7 @@ export interface WeeklySummary {
 }
 
 export interface TimerSession {
-  id: string;
+  id: number;
   type: 'focus' | 'break' | 'long_break';
   taskId: number | null;
   timeBlockId: number | null;

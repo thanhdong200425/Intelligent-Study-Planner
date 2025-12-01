@@ -1,4 +1,4 @@
-import { createTimerSession } from '@/services';
+import { createTimerSession, updateTimerSession } from '@/services';
 import { addToast } from '@heroui/react';
 import { useMutation } from '@tanstack/react-query';
 import { MutationProps } from './task';
@@ -10,15 +10,49 @@ export interface CreateTimerSessionData {
   startTime: string;
 }
 
+export interface UpdateTimerSessionData
+  extends Partial<CreateTimerSessionData> {
+  endTime: string;
+}
+
 export const useCreateTimerSessionMutation = ({
+  onError,
+  onSuccess,
+}: Pick<MutationProps, 'onError'> & { onSuccess?: (id: number) => void }) => {
+  return useMutation({
+    mutationFn: (data: CreateTimerSessionData) => createTimerSession(data),
+    onSuccess: data => {
+      addToast({
+        title: 'Timer session created successfully',
+        color: 'success',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      onSuccess?.(Number(data.id));
+    },
+    onError: (error: Error) => {
+      console.error('Failed to create timer session:', error);
+      addToast({
+        title: 'Failed to create timer session',
+        color: 'danger',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      onError?.(error);
+    },
+  });
+};
+
+export const useUpdateTimerSessionMutation = ({
   onSuccess,
   onError,
 }: MutationProps) => {
   return useMutation({
-    mutationFn: (data: CreateTimerSessionData) => createTimerSession(data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateTimerSessionData }) =>
+      updateTimerSession(id, data),
     onSuccess: () => {
       addToast({
-        title: 'Timer session created successfully',
+        title: 'Timer session updated successfully',
         color: 'success',
         timeout: 1000,
         shouldShowTimeoutProgress: true,
@@ -26,9 +60,9 @@ export const useCreateTimerSessionMutation = ({
       onSuccess?.();
     },
     onError: (error: Error) => {
-      console.error('Failed to create timer session:', error);
+      console.error('Failed to update timer session:', error);
       addToast({
-        title: 'Failed to create timer session',
+        title: 'Failed to update timer session',
         color: 'danger',
         timeout: 1000,
         shouldShowTimeoutProgress: true,

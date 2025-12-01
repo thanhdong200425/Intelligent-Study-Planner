@@ -6,7 +6,10 @@ import { RotateCcw, Settings, Play, Pause, Square } from 'lucide-react';
 import { formatTime, toSeconds, fromSeconds } from '@/utils';
 import { playTimerEndSound } from '@/utils/sounds';
 import { FocusStats } from './FocusStats';
-import { useCreateTimerSessionMutation } from '@/mutations';
+import {
+  useCreateTimerSessionMutation,
+  useUpdateTimerSessionMutation,
+} from '@/mutations';
 import FocusSettingsModal from './FocusSettingsModal';
 import {
   useTimerSettings,
@@ -15,6 +18,8 @@ import {
   useAmbientPreset,
 } from '@/hooks';
 import type { Task } from '@/types';
+
+// TODO: Update database when focus session is completed
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -38,11 +43,19 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
+  const [currentTimerSessionId, setCurrentTimerSessionId] = useState<
+    number | null
+  >(null);
 
   // Play ambient sound only when timer is running
   useAmbientSound(selectedAmbientPreset, isRunning);
 
-  const { mutate: createTimerSession } = useCreateTimerSessionMutation({});
+  const { mutate: createTimerSession } = useCreateTimerSessionMutation({
+    onSuccess: (id: number) => {
+      setCurrentTimerSessionId(id);
+    },
+  });
+  const { mutate: updateTimerSession } = useUpdateTimerSessionMutation({});
 
   const resetToModeDefault = useCallback(
     (mode: TimerMode) => {
@@ -115,8 +128,19 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
           if (preferences.timerSounds) {
             playTimerEndSound();
           }
+
           // Track completion
           if (activeMode === 'focus') {
+            // Update timer session end time
+            if (currentTimerSessionId) {
+              updateTimerSession({
+                id: currentTimerSessionId,
+                data: {
+                  endTime: new Date().toISOString(),
+                },
+              });
+            }
+
             setCompletedSessions(prev => prev + 1);
             const sessionDuration = timerSettings.focus * 60;
             setTotalFocusTime(prev => prev + sessionDuration);
@@ -128,7 +152,14 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [isRunning, activeMode, timerSettings.focus, preferences.timerSounds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isRunning,
+    activeMode,
+    timerSettings.focus,
+    preferences.timerSounds,
+    currentTimerSessionId,
+  ]);
 
   // Calculate progress percentage for circular timer
   const totalTime = toSeconds({
