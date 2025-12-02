@@ -6,8 +6,9 @@ import {
   StudyGoals,
 } from '@/components';
 
-// TODO: Allow user can create their own event type
-// TODO: Update the style of add event type modal
+// DONE: Allow user can create their own event type
+// DONE: Update the style of add event type modal
+// TODO: Create reuse hooks to reduce the code duplication
 // TODO: When click into a event, show the event details by using modal
 
 export default function PlannerPage() {

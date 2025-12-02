@@ -18,7 +18,8 @@ import {
   Spinner,
 } from '@heroui/react';
 import { Plus } from 'lucide-react';
-import { useEventTypes } from '@/mutations/eventTypes';
+import { useEventTypes } from '@/hooks/useEventType';
+import { useTasks } from '@/hooks/useTask';
 import CreateEventTypeModal from './CreateEventTypeModal';
 
 interface AddEventModalProps {
@@ -35,6 +36,7 @@ const formSchema = z.object({
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
   eventTypeId: z.string().min(1, 'Event type is required'),
+  taskId: z.string().optional(),
   note: z.string().optional(),
 });
 
@@ -42,7 +44,8 @@ type FormData = z.infer<typeof formSchema>;
 
 const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
   const [showCreateTypeModal, setShowCreateTypeModal] = useState(false);
-  const { data: eventTypes, isLoading } = useEventTypes();
+  const { data: eventTypes, isLoading: isEventTypesLoading } = useEventTypes();
+  const { data: tasks, isLoading: isTasksLoading } = useTasks();
 
   const {
     control,
@@ -58,6 +61,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
       startTime: '',
       endTime: '',
       eventTypeId: '',
+      taskId: '',
       note: '',
     },
   });
@@ -68,6 +72,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
       console.log({
         ...data,
         eventTypeId: parseInt(data.eventTypeId),
+        taskId: data.taskId ? parseInt(data.taskId) : null,
       });
       handleClose();
     } catch (error) {
@@ -174,7 +179,45 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {isLoading ? (
+                <Controller
+                  name='taskId'
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      label='Task (optional)'
+                      placeholder='Link to a task'
+                      selectedKeys={
+                        field.value ? new Set([field.value]) : new Set()
+                      }
+                      onSelectionChange={keys => {
+                        if (keys === 'all') return;
+                        const selectedKey = Array.from(keys)[0] as string;
+                        setValue('taskId', selectedKey, {
+                          shouldValidate: true,
+                        });
+                      }}
+                      isLoading={isTasksLoading}
+                      isDisabled={
+                        isTasksLoading || !tasks || tasks.length === 0
+                      }
+                    >
+                      {(tasks || []).map(task => (
+                        <SelectItem key={task.id.toString()}>
+                          <div className='flex flex-col items-start'>
+                            <span className='text-sm'>{task.title}</span>
+                            {task.course && (
+                              <span className='text-xs text-gray-500'>
+                                {task.course.name}
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+
+                {isEventTypesLoading ? (
                   <div className='flex justify-center p-4'>
                     <Spinner size='sm' />
                   </div>

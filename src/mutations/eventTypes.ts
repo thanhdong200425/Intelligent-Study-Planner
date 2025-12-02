@@ -1,31 +1,13 @@
 import { addToast } from '@heroui/react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getEventTypes,
-  getEventTypeById,
   createEventType,
   updateEventType,
   deleteEventType,
   CreateEventTypeRequest,
   UpdateEventTypeRequest,
 } from '@/services/eventTypes';
-import { EventType } from '@/types';
 import { MutationProps } from './task';
-
-export const useEventTypes = () => {
-  return useQuery<EventType[]>({
-    queryKey: ['event-types'],
-    queryFn: () => getEventTypes(),
-  });
-};
-
-export const useEventType = (id: number) => {
-  return useQuery<EventType>({
-    queryKey: ['event-types', id],
-    queryFn: () => getEventTypeById(id),
-    enabled: !!id,
-  });
-};
 
 export const useCreateEventTypeMutation = ({
   onError,
