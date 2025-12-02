@@ -36,7 +36,7 @@ const formSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  eventTypeId: z.string().min(1, 'Event type is required'),
+  eventTypeId: z.string().optional(),
   taskId: z.string().optional(),
   note: z.string().optional(),
 });
@@ -99,7 +99,6 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
 
     if (selectedKey === CREATE_NEW_KEY) {
       setShowCreateTypeModal(true);
-      // Don't update the form value yet
     } else {
       setValue('eventTypeId', selectedKey, { shouldValidate: true });
     }
@@ -136,7 +135,6 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                     <Input
                       {...field}
                       label='Title'
-                      placeholder='e.g., Study Session'
                       isRequired
                       isInvalid={!!errors.title}
                       errorMessage={errors.title?.message}
@@ -204,14 +202,30 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                       onSelectionChange={keys => {
                         if (keys === 'all') return;
                         const selectedKey = Array.from(keys)[0] as string;
-                        setValue('taskId', selectedKey, {
-                          shouldValidate: true,
-                        });
+                        field.onChange(selectedKey);
                       }}
                       isLoading={isTasksLoading}
                       isDisabled={
                         isTasksLoading || !tasks || tasks.length === 0
                       }
+                      items={tasks}
+                      renderValue={items => {
+                        return items.map(item => {
+                          const selectedTask = tasks?.find(
+                            t => t.id.toString() === item.key
+                          );
+                          return (
+                            <div
+                              className='flex flex-col items-start'
+                              key={item.key}
+                            >
+                              <span className='text-sm'>
+                                {selectedTask?.title}
+                              </span>
+                            </div>
+                          );
+                        });
+                      }}
                     >
                       {(tasks || []).map(task => (
                         <SelectItem key={task.id.toString()}>
@@ -245,9 +259,30 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                           field.value ? new Set([field.value]) : new Set()
                         }
                         onSelectionChange={handleEventTypeChange}
-                        isRequired
                         isInvalid={!!errors.eventTypeId}
                         errorMessage={errors.eventTypeId?.message}
+                        items={eventTypes}
+                        renderValue={selectedItems =>
+                          selectedItems.map(item => {
+                            const selectedEventType = eventTypes?.find(
+                              t => t.id.toString() === item.key
+                            );
+                            return (
+                              <div
+                                className='flex items-center gap-2'
+                                key={item.key}
+                              >
+                                <div
+                                  className='w-3 h-3 rounded-full'
+                                  style={{
+                                    backgroundColor: selectedEventType?.color,
+                                  }}
+                                />
+                                {selectedEventType?.name}
+                              </div>
+                            );
+                          })
+                        }
                       >
                         {[
                           ...(eventTypes || []).map(type => (
