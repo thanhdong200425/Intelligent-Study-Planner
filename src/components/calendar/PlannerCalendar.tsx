@@ -178,7 +178,7 @@ export default function PlannerCalendar() {
                   {eventsForDay.slice(0, 3).map(event => (
                     <div
                       key={event.id}
-                      className='rounded px-1 py-0.5 text-[12px] text-white truncate'
+                      className='rounded px-1 py-0.5 text-[12px] font-medium text-white truncate'
                       style={{
                         backgroundColor: event.eventType?.color || '#4b5563',
                       }}

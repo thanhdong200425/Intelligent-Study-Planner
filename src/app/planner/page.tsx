@@ -6,10 +6,8 @@ import {
   StudyGoals,
 } from '@/components';
 
-// DONE: Allow user can create their own event type
-// DONE: Update the style of add event type modal
-// DONE Create reuse hooks to reduce the code duplication
-// TODO: When click into a event, show the event details by using modal
+// TODO: Set the max length of the upcoming events to 5
+// TODO: Show the error message as toast when start time is greater than end time
 
 export default function PlannerPage() {
   return (

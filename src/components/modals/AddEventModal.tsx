@@ -16,7 +16,10 @@ import {
   SelectItem,
   Button,
   Spinner,
+  DatePicker,
 } from '@heroui/react';
+import { parseDate } from '@internationalized/date';
+import { I18nProvider } from '@react-aria/i18n';
 import { Plus } from 'lucide-react';
 import { useEventTypes } from '@/hooks/useEventType';
 import { useTasks } from '@/hooks/useTask';
@@ -147,14 +150,27 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                     name='date'
                     control={control}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        type='date'
-                        label='Date'
-                        isRequired
-                        isInvalid={!!errors.date}
-                        errorMessage={errors.date?.message}
-                      />
+                      <I18nProvider locale='en-GB'>
+                        <DatePicker
+                          label='Date'
+                          isRequired
+                          isInvalid={!!errors.date}
+                          errorMessage={errors.date?.message}
+                          value={
+                            field.value ? parseDate(field.value) : undefined
+                          }
+                          onChange={value => {
+                            if (!value) {
+                              field.onChange('');
+                              return;
+                            }
+                            const year = String(value.year).padStart(4, '0');
+                            const month = String(value.month).padStart(2, '0');
+                            const day = String(value.day).padStart(2, '0');
+                            field.onChange(`${year}-${month}-${day}`);
+                          }}
+                        />
+                      </I18nProvider>
                     )}
                   />
                   <div className='grid grid-cols-2 gap-3'>
