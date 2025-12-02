@@ -7,6 +7,7 @@ import {
 } from '@/components';
 
 // TODO: Allow user can create their own event type
+// TODO: Update the style of add event type modal
 // TODO: When click into a event, show the event details by using modal
 
 export default function PlannerPage() {

@@ -104,3 +104,26 @@ export interface UserProfile {
   breakDuration: number;
   dailyGoal: number;
 }
+
+export interface EventType {
+  id: number;
+  userId: number;
+  name: string;
+  color: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Event {
+  id: number;
+  userId: number;
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  title: string;
+  note?: string;
+  eventTypeId: number;
+  eventType?: EventType;
+  createdAt: Date;
+  updatedAt: Date;
+}

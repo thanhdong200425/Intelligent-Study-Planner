@@ -1,5 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Modal,
   ModalBody,
@@ -11,7 +15,11 @@ import {
   Select,
   SelectItem,
   Button,
+  Spinner,
 } from '@heroui/react';
+import { Plus } from 'lucide-react';
+import { useEventTypes } from '@/mutations/eventTypes';
+import CreateEventTypeModal from './CreateEventTypeModal';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -19,43 +27,232 @@ interface AddEventModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const CREATE_NEW_KEY = '__create_new__';
+
+const formSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  date: z.string().min(1, 'Date is required'),
+  startTime: z.string().min(1, 'Start time is required'),
+  endTime: z.string().min(1, 'End time is required'),
+  eventTypeId: z.string().min(1, 'Event type is required'),
+  note: z.string().optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
+  const [showCreateTypeModal, setShowCreateTypeModal] = useState(false);
+  const { data: eventTypes, isLoading } = useEventTypes();
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      eventTypeId: '',
+      note: '',
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      // TODO: Implement event creation API call
+      console.log({
+        ...data,
+        eventTypeId: parseInt(data.eventTypeId),
+      });
+      handleClose();
+    } catch (error) {
+      console.error('Failed to create event:', error);
+    }
+  };
+
+  const handleEventTypeChange = (keys: 'all' | Set<React.Key>) => {
+    if (keys === 'all') return;
+
+    const selectedKey = Array.from(keys)[0] as string;
+
+    if (selectedKey === CREATE_NEW_KEY) {
+      setShowCreateTypeModal(true);
+      // Don't update the form value yet
+    } else {
+      setValue('eventTypeId', selectedKey, { shouldValidate: true });
+    }
+  };
+
+  const handleEventTypeCreated = (eventTypeId: number) => {
+    setValue('eventTypeId', eventTypeId.toString(), { shouldValidate: true });
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose} placement='center'>
-      <ModalContent>
-        {onClose => (
-          <>
-            <ModalHeader className='flex flex-col gap-1'>Add Event</ModalHeader>
-            <ModalBody>
-              <Input label='Title' placeholder='e.g., Study Session' />
-              <div className='grid grid-cols-2 gap-3'>
-                <Input type='date' label='Date' />
-                <Input type='time' label='Time' />
-              </div>
-              <Select label='Type' selectedKeys={new Set(['study'])}>
-                <SelectItem key='study'>Study Session</SelectItem>
-                <SelectItem key='exam'>Exam</SelectItem>
-                <SelectItem key='assignment'>Assignment</SelectItem>
-              </Select>
-              <Textarea label='Notes' placeholder='Add any details...' />
-            </ModalBody>
-            <ModalFooter>
-              <Button variant='light' onPress={onClose}>
-                Cancel
-              </Button>
-              <Button
-                color='primary'
-                onPress={() => {
-                  /* handle save later */ onClose();
-                }}
-              >
-                Add
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={handleClose}
+        placement='center'
+        size='lg'
+      >
+        <ModalContent>
+          {() => (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <ModalHeader className='flex flex-col gap-1'>
+                Add Event
+              </ModalHeader>
+              <ModalBody>
+                <Controller
+                  name='title'
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      label='Title'
+                      placeholder='e.g., Study Session'
+                      isRequired
+                      isInvalid={!!errors.title}
+                      errorMessage={errors.title?.message}
+                    />
+                  )}
+                />
+
+                <div className='grid grid-cols-1 gap-3'>
+                  <Controller
+                    name='date'
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        type='date'
+                        label='Date'
+                        isRequired
+                        isInvalid={!!errors.date}
+                        errorMessage={errors.date?.message}
+                      />
+                    )}
+                  />
+                  <div className='grid grid-cols-2 gap-3'>
+                    <Controller
+                      name='startTime'
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type='time'
+                          label='Start Time'
+                          isRequired
+                          isInvalid={!!errors.startTime}
+                          errorMessage={errors.startTime?.message}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name='endTime'
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type='time'
+                          label='End Time'
+                          isRequired
+                          isInvalid={!!errors.endTime}
+                          errorMessage={errors.endTime?.message}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {isLoading ? (
+                  <div className='flex justify-center p-4'>
+                    <Spinner size='sm' />
+                  </div>
+                ) : (
+                  <Controller
+                    name='eventTypeId'
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        label='Event Type'
+                        placeholder='Select event type'
+                        selectedKeys={
+                          field.value ? new Set([field.value]) : new Set()
+                        }
+                        onSelectionChange={handleEventTypeChange}
+                        isRequired
+                        isInvalid={!!errors.eventTypeId}
+                        errorMessage={errors.eventTypeId?.message}
+                      >
+                        {[
+                          ...(eventTypes || []).map(type => (
+                            <SelectItem key={type.id.toString()}>
+                              <div className='flex items-center gap-2'>
+                                <div
+                                  className='w-3 h-3 rounded-full'
+                                  style={{ backgroundColor: type.color }}
+                                />
+                                {type.name}
+                              </div>
+                            </SelectItem>
+                          )),
+                          <SelectItem
+                            key={CREATE_NEW_KEY}
+                            className='text-primary'
+                            textValue='Create New Event Type'
+                          >
+                            <div className='flex items-center gap-2 font-medium text-primary'>
+                              <Plus className='w-4 h-4' />
+                              Create New Event Type
+                            </div>
+                          </SelectItem>,
+                        ]}
+                      </Select>
+                    )}
+                  />
+                )}
+
+                <Controller
+                  name='note'
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      label='Notes'
+                      placeholder='Add any details...'
+                    />
+                  )}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant='light' onPress={handleClose}>
+                  Cancel
+                </Button>
+                <Button color='primary' type='submit' isLoading={isSubmitting}>
+                  Add Event
+                </Button>
+              </ModalFooter>
+            </form>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <CreateEventTypeModal
+        isOpen={showCreateTypeModal}
+        onClose={() => setShowCreateTypeModal(false)}
+        onSuccess={handleEventTypeCreated}
+      />
+    </>
   );
 };
 
