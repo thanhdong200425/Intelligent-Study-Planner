@@ -18,8 +18,9 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { usePlannerCalendar } from '@/hooks/usePlannerCalendar';
 import { DAYS_OF_WEEK } from '@/utils/constants';
-import { useTasks } from '@/hooks/useTask';
-import { useEventType, useEventTypes } from '@/hooks/useEventType';
+import { useEventTypes } from '@/hooks/useEventType';
+import { useEvents } from '@/hooks/useEvent';
+import { Event } from '@/types';
 
 export default function PlannerCalendar() {
   const {
@@ -33,7 +34,21 @@ export default function PlannerCalendar() {
   } = usePlannerCalendar();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { data: eventTypes } = useEventTypes();
+  const { data: events } = useEvents();
+
+  const eventsForSelectedDay: Event[] =
+    selectedDate && events
+      ? events.filter(event => {
+          const eventDate = new Date(event.date);
+          return (
+            eventDate.getFullYear() === selectedDate.getFullYear() &&
+            eventDate.getMonth() === selectedDate.getMonth() &&
+            eventDate.getDate() === selectedDate.getDate()
+          );
+        })
+      : [];
 
   return (
     <Card className='p-6 rounded-2xl h-full flex flex-col'>
@@ -96,18 +111,51 @@ export default function PlannerCalendar() {
         {grid.flatMap((row, r) =>
           row.map((_, c) => {
             const idx = r * 7 + c;
-            const isToday = idx === currentDate.getDay();
             const cell = gridDays[idx];
             const dayLabel = cell?.day ?? '';
-            const dayClass = cell?.isOutside
-              ? 'text-gray-300'
-              : 'text-gray-700';
-            const containerClass = `border rounded-lg p-2 h-full text-sm ${cell?.isOutside ? 'border-gray-100' : 'border-gray-300'}`;
+            const isOutside = cell?.isOutside;
+
+            const cellDate =
+              !isOutside && dayLabel
+                ? new Date(
+                    currentMonthYear.year,
+                    currentMonthYear.month - 1,
+                    dayLabel
+                  )
+                : null;
+
+            const isToday =
+              !isOutside &&
+              dayLabel === currentDate.getDate() &&
+              currentMonthYear.month === currentDate.getMonth() + 1 &&
+              currentMonthYear.year === currentDate.getFullYear();
+
+            const dayClass = isOutside ? 'text-gray-300' : 'text-gray-700';
+            const containerClass = `border rounded-lg p-2 h-full text-sm ${
+              isOutside ? 'border-gray-100' : 'border-gray-300'
+            }`;
+
+            const eventsForDay =
+              cellDate && events
+                ? events.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return (
+                      eventDate.getFullYear() === cellDate.getFullYear() &&
+                      eventDate.getMonth() === cellDate.getMonth() &&
+                      eventDate.getDate() === cellDate.getDate()
+                    );
+                  })
+                : [];
+
             return (
               <div
-                onClick={() => setIsDetailOpen(true)}
+                onClick={() => {
+                  if (!cellDate) return;
+                  setSelectedDate(cellDate);
+                  setIsDetailOpen(true);
+                }}
                 key={`${r}-${c}`}
-                className={`${containerClass}`}
+                className={containerClass}
               >
                 <span
                   className={dayClass}
@@ -124,6 +172,26 @@ export default function PlannerCalendar() {
                 >
                   {dayLabel}
                 </span>
+
+                {/* Events for this day */}
+                <div className='mt-2 space-y-1'>
+                  {eventsForDay.slice(0, 3).map(event => (
+                    <div
+                      key={event.id}
+                      className='rounded px-1 py-0.5 text-[12px] text-white truncate'
+                      style={{
+                        backgroundColor: event.eventType?.color || '#4b5563',
+                      }}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {eventsForDay.length > 3 && (
+                    <div className='text-[10px] text-gray-500'>
+                      +{eventsForDay.length - 3} more
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })
@@ -141,6 +209,8 @@ export default function PlannerCalendar() {
       <DayDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
+        date={selectedDate}
+        events={eventsForSelectedDay}
       />
 
       {/* Event types */}
