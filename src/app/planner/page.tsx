@@ -8,7 +8,7 @@ import {
 
 // DONE: Allow user can create their own event type
 // DONE: Update the style of add event type modal
-// TODO: Create reuse hooks to reduce the code duplication
+// DONE Create reuse hooks to reduce the code duplication
 // TODO: When click into a event, show the event details by using modal
 
 export default function PlannerPage() {

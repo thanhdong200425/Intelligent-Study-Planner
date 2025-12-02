@@ -34,7 +34,6 @@ export default function PlannerCalendar() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { data: eventTypes } = useEventTypes();
-  console.log({ eventTypes });
 
   return (
     <Card className='p-6 rounded-2xl h-full flex flex-col'>
@@ -108,35 +107,44 @@ export default function PlannerCalendar() {
               <div
                 onClick={() => setIsDetailOpen(true)}
                 key={`${r}-${c}`}
-                className={containerClass}
+                className={`${containerClass}`}
               >
-                <span className={dayClass}>{dayLabel}</span>
+                <span
+                  className={dayClass}
+                  style={
+                    isToday
+                      ? {
+                          backgroundColor: '#4e8df5',
+                          color: 'white',
+                          padding: '7px 10px',
+                          borderRadius: '50%',
+                        }
+                      : {}
+                  }
+                >
+                  {dayLabel}
+                </span>
               </div>
             );
           })
         )}
       </div>
+
+      {/* Add event modal */}
       <AddEventModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onOpenChange={setIsAddOpen}
       />
+
+      {/* Day detail modal */}
       <DayDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
       />
+
+      {/* Event types */}
       <div className='flex items-center gap-6 border-t border-gray-100 pt-3 mt-4 text-sm text-gray-600'>
-        {/* <div className='flex items-center gap-2'>
-          <span className='size-3 rounded bg-blue-600 inline-block' /> Study
-          Session
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='size-3 rounded bg-red-600 inline-block' /> Exam
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='size-3 rounded bg-amber-500 inline-block' />{' '}
-          Assignment
-        </div> */}
         {eventTypes &&
           eventTypes.length > 0 &&
           eventTypes.map(eventType => (

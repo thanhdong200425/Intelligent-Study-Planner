@@ -20,6 +20,7 @@ import {
 import { Plus } from 'lucide-react';
 import { useEventTypes } from '@/hooks/useEventType';
 import { useTasks } from '@/hooks/useTask';
+import { useCreateEventMutation } from '@/mutations/event';
 import CreateEventTypeModal from './CreateEventTypeModal';
 
 interface AddEventModalProps {
@@ -47,6 +48,15 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
   const { data: eventTypes, isLoading: isEventTypesLoading } = useEventTypes();
   const { data: tasks, isLoading: isTasksLoading } = useTasks();
 
+  const { mutate: createEvent } = useCreateEventMutation({
+    onSuccess: () => {
+      handleClose();
+    },
+    onError: error => {
+      console.error('Failed to create event:', error);
+    },
+  });
+
   const {
     control,
     handleSubmit,
@@ -67,17 +77,19 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
   });
 
   const onSubmit = async (data: FormData) => {
-    try {
-      // TODO: Implement event creation API call
-      console.log({
-        ...data,
-        eventTypeId: parseInt(data.eventTypeId),
-        taskId: data.taskId ? parseInt(data.taskId) : null,
-      });
-      handleClose();
-    } catch (error) {
-      console.error('Failed to create event:', error);
-    }
+    const payload = {
+      title: data.title,
+      date: data.date,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      eventTypeId: data.eventTypeId
+        ? parseInt(data.eventTypeId, 10)
+        : undefined,
+      taskId: data.taskId ? parseInt(data.taskId, 10) : undefined,
+      note: data.note || undefined,
+    };
+
+    createEvent(payload);
   };
 
   const handleEventTypeChange = (keys: 'all' | Set<React.Key>) => {

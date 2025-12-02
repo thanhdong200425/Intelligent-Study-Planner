@@ -122,8 +122,10 @@ export interface Event {
   endTime: Date;
   title: string;
   note?: string;
-  eventTypeId: number;
+  eventTypeId?: number;
   eventType?: EventType;
+  taskId?: number;
+  task?: Pick<Task, 'title'>;
   createdAt: Date;
   updatedAt: Date;
 }
