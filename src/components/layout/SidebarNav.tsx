@@ -31,7 +31,7 @@ const menuItems: MenuItem[] = [
   // { href: '/?tab=habits', icon: Calendar, label: 'Habits', collapsed: false },
   { href: '/courses', icon: BookOpen, label: 'Courses', collapsed: false },
   {
-    href: '/?tab=analytics',
+    href: '/analytics',
     icon: BarChart2,
     label: 'Analytics',
     collapsed: false,
