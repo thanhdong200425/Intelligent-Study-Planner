@@ -12,15 +12,10 @@ import {
 } from '@/components/analytics';
 import { Clock, BookOpen, BarChart3, Target } from 'lucide-react';
 import { Button } from '@heroui/react';
-import { useQuery } from '@tanstack/react-query';
-import { getAnalyticsStats } from '@/services/analytics';
+import { useAnalyticsStats } from '@/hooks/useAnalyticsStats';
 
 export default function AnalyticsPage() {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['analytics', 'stats'],
-    queryFn: getAnalyticsStats,
-  });
-
+  const { data: stats, isLoading } = useAnalyticsStats();
   return (
     <div className='flex h-screen bg-gray-50 text-gray-800 font-sans'>
       <SidebarNav />

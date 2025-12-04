@@ -3,8 +3,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@heroui/react';
 import { RotateCcw, Settings, Play, Pause, Square } from 'lucide-react';
-import { formatTime, toSeconds, fromSeconds } from '@/utils';
+import { toSeconds } from '@/utils';
 import { playTimerEndSound } from '@/utils/sounds';
+import { differenceInMinutes } from 'date-fns';
 import { FocusStats } from './FocusStats';
 import {
   useCreateTimerSessionMutation,
@@ -14,12 +15,11 @@ import FocusSettingsModal from './FocusSettingsModal';
 import {
   useTimerSettings,
   useTimerPreferences,
+  useTimerDisplay,
   useAmbientSound,
   useAmbientPreset,
 } from '@/hooks';
 import type { Task } from '@/types';
-
-// TODO: Update database when focus session is completed
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -30,6 +30,9 @@ interface FocusTimerProps {
 export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const { settings: timerSettings, updateSettings } = useTimerSettings();
   const { preferences, updatePreferences } = useTimerPreferences();
+  const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
+
+  const [startTime, setStartTime] = useState<Date | null>(null);
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(
@@ -38,11 +41,11 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
       seconds: 0,
     })
   );
+
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
   const [currentTimerSessionId, setCurrentTimerSessionId] = useState<
     number | null
   >(null);
@@ -68,6 +71,8 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
 
   const toggleSession = useCallback(() => {
     if (!isRunning) {
+      const sessionStartTime = new Date();
+      setStartTime(sessionStartTime);
       createTimerSession({
         type: activeMode,
         taskId:
@@ -75,7 +80,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
             ? Number(selectedTask.id)
             : null,
         timeBlockId: null,
-        startTime: new Date().toISOString(),
+        startTime: sessionStartTime.toISOString(),
       });
     }
 
@@ -91,12 +96,29 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const handleReset = () => {
     setIsRunning(false);
     setStartedAt(null);
+    setStartTime(null);
     resetToModeDefault(activeMode);
   };
 
   const handleStop = () => {
     setIsRunning(false);
     setStartedAt(null);
+
+    // Calculate and update actual minutes if session was running
+    if (currentTimerSessionId && startTime) {
+      const endTime = new Date();
+      const durationMinutes = differenceInMinutes(endTime, startTime);
+
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          endTime: endTime.toISOString(),
+          durationMinutes,
+        },
+      });
+    }
+
+    setStartTime(null);
   };
 
   const handleModeChange = (mode: TimerMode) => {
@@ -131,12 +153,19 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
 
           // Track completion
           if (activeMode === 'focus') {
-            // Update timer session end time
+            // Calculate actual minutes based on startTime and endTime
+            const endTime = new Date();
+            const durationMinutes = startTime
+              ? differenceInMinutes(endTime, startTime)
+              : 0;
+
+            // Update timer session end time and actual minutes
             if (currentTimerSessionId) {
               updateTimerSession({
                 id: currentTimerSessionId,
                 data: {
-                  endTime: new Date().toISOString(),
+                  endTime: endTime.toISOString(),
+                  durationMinutes,
                 },
               });
             }
@@ -144,6 +173,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
             setCompletedSessions(prev => prev + 1);
             const sessionDuration = timerSettings.focus * 60;
             setTotalFocusTime(prev => prev + sessionDuration);
+            setStartTime(null);
           }
           return 0;
         }
@@ -159,23 +189,23 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     timerSettings.focus,
     preferences.timerSounds,
     currentTimerSessionId,
+    startTime,
   ]);
 
-  // Calculate progress percentage for circular timer
-  const totalTime = toSeconds({
-    minutes: timerSettings[activeMode],
-    seconds: 0,
+  // Calculate timer display values and progress
+  const {
+    displayMinutes,
+    displaySeconds,
+    strokeDashoffset,
+    circumference,
+    isDarkModeActive,
+  } = useTimerDisplay({
+    remainingTime,
+    timerSettings,
+    activeMode,
+    darkMode: preferences.darkMode,
+    isRunning,
   });
-  const progress = ((totalTime - remainingTime) / totalTime) * 100;
-  const circumference = 2 * Math.PI * 100; // radius = 100
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  const { minutes, seconds } = fromSeconds(remainingTime);
-  const displayMinutes = formatTime(minutes);
-  const displaySeconds = formatTime(seconds);
-
-  // Dark mode: apply dark styling when dark mode is on and timer is running
-  const isDarkModeActive = preferences.darkMode && isRunning;
 
   // If dark mode is active, render full-screen black overlay
   if (isDarkModeActive) {

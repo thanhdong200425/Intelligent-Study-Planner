@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api';
-import { CreateTimerSessionData } from '@/mutations';
+import { CreateTimerSessionData, UpdateTimerSessionData } from '@/mutations';
 import { TimerSession } from '@/types';
 
 const endpoint = {
@@ -20,7 +20,7 @@ export const createTimerSession = async (
 
 export const updateTimerSession = async (
   id: number,
-  data: Partial<CreateTimerSessionData>
+  data: UpdateTimerSessionData
 ): Promise<TimerSession> => {
   try {
     const response = await apiClient.patch(
