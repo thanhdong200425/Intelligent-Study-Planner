@@ -90,7 +90,8 @@ export interface TimerSession {
   timeBlockId: number | null;
   startTime: string;
   endTime?: string;
-  actualMinutes: number;
+  durationMinutes: number;
+  status: 'active' | 'completed' | 'stopped';
   task?: Task;
 }
 

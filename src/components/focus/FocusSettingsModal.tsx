@@ -32,12 +32,6 @@ interface FocusSettingsModalProps {
   onPreferencesChange: (preferences: Partial<TimerPreferences>) => void;
 }
 
-// DONE: Add a ok button to persist settings
-// DONE: Remove the scroll bar
-// DONE: Save timer durations to local storage and load on mount, update when changed
-// DONE: Add function for timer sounds and dark mode
-// DONE: Add function for quick presets
-// DONE: The dark mode isn't work until user refresh the page
 // TODO: Add function for Spotify integration
 // Add routes for authorization to request user grant access to Spotify, then request access token
 

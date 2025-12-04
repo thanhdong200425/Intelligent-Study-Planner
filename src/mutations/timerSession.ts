@@ -12,8 +12,9 @@ export interface CreateTimerSessionData {
 
 export interface UpdateTimerSessionData
   extends Partial<CreateTimerSessionData> {
-  endTime: string;
-  durationMinutes: number;
+  endTime?: string;
+  durationMinutes?: number;
+  status?: 'active' | 'completed' | 'stopped';
 }
 
 export const useCreateTimerSessionMutation = ({

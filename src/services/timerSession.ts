@@ -43,3 +43,13 @@ export const getTodayTimerSessions = async (): Promise<TimerSession[]> => {
     return [];
   }
 };
+
+export const getActiveTimerSession = async (): Promise<TimerSession | null> => {
+  try {
+    const response = await apiClient.get(`${endpoint.timerSession}/active`);
+    return response.data;
+  } catch (err) {
+    console.log('Error fetching active timer session: ', err);
+    return null;
+  }
+};

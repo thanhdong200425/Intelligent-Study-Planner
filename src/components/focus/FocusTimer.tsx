@@ -5,7 +5,7 @@ import { Button } from '@heroui/react';
 import { RotateCcw, Settings, Play, Pause, Square } from 'lucide-react';
 import { toSeconds } from '@/utils';
 import { playTimerEndSound } from '@/utils/sounds';
-import { differenceInMinutes } from 'date-fns';
+import { differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { FocusStats } from './FocusStats';
 import {
   useCreateTimerSessionMutation,
@@ -20,6 +20,7 @@ import {
   useAmbientPreset,
 } from '@/hooks';
 import type { Task } from '@/types';
+import { getActiveTimerSession } from '@/services';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -41,8 +42,6 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
       seconds: 0,
     })
   );
-
-  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -60,13 +59,71 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   });
   const { mutate: updateTimerSession } = useUpdateTimerSessionMutation({});
 
+  // Restore timer state on mount
+  useEffect(() => {
+    const restoreTimerState = async () => {
+      const activeSession = await getActiveTimerSession();
+
+      if (activeSession) {
+        const sessionStartTime = new Date(activeSession.startTime);
+        const now = new Date();
+
+        // Calculate the duration of the session based on type
+        const sessionType = activeSession.type as TimerMode;
+
+        const totalDurationSeconds = timerSettings[sessionType] * 60;
+
+        // Calculate elapsed time
+        const elapsedSeconds = differenceInSeconds(now, sessionStartTime);
+
+        // Calculate remaining time
+        const calculatedRemainingTime = Math.max(
+          0,
+          totalDurationSeconds - elapsedSeconds
+        );
+
+        // If timer has expired, mark it as completed
+        if (calculatedRemainingTime === 0) {
+          updateTimerSession({
+            id: activeSession.id,
+            data: {
+              endTime: new Date(
+                sessionStartTime.getTime() + totalDurationSeconds * 1000
+              ).toISOString(),
+              durationMinutes: Math.floor(totalDurationSeconds / 60),
+              status: 'completed',
+            },
+          });
+        } else {
+          // Restore the timer state
+          setCurrentTimerSessionId(activeSession.id);
+          setStartTime(sessionStartTime);
+          setActiveMode(sessionType);
+          setRemainingTime(calculatedRemainingTime);
+          setIsRunning(true);
+        }
+      }
+    };
+
+    restoreTimerState();
+  }, [timerSettings, updateTimerSession]);
+
   const resetToModeDefault = useCallback(
     (mode: TimerMode) => {
       const minutes = timerSettings[mode];
       const seconds = 0;
       setRemainingTime(toSeconds({ minutes, seconds }));
+      if (currentTimerSessionId) {
+        updateTimerSession({
+          id: currentTimerSessionId,
+          data: {
+            status: 'stopped',
+          },
+        });
+      }
     },
-    [timerSettings]
+
+    [timerSettings, currentTimerSessionId, updateTimerSession]
   );
 
   const toggleSession = useCallback(() => {
@@ -84,25 +141,52 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
       });
     }
 
+    // If there's an active timer session, mark it as stopped
     setIsRunning(prev => {
-      const next = !prev;
-      if (next && !startedAt) {
-        setStartedAt(Date.now());
-      }
-      return next;
+      return !prev;
     });
-  }, [activeMode, createTimerSession, isRunning, selectedTask?.id, startedAt]);
+    if (currentTimerSessionId)
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          status: isRunning ? 'stopped' : 'active',
+        },
+      });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeMode,
+    createTimerSession,
+    isRunning,
+    selectedTask?.id,
+    currentTimerSessionId,
+  ]);
 
   const handleReset = () => {
     setIsRunning(false);
-    setStartedAt(null);
+
+    // If there's an active timer session, mark it as stopped
+    if (currentTimerSessionId && startTime) {
+      const endTime = new Date();
+      const durationMinutes = differenceInMinutes(endTime, startTime);
+
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          endTime: endTime.toISOString(),
+          durationMinutes,
+          status: 'stopped',
+        },
+      });
+    }
+
     setStartTime(null);
+    setCurrentTimerSessionId(null);
     resetToModeDefault(activeMode);
   };
 
   const handleStop = () => {
     setIsRunning(false);
-    setStartedAt(null);
 
     // Calculate and update actual minutes if session was running
     if (currentTimerSessionId && startTime) {
@@ -114,16 +198,36 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
         data: {
           endTime: endTime.toISOString(),
           durationMinutes,
+          status: 'stopped',
         },
       });
     }
 
     setStartTime(null);
+    setCurrentTimerSessionId(null);
   };
 
   const handleModeChange = (mode: TimerMode) => {
     if (isRunning) {
       setIsRunning(false);
+
+      // If there's an active timer session, mark it as stopped
+      if (currentTimerSessionId && startTime) {
+        const endTime = new Date();
+        const durationMinutes = differenceInMinutes(endTime, startTime);
+
+        updateTimerSession({
+          id: currentTimerSessionId,
+          data: {
+            endTime: endTime.toISOString(),
+            durationMinutes,
+            status: 'stopped',
+          },
+        });
+      }
+
+      setStartTime(null);
+      setCurrentTimerSessionId(null);
     }
     setActiveMode(mode);
     resetToModeDefault(mode);
@@ -166,6 +270,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
                 data: {
                   endTime: endTime.toISOString(),
                   durationMinutes,
+                  status: 'completed',
                 },
               });
             }
@@ -174,6 +279,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
             const sessionDuration = timerSettings.focus * 60;
             setTotalFocusTime(prev => prev + sessionDuration);
             setStartTime(null);
+            setCurrentTimerSessionId(null);
           }
           return 0;
         }
