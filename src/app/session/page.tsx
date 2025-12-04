@@ -2,8 +2,10 @@ import React from 'react';
 import { SidebarNav, HeaderBar } from '@/components';
 import FocusSessionWrapper from '@/components/focus/FocusSessionWrapper';
 
-// TODO: Ensure the focus timer is still running when the page is refreshed
-// TODO: Auto switch between focus and break when the timer ends, and vice versa
+// TODO: Show a small pop-up if user is not focused in "focus page" to ensure they can see the timer
+// TODO: Load time focused and sessions quantity from backend
+// TODO: Just show 5 recent sessions in the session history
+// TODO: When user click into view all, redirect to the session history page
 
 export default function FocusPage() {
   return (

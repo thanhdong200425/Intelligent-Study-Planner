@@ -233,6 +233,27 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     resetToModeDefault(mode);
   };
 
+  // Auto-switch to next mode when timer completes
+  const autoSwitchToNextMode = useCallback(
+    (currentCompletedSessions: number) => {
+      let nextMode: TimerMode;
+
+      if (activeMode === 'focus') {
+        const nextSessionCount = currentCompletedSessions + 1;
+        const shouldTakeLongBreak =
+          nextSessionCount > 0 && nextSessionCount % 4 === 0;
+        nextMode = shouldTakeLongBreak ? 'long_break' : 'break';
+      } else {
+        nextMode = 'focus';
+      }
+
+      // Switch mode and reset timer
+      setActiveMode(nextMode);
+      resetToModeDefault(nextMode);
+    },
+    [activeMode, resetToModeDefault]
+  );
+
   // Reset timer when durations change
   useEffect(() => {
     if (!isRunning) {
@@ -278,9 +299,15 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
             setCompletedSessions(prev => prev + 1);
             const sessionDuration = timerSettings.focus * 60;
             setTotalFocusTime(prev => prev + sessionDuration);
-            setStartTime(null);
-            setCurrentTimerSessionId(null);
           }
+
+          // Clear current session state
+          setStartTime(null);
+          setCurrentTimerSessionId(null);
+
+          // Auto-switch to next mode and start timer (pass updated count)
+          autoSwitchToNextMode(completedSessions);
+
           return 0;
         }
         return prev - 1;
@@ -296,6 +323,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     preferences.timerSounds,
     currentTimerSessionId,
     startTime,
+    autoSwitchToNextMode,
   ]);
 
   // Calculate timer display values and progress
