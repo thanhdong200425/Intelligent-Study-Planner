@@ -24,7 +24,9 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { href: '/', icon: Clock, label: 'Today', collapsed: false },
+  ...(process.env.NEXT_PUBLIC_NODE_ENV === 'production'
+    ? []
+    : [{ href: '/', icon: Clock, label: 'Today', collapsed: false }]),
   { href: '/planner', icon: LayoutGrid, label: 'Planner', collapsed: false },
   { href: '/tasks', icon: ListTodo, label: 'Tasks', collapsed: false },
   { href: '/session', icon: Timer, label: 'Focus', collapsed: false },
