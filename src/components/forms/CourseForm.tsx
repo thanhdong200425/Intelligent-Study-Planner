@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Course } from '@/types';
-import { CourseStorage } from '@/lib/storage';
 import { Button } from '@/components/ui/Button';
 import { addToast, Input } from '@heroui/react';
 import { Controller, useForm } from 'react-hook-form';

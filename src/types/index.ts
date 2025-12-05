@@ -29,6 +29,7 @@ export interface Task {
   completed?: boolean;
   actualMinutes?: number;
   priority?: TaskPriority;
+  course?: Course;
 }
 
 export interface AvailabilityWindow {
@@ -83,13 +84,15 @@ export interface WeeklySummary {
 }
 
 export interface TimerSession {
-  id: string;
+  id: number;
   type: 'focus' | 'break' | 'long_break';
   taskId: number | null;
   timeBlockId: number | null;
   startTime: string;
   endTime?: string;
-  actualMinutes: number;
+  durationMinutes: number;
+  status: 'active' | 'completed' | 'stopped';
+  task?: Task;
 }
 
 export interface UserProfile {
@@ -101,4 +104,29 @@ export interface UserProfile {
   focusDuration: number;
   breakDuration: number;
   dailyGoal: number;
+}
+
+export interface EventType {
+  id: number;
+  userId: number;
+  name: string;
+  color: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Event {
+  id: number;
+  userId: number;
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  title: string;
+  note?: string;
+  eventTypeId?: number;
+  eventType?: EventType;
+  taskId?: number;
+  task?: Pick<Task, 'title'>;
+  createdAt: Date;
+  updatedAt: Date;
 }

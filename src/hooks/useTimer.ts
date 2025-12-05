@@ -44,6 +44,7 @@ export const useTimerSettings = () => {
   const updateSettings = (newSettings: typeof DEFAULT_SETTINGS) => {
     setSettings(newSettings);
     localStorage.setItem('timer-settings', JSON.stringify(newSettings));
+    console.log('settings updated', newSettings);
   };
 
   return { settings, updateSettings, isLoaded };

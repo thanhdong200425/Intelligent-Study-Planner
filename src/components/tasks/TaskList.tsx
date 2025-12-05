@@ -33,9 +33,9 @@ const TaskList: React.FC<TaskListProps> = ({
     return priorityRank[priority] ?? 0;
   };
 
-  const { data: tasks } = useQuery({
+  const { data: tasks } = useQuery<Task[]>({
     queryKey: ['tasks'],
-    queryFn: getAllTasks,
+    queryFn: () => getAllTasks({ includeCourse: true }),
   });
 
   const filteredTasks = useMemo(() => {
@@ -45,8 +45,8 @@ const TaskList: React.FC<TaskListProps> = ({
 
     if (activeFilter === 'priority') {
       return tasks
-        .filter(task => !!task.priority)
-        .sort((a, b) => {
+        .filter((task: Task) => !!task.priority)
+        .sort((a: Task, b: Task) => {
           const rankA = taskPriorityRank(a.priority);
           const rankB = taskPriorityRank(b.priority);
           const comparison = rankA - rankB;
@@ -83,7 +83,7 @@ const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <>
-      {filteredTasks.map(task => (
+      {filteredTasks.map((task: Task) => (
         <TaskCard key={task.id} task={task} />
       ))}
     </>
