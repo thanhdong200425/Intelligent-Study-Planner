@@ -2,8 +2,6 @@ import React from 'react';
 import { SidebarNav, HeaderBar } from '@/components';
 import FocusSessionWrapper from '@/components/focus/FocusSessionWrapper';
 
-// TODO: When user click into view all, show all sessions
-
 export default function FocusPage() {
   return (
     <div className='flex h-screen bg-gray-50 text-gray-800 font-sans'>
