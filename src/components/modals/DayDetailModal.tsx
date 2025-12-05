@@ -10,12 +10,15 @@ import {
 } from '@heroui/react';
 import { Event } from '@/types';
 import { format } from 'date-fns';
+import { Trash2 } from 'lucide-react';
 
 interface DayDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   date: Date | null;
   events: Event[];
+  onEditEvent: (event: Event) => void;
+  onDeleteEvent: (event: Event) => void;
 }
 
 const DayDetailModal: React.FC<DayDetailModalProps> = ({
@@ -23,6 +26,8 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
   onClose,
   date,
   events,
+  onEditEvent,
+  onDeleteEvent,
 }) => {
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} placement='center'>
@@ -52,7 +57,13 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                         return (
                           <div
                             key={event.id}
-                            className='border border-gray-100 rounded-lg p-3 text-sm'
+                            role='button'
+                            tabIndex={0}
+                            onClick={() => onEditEvent(event)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') onEditEvent(event);
+                            }}
+                            className='border border-gray-100 rounded-lg p-3 text-sm cursor-pointer hover:border-blue-200 hover:bg-blue-50 transition-colors'
                           >
                             <div className='flex items-center justify-between gap-2'>
                               <div className='flex items-center gap-2'>
@@ -68,12 +79,28 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                                   {event.title}
                                 </span>
                               </div>
-                              {hasTime && (
-                                <span className='text-xs text-gray-500'>
-                                  {format(start, 'HH:mm')} -{' '}
-                                  {format(end, 'HH:mm')}
-                                </span>
-                              )}
+                              <div className='flex items-center gap-2'>
+                                {hasTime && (
+                                  <span className='text-xs text-gray-500'>
+                                    {format(start, 'HH:mm')} -{' '}
+                                    {format(end, 'HH:mm')}
+                                  </span>
+                                )}
+                                <Button
+                                  isIconOnly
+                                  variant='light'
+                                  radius='full'
+                                  size='sm'
+                                  onPress={e => {
+                                    (e as any).stopPropagation();
+                                    onDeleteEvent(event);
+                                  }}
+                                  className='text-gray-500 hover:text-red-600'
+                                  aria-label='Delete event'
+                                >
+                                  <Trash2 className='w-4 h-4' />
+                                </Button>
+                              </div>
                             </div>
 
                             <div className='mt-3 flex flex-wrap gap-2'>

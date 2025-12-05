@@ -5,7 +5,11 @@ import { BaseButton } from '../buttons';
 import { useEvents } from '@/hooks/useEvent';
 import { format } from 'date-fns';
 
-export default function UpcomingEvents() {
+interface UpcomingEventsProps {
+  maxItems?: number;
+}
+
+export default function UpcomingEvents({ maxItems = 5 }: UpcomingEventsProps) {
   const { data: events, isLoading } = useEvents();
 
   const today = new Date();
@@ -29,7 +33,8 @@ export default function UpcomingEvents() {
         const aStart = new Date(a.startTime);
         const bStart = new Date(b.startTime);
         return aStart.getTime() - bStart.getTime();
-      }) ?? [];
+      })
+      .slice(0, maxItems) ?? [];
 
   return (
     <Card className='rounded-2xl'>

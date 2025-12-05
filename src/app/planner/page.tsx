@@ -6,9 +6,6 @@ import {
   StudyGoals,
 } from '@/components';
 
-// TODO: Set the max length of the upcoming events to 5
-// TODO: Show the error message as toast when start time is greater than end time
-
 export default function PlannerPage() {
   return (
     <div className='min-h-screen bg-gray-50 flex'>

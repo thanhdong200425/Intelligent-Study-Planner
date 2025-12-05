@@ -21,7 +21,9 @@ export const FocusStats: React.FC<FocusStatsProps> = ({
         <div className='text-2xl font-normal text-gray-900 mb-1'>
           {sessionsToday}
         </div>
-        <div className='text-sm text-gray-600 text-center'>Sessions Today</div>
+        <div className='text-sm text-gray-600 text-center'>
+          Completed Sessions
+        </div>
       </div>
       <div className='flex flex-col items-center flex-1'>
         <div className='text-2xl font-normal text-gray-900 mb-1'>

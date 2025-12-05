@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,19 +17,28 @@ import {
   Button,
   Spinner,
   DatePicker,
+  addToast,
 } from '@heroui/react';
 import { parseDate } from '@internationalized/date';
 import { I18nProvider } from '@react-aria/i18n';
 import { Plus } from 'lucide-react';
+import { differenceInMinutes } from 'date-fns';
 import { useEventTypes } from '@/hooks/useEventType';
 import { useTasks } from '@/hooks/useTask';
-import { useCreateEventMutation } from '@/mutations/event';
+import {
+  useCreateEventMutation,
+  useUpdateEventMutation,
+} from '@/mutations/event';
+import { CreateEventRequest } from '@/services/event';
 import CreateEventTypeModal from './CreateEventTypeModal';
+import { Event } from '@/types';
 
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
+  mode?: 'create' | 'edit';
+  eventToEdit?: Event | null;
 }
 
 const CREATE_NEW_KEY = '__create_new__';
@@ -46,7 +55,13 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
+const AddEventModal: React.FC<AddEventModalProps> = ({
+  isOpen,
+  onClose,
+  onOpenChange,
+  mode = 'create',
+  eventToEdit,
+}) => {
   const [showCreateTypeModal, setShowCreateTypeModal] = useState(false);
   const { data: eventTypes, isLoading: isEventTypesLoading } = useEventTypes();
   const { data: tasks, isLoading: isTasksLoading } = useTasks();
@@ -59,13 +74,22 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
       console.error('Failed to create event:', error);
     },
   });
+  const { mutate: updateEvent } = useUpdateEventMutation({
+    onSuccess: () => {
+      handleClose();
+    },
+    onError: error => {
+      console.error('Failed to update event:', error);
+    },
+  });
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    formState: { errors, isSubmitting },
+    getValues,
+    formState: { errors, isSubmitting, isDirty, dirtyFields },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,7 +103,48 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const isEditMode = mode === 'edit' && !!eventToEdit;
+
+  useEffect(() => {
+    if (isEditMode && eventToEdit) {
+      const start = new Date(eventToEdit.startTime);
+      const end = new Date(eventToEdit.endTime);
+      const date = new Date(eventToEdit.date);
+
+      const pad = (val: number) => String(val).padStart(2, '0');
+
+      reset({
+        title: eventToEdit.title || '',
+        date: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+          date.getDate()
+        )}`,
+        startTime: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
+        endTime: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+        eventTypeId: eventToEdit.eventTypeId
+          ? String(eventToEdit.eventTypeId)
+          : '',
+        taskId: eventToEdit.taskId ? String(eventToEdit.taskId) : '',
+        note: eventToEdit.note || '',
+      });
+    } else {
+      reset();
+    }
+  }, [isEditMode, eventToEdit, reset]);
+
+  const onCreate = async (data: FormData) => {
+    const startDateTime = new Date(`1970-01-01T${data.startTime}`);
+    const endDateTime = new Date(`1970-01-01T${data.endTime}`);
+
+    if (differenceInMinutes(endDateTime, startDateTime) <= 0) {
+      addToast({
+        title: 'Start time must be earlier than end time',
+        color: 'danger',
+        timeout: 1500,
+        shouldShowTimeoutProgress: true,
+      });
+      return;
+    }
+
     const payload = {
       title: data.title,
       date: data.date,
@@ -93,6 +158,72 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
     };
 
     createEvent(payload);
+  };
+
+  const onUpdate = async () => {
+    const dirtyFieldKeys = Object.keys(dirtyFields);
+
+    if (dirtyFieldKeys.length === 0) {
+      handleClose();
+      return;
+    }
+
+    const data = getValues();
+
+    // Validate time if either startTime or endTime is dirty
+    if (dirtyFields.startTime || dirtyFields.endTime) {
+      const startDateTime = new Date(`1970-01-01T${data.startTime}`);
+      const endDateTime = new Date(`1970-01-01T${data.endTime}`);
+
+      if (differenceInMinutes(endDateTime, startDateTime) <= 0) {
+        addToast({
+          title: 'Start time must be earlier than end time',
+          color: 'danger',
+          timeout: 1500,
+          shouldShowTimeoutProgress: true,
+        });
+        return;
+      }
+    }
+
+    // Build payload with only dirty fields
+    const apiPayload: Partial<CreateEventRequest> = {};
+
+    if (dirtyFields.title) {
+      apiPayload.title = data.title;
+    }
+    if (dirtyFields.date) {
+      apiPayload.date = data.date;
+    }
+    if (dirtyFields.startTime) {
+      apiPayload.startTime = data.startTime;
+    }
+    if (dirtyFields.endTime) {
+      apiPayload.endTime = data.endTime;
+    }
+    if (dirtyFields.eventTypeId) {
+      apiPayload.eventTypeId = data.eventTypeId
+        ? parseInt(data.eventTypeId, 10)
+        : undefined;
+    }
+    if (dirtyFields.taskId) {
+      apiPayload.taskId = data.taskId ? parseInt(data.taskId, 10) : null;
+    }
+    if (dirtyFields.note) {
+      apiPayload.note = data.note || undefined;
+    }
+
+    if (eventToEdit) {
+      updateEvent({ id: eventToEdit.id, data: apiPayload });
+    }
+  };
+
+  const onSubmit = async (data: FormData) => {
+    if (isEditMode && eventToEdit) {
+      await onUpdate();
+    } else {
+      await onCreate(data);
+    }
   };
 
   const handleEventTypeChange = (keys: 'all' | Set<React.Key>) => {
@@ -114,6 +245,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     reset();
     onClose();
+    onOpenChange?.(false);
   };
 
   return (
@@ -128,7 +260,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
           {() => (
             <form onSubmit={handleSubmit(onSubmit)}>
               <ModalHeader className='flex flex-col gap-1'>
-                Add Event
+                {isEditMode ? 'Edit Event' : 'Add Event'}
               </ModalHeader>
               <ModalBody>
                 <Controller
@@ -344,8 +476,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose }) => {
                 <Button variant='light' onPress={handleClose}>
                   Cancel
                 </Button>
-                <Button color='primary' type='submit' isLoading={isSubmitting}>
-                  Add Event
+                <Button
+                  color='primary'
+                  type='submit'
+                  isLoading={isSubmitting}
+                  isDisabled={!isDirty}
+                >
+                  {isEditMode ? 'Save Changes' : 'Add Event'}
                 </Button>
               </ModalFooter>
             </form>

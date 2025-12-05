@@ -21,6 +21,7 @@ import { DAYS_OF_WEEK } from '@/utils/constants';
 import { useEventTypes } from '@/hooks/useEventType';
 import { useEvents } from '@/hooks/useEvent';
 import { Event } from '@/types';
+import { useDeleteEventMutation } from '@/mutations/event';
 
 export default function PlannerCalendar() {
   const {
@@ -35,8 +36,19 @@ export default function PlannerCalendar() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
+  const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
+  const [formKey, setFormKey] = useState(0);
   const { data: eventTypes } = useEventTypes();
   const { data: events } = useEvents();
+  const { mutate: deleteEvent } = useDeleteEventMutation({});
+
+  const openCreateModal = () => {
+    setMode('create');
+    setEventToEdit(null);
+    setFormKey(prev => prev + 1); // ensure form resets when switching from edit to create
+    setIsAddOpen(true);
+  };
 
   const eventsForSelectedDay: Event[] =
     selectedDate && events
@@ -93,7 +105,7 @@ export default function PlannerCalendar() {
           <BaseButton
             startContent={<Plus className='size-4' />}
             content='Add Event'
-            onPress={() => setIsAddOpen(true)}
+            onPress={openCreateModal}
           />
         </div>
       </div>
@@ -200,9 +212,16 @@ export default function PlannerCalendar() {
 
       {/* Add event modal */}
       <AddEventModal
+        key={formKey}
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
+        onClose={() => {
+          setIsAddOpen(false);
+          setEventToEdit(null);
+          setMode('create');
+        }}
         onOpenChange={setIsAddOpen}
+        mode={mode}
+        eventToEdit={eventToEdit}
       />
 
       {/* Day detail modal */}
@@ -211,6 +230,13 @@ export default function PlannerCalendar() {
         onClose={() => setIsDetailOpen(false)}
         date={selectedDate}
         events={eventsForSelectedDay}
+        onEditEvent={event => {
+          setEventToEdit(event);
+          setMode('edit');
+          setIsDetailOpen(false);
+          setIsAddOpen(true);
+        }}
+        onDeleteEvent={event => deleteEvent(event.id)}
       />
 
       {/* Event types */}

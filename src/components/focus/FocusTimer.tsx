@@ -20,7 +20,7 @@ import {
   useAmbientPreset,
 } from '@/hooks';
 import type { Task } from '@/types';
-import { getActiveTimerSession } from '@/services';
+import { getActiveTimerSession, getTodayTimerSessions } from '@/services';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -58,6 +58,28 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     },
   });
   const { mutate: updateTimerSession } = useUpdateTimerSessionMutation({});
+
+  // Load today's stats (completed focus sessions + total focus time) from backend
+  useEffect(() => {
+    const loadTodayStats = async () => {
+      const sessions = await getTodayTimerSessions();
+
+      // Only count completed focus sessions for stats
+      const completedFocusSessions = sessions.filter(
+        session => session.type === 'focus' && session.status === 'completed'
+      );
+
+      const totalMinutes = completedFocusSessions.reduce(
+        (sum, session) => sum + (session.durationMinutes ?? 0),
+        0
+      );
+
+      setCompletedSessions(completedFocusSessions.length);
+      setTotalFocusTime(totalMinutes * 60); // convert minutes to seconds
+    };
+
+    loadTodayStats();
+  }, []);
 
   // Restore timer state on mount
   useEffect(() => {
