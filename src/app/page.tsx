@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { TimeIcon, BookIcon, AnalyticsIcon } from '@/components/icons/Icons';
 import {
   StatCard,
@@ -11,6 +12,10 @@ import {
 } from '@/components';
 
 export default function Home() {
+  if (process.env.NEXT_PUBLIC_NODE_ENV === 'production') {
+    redirect('/planner');
+  }
+
   return (
     <div className='flex h-screen bg-gray-50 text-gray-800 font-sans'>
       <SidebarNav />
