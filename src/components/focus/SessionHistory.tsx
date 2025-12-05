@@ -41,7 +41,7 @@ const SessionHistory: React.FC = () => {
       const minutes = Math.round((end.getTime() - start.getTime()) / 60000);
       return minutes;
     }
-    return session.actualMinutes || 0;
+    return session.durationMinutes || 0;
   };
 
   const isSessionCompleted = (session: TimerSession) => {
@@ -86,7 +86,7 @@ const SessionHistory: React.FC = () => {
             No sessions today. Start your first focus session!
           </div>
         ) : (
-          sessions.map(session => {
+          sessions.slice(0, 5).map(session => {
             const completed = isSessionCompleted(session);
             const duration = getSessionDuration(session);
             const name = getSessionName(session);
