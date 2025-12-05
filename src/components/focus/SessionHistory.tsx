@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@heroui/react';
 import { Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { getTodayTimerSessions } from '@/services';
 import { TimerSession } from '@/types';
 
 const SessionHistory: React.FC = () => {
+  const [showAll, setShowAll] = useState(false);
   const { data: sessions = [], isLoading } = useQuery<TimerSession[]>({
     queryKey: ['timer-sessions', 'today'],
     queryFn: getTodayTimerSessions,
@@ -70,9 +71,16 @@ const SessionHistory: React.FC = () => {
         <h2 className='text-base font-normal text-gray-900'>
           Today&apos;s Sessions
         </h2>
-        <Button size='sm' radius='lg' className='bg-black text-white h-9'>
-          View All
-        </Button>
+        {sessions.length > 5 && (
+          <Button
+            size='sm'
+            radius='lg'
+            className='bg-black text-white h-9'
+            onPress={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show Less' : `View All ${sessions.length}`}
+          </Button>
+        )}
       </div>
 
       {/* Session List */}
@@ -86,7 +94,7 @@ const SessionHistory: React.FC = () => {
             No sessions today. Start your first focus session!
           </div>
         ) : (
-          sessions.slice(0, 5).map(session => {
+          (showAll ? sessions : sessions.slice(0, 5)).map(session => {
             const completed = isSessionCompleted(session);
             const duration = getSessionDuration(session);
             const name = getSessionName(session);

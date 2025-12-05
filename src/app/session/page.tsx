@@ -2,8 +2,7 @@ import React from 'react';
 import { SidebarNav, HeaderBar } from '@/components';
 import FocusSessionWrapper from '@/components/focus/FocusSessionWrapper';
 
-// TODO: Just show 5 recent sessions in the session history
-// TODO: When user click into view all, redirect to the session history page
+// TODO: When user click into view all, show all sessions
 
 export default function FocusPage() {
   return (
