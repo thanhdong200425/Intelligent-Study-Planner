@@ -17,5 +17,3 @@ export const GlobalFloatingTimerWrapper: React.FC<
     </>
   );
 };
-
-
