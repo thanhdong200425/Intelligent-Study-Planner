@@ -71,7 +71,7 @@ export const login = async (data: AuthCredentials): Promise<LoginResponse> => {
 
 export const logout = async () => {
   try {
-    const response = await apiClient.post(endpoint.logout);
+    const response = await apiClient.delete(endpoint.logout);
     return response.data;
   } catch (err: any) {
     console.log('Error: ', err);
