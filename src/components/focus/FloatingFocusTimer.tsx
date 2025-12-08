@@ -30,6 +30,7 @@ export const FloatingFocusTimer: React.FC = () => {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
   const isOnFocusPage = pathname === '/session';
+  const isOnAuthPage = ['/auth', '/verify'].some(route => pathname.startsWith(route));
 
   const label = useMemo(() => {
     if (!activeSession) return null;
@@ -41,7 +42,7 @@ export const FloatingFocusTimer: React.FC = () => {
 
   // Fetch active timer session when component mounts or settings change
   useEffect(() => {
-    if (isOnFocusPage) return;
+    if (isOnFocusPage || isOnAuthPage) return;
 
     let isMounted = true;
 
@@ -72,12 +73,12 @@ export const FloatingFocusTimer: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [isOnFocusPage, timerSettings]);
+  }, [isOnFocusPage, isOnAuthPage, timerSettings]);
 
   // Countdown effect
   useEffect(() => {
     if (remainingSeconds === null || remainingSeconds <= 0) return;
-    if (isOnFocusPage) return;
+    if (isOnFocusPage || isOnAuthPage) return;
 
     const intervalId = setInterval(() => {
       setRemainingSeconds(prev => {
@@ -91,15 +92,17 @@ export const FloatingFocusTimer: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [remainingSeconds, isOnFocusPage]);
+  }, [remainingSeconds, isOnFocusPage, isOnAuthPage]);
 
   // Hide card if:
   // - user is on focus page
+  // - user is on auth page
   // - no active session
   // - timer finished
   // - user manually closed it
   if (
     isOnFocusPage ||
+    isOnAuthPage ||
     !isVisible ||
     !activeSession ||
     remainingSeconds === null ||

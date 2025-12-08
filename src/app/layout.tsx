@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { QueryProvider, ReduxProvider } from '@/components';
 import { GlobalFloatingTimerWrapper } from '@/components/layout/GlobalFloatingTimerWrapper';
+import React from 'react';
+import { AuthInitializer } from '@/components/auth';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -25,7 +27,10 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <ReduxProvider>
           <QueryProvider>
-            <GlobalFloatingTimerWrapper>{children}</GlobalFloatingTimerWrapper>
+            <GlobalFloatingTimerWrapper>
+              <AuthInitializer>{children}</AuthInitializer>
+              {/*{children}*/}
+            </GlobalFloatingTimerWrapper>
           </QueryProvider>
         </ReduxProvider>
       </body>

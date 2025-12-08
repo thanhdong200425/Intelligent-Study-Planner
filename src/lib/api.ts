@@ -2,7 +2,6 @@ import { refreshAccessToken } from '@/services';
 import { store } from '@/store';
 import { clearAuth, setAccessToken } from '@/store/slices/authSlice';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { is } from 'date-fns/locale';
 
 // Base URL can be configured via environment variable
 export const baseURL =
@@ -80,8 +79,12 @@ apiClient.interceptors.response.use(
   },
   async error => {
     const originalRequest = error.config;
-    if (originalRequest.url?.includes('/auth/login')) return Promise.reject(error);
-    
+    if (
+      originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/refresh')
+    )
+      return Promise.reject(error);
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
