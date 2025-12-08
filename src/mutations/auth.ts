@@ -14,6 +14,7 @@ import {
   verifyRegisterOtp,
 } from '@/services/auth';
 import { setAuthData, clearAuth } from '@/store/slices/authSlice';
+import { clearUser } from '@/store/slices/userSlice';
 
 export const useLoginMutation = () => {
   const router = useRouter();
@@ -144,6 +145,8 @@ export const useLogoutMutation = () => {
     onSuccess: () => {
       // Clear Redux auth state
       dispatch(clearAuth());
+      // Clear persisted user profile
+      dispatch(clearUser());
 
       addToast({
         title: 'Success',
@@ -156,6 +159,8 @@ export const useLogoutMutation = () => {
     onError: (error: Error) => {
       // Even if logout fails on server, clear local state
       dispatch(clearAuth());
+      // Clear persisted user profile
+      dispatch(clearUser());
 
       addToast({
         title: 'Error',

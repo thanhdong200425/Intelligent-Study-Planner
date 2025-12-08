@@ -2,29 +2,29 @@
 
 import Link from 'next/link';
 import {
-  Button,
   Avatar,
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@heroui/react';
 import {
-  Calendar,
-  ListTodo,
   BarChart2,
+  BookOpen,
+  ChevronsLeft,
   Clock,
   LayoutGrid,
-  Timer,
-  ChevronsLeft,
-  BookOpen,
-  User,
+  ListTodo,
   LogOut,
+  Timer,
   UserRound,
 } from 'lucide-react';
-import { useState } from 'react';
+import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { useLogoutMutation } from '@/mutations/auth';
+import { useDispatch } from 'react-redux';
+import { setSidebarCollapsed } from '@/store/slices/appSlice';
 
 interface MenuItem {
   href: string;
@@ -74,12 +74,17 @@ const Item: React.FC<MenuItem & { isActive?: boolean }> = ({
 };
 
 export default function SidebarNav() {
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useAppSelector(state => state.app.sidebarCollapsed);
   const pathname = usePathname();
   const router = useRouter();
   const userProfile = useAppSelector(state => state.auth.user);
   const { mutate: triggerLogout, isPending: isLoggingOut } =
     useLogoutMutation();
+  const dispatch = useDispatch();
+
+  const handleToggleCollapse = () => {
+    dispatch(setSidebarCollapsed(!collapsed));
+  };
 
   return (
     <aside
@@ -189,7 +194,7 @@ export default function SidebarNav() {
               className={`size-5 transition-transform ${collapsed ? 'rotate-180' : ''}`}
             />
           }
-          onPress={() => setCollapsed(v => !v)}
+          onPress={handleToggleCollapse}
         ></Button>
       </div>
     </aside>

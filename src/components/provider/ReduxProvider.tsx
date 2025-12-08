@@ -2,7 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
-import { store } from '@/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 // Component to handle authentication status checking
@@ -29,7 +30,9 @@ interface ReduxProviderProps {
 export function ReduxProvider({ children }: ReduxProviderProps) {
   return (
     <Provider store={store}>
-      <AuthChecker>{children}</AuthChecker>
+      <PersistGate loading={null} persistor={persistor}>
+        <AuthChecker>{children}</AuthChecker>
+      </PersistGate>
     </Provider>
   );
 }
