@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@heroui/react';
+import { Button, Avatar } from '@heroui/react';
 import {
   Calendar,
   ListTodo,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAppSelector } from '@/store/hooks';
 
 interface MenuItem {
   href: string;
@@ -67,6 +68,7 @@ const Item: React.FC<MenuItem & { isActive?: boolean }> = ({
 export default function SidebarNav() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const userProfile = useAppSelector(state => state.auth.user);
 
   return (
     <aside
@@ -91,20 +93,30 @@ export default function SidebarNav() {
           );
         })}
       </nav>
-      <div className={`mb-4 ${collapsed ? 'px-3' : 'px-2'}`}>
+      <div
+        className={`flex justify-between mb-4 px-3 ${collapsed ? 'gap-3' : 'gap-0'}`}
+        style={{ flexDirection: collapsed ? 'column' : 'row' }}
+      >
+        <div
+          className={`flex-1 hover:cursor-pointer ${collapsed ? 'flex justify-center' : ''}`}
+        >
+          <Avatar
+            showFallback
+            name={userProfile?.email?.charAt(0) || ''}
+            src={userProfile?.name || ''}
+          />
+        </div>
         <Button
           fullWidth
           variant='light'
-          className='justify-center h-11 text-gray-700'
+          className={`h-11 text-gray-700 flex-1 p-2`}
           startContent={
             <ChevronsLeft
               className={`size-5 transition-transform ${collapsed ? 'rotate-180' : ''}`}
             />
           }
           onPress={() => setCollapsed(v => !v)}
-        >
-          {!collapsed && 'Collapse'}
-        </Button>
+        ></Button>
       </div>
     </aside>
   );
