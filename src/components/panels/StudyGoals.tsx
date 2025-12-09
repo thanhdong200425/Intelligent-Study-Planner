@@ -1,63 +1,53 @@
 'use client';
-import { Card, CardHeader, CardBody, Progress } from '@heroui/react';
-import { BookOpenCheck, GraduationCap, CheckSquare } from 'lucide-react';
-
-function GoalRow({
-  icon,
-  title,
-  subtitle,
-  value,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-  value: number;
-}) {
-  return (
-    <div className='border border-gray-200 rounded-xl p-4'>
-      <div className='flex items-start gap-3'>
-        <div className='rounded-lg p-2 bg-blue-100 text-blue-700'>{icon}</div>
-        <div className='flex-1'>
-          <p className='text-sm text-gray-900'>{title}</p>
-          <p className='text-sm text-gray-500'>{subtitle}</p>
-        </div>
-        <p className='text-sm text-gray-900 w-10 text-right'>{value}%</p>
-      </div>
-      <Progress
-        aria-label={`${title} progress`}
-        value={value}
-        className='mt-3'
-      />
-    </div>
-  );
-}
+import { Card, CardHeader, CardBody, Chip } from '@heroui/react';
+import { Sparkles } from 'lucide-react';
 
 export default function StudyGoals() {
   return (
-    <Card className='rounded-2xl'>
+    <Card className='rounded-2xl border-dashed border-2 border-gray-200 bg-linear-to-b from-white to-gray-50'>
       <CardHeader className='px-6 pt-6 pb-0 flex items-center justify-between'>
-        <h3 className='text-base text-gray-900'>Study Goals</h3>
-        <span className='text-sm text-gray-900'>View All</span>
+        <h3 className='text-base text-gray-900 flex items-center gap-2'>
+          <Sparkles className='size-4 text-blue-500' />
+          Study Goals
+        </h3>
+        <Chip
+          size='sm'
+          variant='flat'
+          className='text-xs font-medium bg-blue-50 text-blue-600 border-none'
+        >
+          Coming soon
+        </Chip>
       </CardHeader>
-      <CardBody className='px-6 pb-6 pt-4 space-y-4'>
-        <GoalRow
-          icon={<BookOpenCheck className='size-5' />}
-          title='Weekly Study Hours'
-          subtitle='32 / 40 hours'
-          value={80}
-        />
-        <GoalRow
-          icon={<GraduationCap className='size-5' />}
-          title='Course Completion'
-          subtitle='6 / 8 courses'
-          value={75}
-        />
-        <GoalRow
-          icon={<CheckSquare className='size-5' />}
-          title='Assignment Success'
-          subtitle='15 / 20 completed'
-          value={75}
-        />
+      <CardBody className='px-6 pb-6 pt-4 space-y-3'>
+        <p className='text-sm text-gray-600'>
+          Soon you&apos;ll be able to set smart study goals, track your weekly
+          focus time, and see progress across courses in one minimalist view.
+        </p>
+        <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-500'>
+          <div className='rounded-xl border border-gray-100 bg-white/60 px-3 py-2'>
+            <p className='font-medium text-gray-900 text-xs'>
+              Personalised goals
+            </p>
+            <p className='mt-1'>
+              AI-assisted targets based on your schedule and habits.
+            </p>
+          </div>
+          <div className='rounded-xl border border-gray-100 bg-white/60 px-3 py-2'>
+            <p className='font-medium text-gray-900 text-xs'>Progress radar</p>
+            <p className='mt-1'>
+              Visual summaries of focus time, tasks and deadlines.
+            </p>
+          </div>
+          <div className='rounded-xl border border-gray-100 bg-white/60 px-3 py-2'>
+            <p className='font-medium text-gray-900 text-xs'>Gentle nudges</p>
+            <p className='mt-1'>
+              Subtle reminders to keep you on track, not stressed.
+            </p>
+          </div>
+        </div>
+        <p className='text-xs text-gray-400 mt-2'>
+          We&apos;re polishing this experience based on early user feedback.
+        </p>
       </CardBody>
     </Card>
   );

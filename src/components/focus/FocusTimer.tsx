@@ -3,23 +3,37 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@heroui/react';
 import { RotateCcw, Settings, Play, Pause, Square } from 'lucide-react';
-import { formatTime, toSeconds, fromSeconds } from '@/utils';
+import { toSeconds } from '@/utils';
 import { playTimerEndSound } from '@/utils/sounds';
+import { differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { FocusStats } from './FocusStats';
-import { useCreateTimerSessionMutation } from '@/mutations';
+import {
+  useCreateTimerSessionMutation,
+  useUpdateTimerSessionMutation,
+} from '@/mutations';
 import FocusSettingsModal from './FocusSettingsModal';
 import {
   useTimerSettings,
   useTimerPreferences,
+  useTimerDisplay,
   useAmbientSound,
   useAmbientPreset,
 } from '@/hooks';
+import type { Task } from '@/types';
+import { getActiveTimerSession, getTodayTimerSessions } from '@/services';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
-export const FocusTimer: React.FC = () => {
+interface FocusTimerProps {
+  selectedTask: Task | null;
+}
+
+export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const { settings: timerSettings, updateSettings } = useTimerSettings();
   const { preferences, updatePreferences } = useTimerPreferences();
+  const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
+
+  const [startTime, setStartTime] = useState<Date | null>(null);
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(
@@ -28,63 +42,239 @@ export const FocusTimer: React.FC = () => {
       seconds: 0,
     })
   );
-  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
+  const [currentTimerSessionId, setCurrentTimerSessionId] = useState<
+    number | null
+  >(null);
 
   // Play ambient sound only when timer is running
   useAmbientSound(selectedAmbientPreset, isRunning);
 
-  const { mutate: createTimerSession } = useCreateTimerSessionMutation({});
+  const { mutate: createTimerSession } = useCreateTimerSessionMutation({
+    onSuccess: (id: number) => {
+      setCurrentTimerSessionId(id);
+    },
+  });
+  const { mutate: updateTimerSession } = useUpdateTimerSessionMutation({});
+
+  // Load today's stats (completed focus sessions + total focus time) from backend
+  useEffect(() => {
+    const loadTodayStats = async () => {
+      const sessions = await getTodayTimerSessions();
+
+      // Only count completed focus sessions for stats
+      const completedFocusSessions = sessions.filter(
+        session => session.type === 'focus' && session.status === 'completed'
+      );
+
+      const totalMinutes = completedFocusSessions.reduce(
+        (sum, session) => sum + (session.durationMinutes ?? 0),
+        0
+      );
+
+      setCompletedSessions(completedFocusSessions.length);
+      setTotalFocusTime(totalMinutes * 60); // convert minutes to seconds
+    };
+
+    loadTodayStats();
+  }, []);
+
+  // Restore timer state on mount
+  useEffect(() => {
+    const restoreTimerState = async () => {
+      const activeSession = await getActiveTimerSession();
+
+      if (activeSession) {
+        const sessionStartTime = new Date(activeSession.startTime);
+        const now = new Date();
+
+        // Calculate the duration of the session based on type
+        const sessionType = activeSession.type as TimerMode;
+
+        const totalDurationSeconds = timerSettings[sessionType] * 60;
+
+        // Calculate elapsed time
+        const elapsedSeconds = differenceInSeconds(now, sessionStartTime);
+
+        // Calculate remaining time
+        const calculatedRemainingTime = Math.max(
+          0,
+          totalDurationSeconds - elapsedSeconds
+        );
+
+        // If timer has expired, mark it as completed
+        if (calculatedRemainingTime === 0) {
+          updateTimerSession({
+            id: activeSession.id,
+            data: {
+              endTime: new Date(
+                sessionStartTime.getTime() + totalDurationSeconds * 1000
+              ).toISOString(),
+              durationMinutes: Math.floor(totalDurationSeconds / 60),
+              status: 'completed',
+            },
+          });
+        } else {
+          // Restore the timer state
+          setCurrentTimerSessionId(activeSession.id);
+          setStartTime(sessionStartTime);
+          setActiveMode(sessionType);
+          setRemainingTime(calculatedRemainingTime);
+          setIsRunning(true);
+        }
+      }
+    };
+
+    restoreTimerState();
+  }, [timerSettings, updateTimerSession]);
 
   const resetToModeDefault = useCallback(
     (mode: TimerMode) => {
       const minutes = timerSettings[mode];
       const seconds = 0;
       setRemainingTime(toSeconds({ minutes, seconds }));
+      if (currentTimerSessionId) {
+        updateTimerSession({
+          id: currentTimerSessionId,
+          data: {
+            status: 'stopped',
+          },
+        });
+      }
     },
-    [timerSettings]
+
+    [timerSettings, currentTimerSessionId, updateTimerSession]
   );
 
   const toggleSession = useCallback(() => {
     if (!isRunning) {
+      const sessionStartTime = new Date();
+      setStartTime(sessionStartTime);
       createTimerSession({
         type: activeMode,
-        taskId: null,
+        taskId:
+          activeMode === 'focus' && selectedTask?.id
+            ? Number(selectedTask.id)
+            : null,
         timeBlockId: null,
-        startTime: new Date().toISOString(),
+        startTime: sessionStartTime.toISOString(),
       });
     }
 
+    // If there's an active timer session, mark it as stopped
     setIsRunning(prev => {
-      const next = !prev;
-      if (next && !startedAt) {
-        setStartedAt(Date.now());
-      }
-      return next;
+      return !prev;
     });
-  }, [activeMode, createTimerSession, isRunning, startedAt]);
+    if (currentTimerSessionId)
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          status: isRunning ? 'stopped' : 'active',
+        },
+      });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeMode,
+    createTimerSession,
+    isRunning,
+    selectedTask?.id,
+    currentTimerSessionId,
+  ]);
 
   const handleReset = () => {
     setIsRunning(false);
-    setStartedAt(null);
+
+    // If there's an active timer session, mark it as stopped
+    if (currentTimerSessionId && startTime) {
+      const endTime = new Date();
+      const durationMinutes = differenceInMinutes(endTime, startTime);
+
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          endTime: endTime.toISOString(),
+          durationMinutes,
+          status: 'stopped',
+        },
+      });
+    }
+
+    setStartTime(null);
+    setCurrentTimerSessionId(null);
     resetToModeDefault(activeMode);
   };
 
   const handleStop = () => {
     setIsRunning(false);
-    setStartedAt(null);
+
+    // Calculate and update actual minutes if session was running
+    if (currentTimerSessionId && startTime) {
+      const endTime = new Date();
+      const durationMinutes = differenceInMinutes(endTime, startTime);
+
+      updateTimerSession({
+        id: currentTimerSessionId,
+        data: {
+          endTime: endTime.toISOString(),
+          durationMinutes,
+          status: 'stopped',
+        },
+      });
+    }
+
+    setStartTime(null);
+    setCurrentTimerSessionId(null);
   };
 
   const handleModeChange = (mode: TimerMode) => {
     if (isRunning) {
       setIsRunning(false);
+
+      // If there's an active timer session, mark it as stopped
+      if (currentTimerSessionId && startTime) {
+        const endTime = new Date();
+        const durationMinutes = differenceInMinutes(endTime, startTime);
+
+        updateTimerSession({
+          id: currentTimerSessionId,
+          data: {
+            endTime: endTime.toISOString(),
+            durationMinutes,
+            status: 'stopped',
+          },
+        });
+      }
+
+      setStartTime(null);
+      setCurrentTimerSessionId(null);
     }
     setActiveMode(mode);
     resetToModeDefault(mode);
   };
+
+  // Auto-switch to next mode when timer completes
+  const autoSwitchToNextMode = useCallback(
+    (currentCompletedSessions: number) => {
+      let nextMode: TimerMode;
+
+      if (activeMode === 'focus') {
+        const nextSessionCount = currentCompletedSessions + 1;
+        const shouldTakeLongBreak =
+          nextSessionCount > 0 && nextSessionCount % 4 === 0;
+        nextMode = shouldTakeLongBreak ? 'long_break' : 'break';
+      } else {
+        nextMode = 'focus';
+      }
+
+      // Switch mode and reset timer
+      setActiveMode(nextMode);
+      resetToModeDefault(nextMode);
+    },
+    [activeMode, resetToModeDefault]
+  );
 
   // Reset timer when durations change
   useEffect(() => {
@@ -107,12 +297,39 @@ export const FocusTimer: React.FC = () => {
           if (preferences.timerSounds) {
             playTimerEndSound();
           }
+
           // Track completion
           if (activeMode === 'focus') {
+            // Calculate actual minutes based on startTime and endTime
+            const endTime = new Date();
+            const durationMinutes = startTime
+              ? differenceInMinutes(endTime, startTime)
+              : 0;
+
+            // Update timer session end time and actual minutes
+            if (currentTimerSessionId) {
+              updateTimerSession({
+                id: currentTimerSessionId,
+                data: {
+                  endTime: endTime.toISOString(),
+                  durationMinutes,
+                  status: 'completed',
+                },
+              });
+            }
+
             setCompletedSessions(prev => prev + 1);
             const sessionDuration = timerSettings.focus * 60;
             setTotalFocusTime(prev => prev + sessionDuration);
           }
+
+          // Clear current session state
+          setStartTime(null);
+          setCurrentTimerSessionId(null);
+
+          // Auto-switch to next mode and start timer (pass updated count)
+          autoSwitchToNextMode(completedSessions);
+
           return 0;
         }
         return prev - 1;
@@ -120,23 +337,31 @@ export const FocusTimer: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [isRunning, activeMode, timerSettings.focus, preferences.timerSounds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isRunning,
+    activeMode,
+    timerSettings.focus,
+    preferences.timerSounds,
+    currentTimerSessionId,
+    startTime,
+    autoSwitchToNextMode,
+  ]);
 
-  // Calculate progress percentage for circular timer
-  const totalTime = toSeconds({
-    minutes: timerSettings[activeMode],
-    seconds: 0,
+  // Calculate timer display values and progress
+  const {
+    displayMinutes,
+    displaySeconds,
+    strokeDashoffset,
+    circumference,
+    isDarkModeActive,
+  } = useTimerDisplay({
+    remainingTime,
+    timerSettings,
+    activeMode,
+    darkMode: preferences.darkMode,
+    isRunning,
   });
-  const progress = ((totalTime - remainingTime) / totalTime) * 100;
-  const circumference = 2 * Math.PI * 100; // radius = 100
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  const { minutes, seconds } = fromSeconds(remainingTime);
-  const displayMinutes = formatTime(minutes);
-  const displaySeconds = formatTime(seconds);
-
-  // Dark mode: apply dark styling when dark mode is on and timer is running
-  const isDarkModeActive = preferences.darkMode && isRunning;
 
   // If dark mode is active, render full-screen black overlay
   if (isDarkModeActive) {
@@ -204,6 +429,51 @@ export const FocusTimer: React.FC = () => {
 
   return (
     <div className='bg-white border border-gray-100 rounded-2xl p-8'>
+      {/* Selected task info */}
+      <div className='bg-gray-50 border border-gray-200 rounded-[14px] p-4 mb-6'>
+        <p className='text-sm text-[#4a5565] mb-1'>Focusing on:</p>
+        {selectedTask ? (
+          <>
+            <p className='text-base text-[#101828] mb-3'>
+              {selectedTask.title}
+            </p>
+            <div className='flex flex-wrap items-center gap-2'>
+              <span className='inline-flex items-center justify-center rounded-lg border border-[rgba(0,0,0,0.1)] px-2 py-0.5 text-xs text-neutral-950'>
+                {/* Simple mirror of task type emoji/label */}
+                {selectedTask.type === 'reading'
+                  ? '📖 Reading'
+                  : selectedTask.type === 'coding'
+                    ? '💻 Coding'
+                    : selectedTask.type === 'writing'
+                      ? '✍️ Writing'
+                      : selectedTask.type === 'pset'
+                        ? '📝 Pset'
+                        : '📋 Task'}
+              </span>
+              {selectedTask.priority && (
+                <span className='inline-flex items-center justify-center rounded-lg border px-2 py-0.5 text-xs bg-[#fef9c2] border-[#fff085] text-[#a65f00]'>
+                  {selectedTask.priority === 'high'
+                    ? 'High'
+                    : selectedTask.priority === 'medium'
+                      ? 'Medium'
+                      : selectedTask.priority === 'low'
+                        ? 'Low'
+                        : 'Priority'}
+                </span>
+              )}
+              {selectedTask.course && (
+                <span className='inline-flex items-center justify-center rounded-lg border border-[rgba(0,0,0,0.1)] px-2 py-0.5 text-xs text-neutral-950'>
+                  {selectedTask.course.name}
+                </span>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className='text-sm text-gray-500'>
+            No task selected. Choose a task from the sidebar to focus on.
+          </p>
+        )}
+      </div>
       {/* Mode Tabs and Settings - Hide in dark mode when running */}
       {!isDarkModeActive && (
         <div className='relative flex items-center mb-8'>

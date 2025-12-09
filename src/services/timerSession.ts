@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api';
-import { CreateTimerSessionData } from '@/mutations';
+import { CreateTimerSessionData, UpdateTimerSessionData } from '@/mutations';
 import { TimerSession } from '@/types';
 
 const endpoint = {
@@ -15,5 +15,41 @@ export const createTimerSession = async (
   } catch (err) {
     console.log('Error creating timer session: ', err);
     throw err;
+  }
+};
+
+export const updateTimerSession = async (
+  id: number,
+  data: UpdateTimerSessionData
+): Promise<TimerSession> => {
+  try {
+    const response = await apiClient.patch(
+      `${endpoint.timerSession}/${id}`,
+      data
+    );
+    return response.data;
+  } catch (err) {
+    console.log('Error updating timer session: ', err);
+    throw err;
+  }
+};
+
+export const getTodayTimerSessions = async (): Promise<TimerSession[]> => {
+  try {
+    const response = await apiClient.get(`${endpoint.timerSession}/today`);
+    return response.data;
+  } catch (err) {
+    console.log('Error fetching today timer sessions: ', err);
+    return [];
+  }
+};
+
+export const getActiveTimerSession = async (): Promise<TimerSession | null> => {
+  try {
+    const response = await apiClient.get(`${endpoint.timerSession}/active`);
+    return response.data;
+  } catch (err) {
+    console.log('Error fetching active timer session: ', err);
+    return null;
   }
 };

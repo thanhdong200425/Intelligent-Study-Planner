@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@heroui/react';
+import {
+  Button,
+  Avatar,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@heroui/react';
 import {
   Calendar,
   ListTodo,
@@ -12,9 +18,13 @@ import {
   ChevronsLeft,
   BookOpen,
   User,
+  LogOut,
+  UserRound,
 } from 'lucide-react';
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAppSelector } from '@/store/hooks';
+import { useLogoutMutation } from '@/mutations/auth';
 
 interface MenuItem {
   href: string;
@@ -24,19 +34,20 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { href: '/', icon: Clock, label: 'Today', collapsed: false },
+  ...(process.env.NEXT_PUBLIC_NODE_ENV === 'production'
+    ? []
+    : [{ href: '/', icon: Clock, label: 'Today', collapsed: false }]),
   { href: '/planner', icon: LayoutGrid, label: 'Planner', collapsed: false },
   { href: '/tasks', icon: ListTodo, label: 'Tasks', collapsed: false },
   { href: '/session', icon: Timer, label: 'Focus', collapsed: false },
-  { href: '/?tab=habits', icon: Calendar, label: 'Habits', collapsed: false },
+  // { href: '/?tab=habits', icon: Calendar, label: 'Habits', collapsed: false },
   { href: '/courses', icon: BookOpen, label: 'Courses', collapsed: false },
   {
-    href: '/?tab=analytics',
+    href: '/analytics',
     icon: BarChart2,
     label: 'Analytics',
     collapsed: false,
   },
-  { href: '/profile', icon: User, label: 'Profile', collapsed: false },
 ];
 
 const Item: React.FC<MenuItem & { isActive?: boolean }> = ({
@@ -65,6 +76,10 @@ const Item: React.FC<MenuItem & { isActive?: boolean }> = ({
 export default function SidebarNav() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const userProfile = useAppSelector(state => state.auth.user);
+  const { mutate: triggerLogout, isPending: isLoggingOut } =
+    useLogoutMutation();
 
   return (
     <aside
@@ -89,20 +104,93 @@ export default function SidebarNav() {
           );
         })}
       </nav>
-      <div className={`mb-4 ${collapsed ? 'px-3' : 'px-2'}`}>
+      <div
+        className={`flex justify-between mb-4 px-3 ${collapsed ? 'gap-3' : 'gap-0'}`}
+        style={{ flexDirection: collapsed ? 'column' : 'row' }}
+      >
+        <div
+          className={`flex-1 hover:cursor-pointer ${collapsed ? 'flex justify-center' : ''}`}
+        >
+          <Popover placement='top-start' offset={10}>
+            <PopoverTrigger>
+              <Button
+                variant='light'
+                className={`p-0 min-w-0 ${collapsed ? 'mx-auto' : ''}`}
+                aria-label='Open profile menu'
+              >
+                <Avatar
+                  showFallback
+                  name={userProfile?.email?.charAt(0).toUpperCase() || ''}
+                  src={userProfile?.name || ''}
+                  className='w-10 h-10 text-sm font-medium text-white'
+                  style={{
+                    background:
+                      'linear-gradient(135deg, #6675FF 0%, #7B5BFF 100%)',
+                  }}
+                />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='p-0'>
+              <div className='w-[240px] rounded-lg border border-gray-200 bg-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]'>
+                <div className='flex items-center gap-3 px-4 pt-4 pb-3'>
+                  <Avatar
+                    showFallback
+                    name={userProfile?.email?.charAt(0).toUpperCase() || ''}
+                    src={userProfile?.name || ''}
+                    className='w-10 h-10 text-sm font-medium text-white'
+                    style={{
+                      background:
+                        'linear-gradient(135deg, #6675FF 0%, #7B5BFF 100%)',
+                    }}
+                  />
+                  <div>
+                    <p className='text-sm font-medium text-[#101828]'>
+                      {userProfile?.name || ''}
+                    </p>
+                    <p className='text-xs text-[#6a7282]'>
+                      {userProfile?.email || ''}
+                    </p>
+                  </div>
+                </div>
+                <div className='h-px bg-gray-200' />
+                <div className='flex flex-col gap-1 px-2 py-2'>
+                  <Button
+                    fullWidth
+                    variant='light'
+                    onPress={() => router.push('/profile')}
+                    className='justify-start gap-3 rounded-[8px] text-sm font-normal text-[#364153] hover:bg-[#F2F4F7]'
+                    startContent={
+                      <UserRound className='size-4 text-[#364153]' />
+                    }
+                  >
+                    Profile
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant='light'
+                    className='justify-start gap-3 rounded-md text-sm font-normal text-[#e7000b] hover:bg-[#FDECEC]'
+                    startContent={<LogOut className='size-4 text-[#e7000b]' />}
+                    isLoading={isLoggingOut}
+                    onPress={() => triggerLogout()}
+                  >
+                    Log Out
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <Button
           fullWidth
           variant='light'
-          className='justify-center h-11 text-gray-700'
+          className={`h-11 text-gray-700 flex-1 p-2`}
           startContent={
             <ChevronsLeft
               className={`size-5 transition-transform ${collapsed ? 'rotate-180' : ''}`}
             />
           }
           onPress={() => setCollapsed(v => !v)}
-        >
-          {!collapsed && 'Collapse'}
-        </Button>
+        ></Button>
       </div>
     </aside>
   );

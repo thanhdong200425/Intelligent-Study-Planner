@@ -5,9 +5,15 @@ import { TaskFormData } from '@/components/forms/TaskForm';
 
 const endpoint = '/tasks';
 
-export const getAllTasks = async (): Promise<Task[]> => {
+export const getAllTasks = async ({
+  includeCourse,
+}: {
+  includeCourse?: boolean;
+}): Promise<Task[]> => {
   try {
-    const response = await apiClient.get(endpoint);
+    const response = await apiClient.get(endpoint, {
+      params: { includeCourse: includeCourse ?? false },
+    });
     return response.data;
   } catch (err) {
     console.log('Error fetching tasks: ', err);

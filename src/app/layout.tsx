@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { QueryProvider, ReduxProvider } from '@/components';
+import { GlobalFloatingTimerWrapper } from '@/components/layout/GlobalFloatingTimerWrapper';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang='en'>
       <body className={`${inter.variable} antialiased`}>
         <ReduxProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <GlobalFloatingTimerWrapper>{children}</GlobalFloatingTimerWrapper>
+          </QueryProvider>
         </ReduxProvider>
       </body>
     </html>
