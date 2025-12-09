@@ -12,6 +12,10 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
 } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourses } from '@/services/course';
@@ -58,6 +62,23 @@ const priorities: { key: TaskPriority; label: string }[] = [
   { key: 'medium', label: 'Medium' },
   { key: 'high', label: 'High' },
   { key: 'unknown', label: 'Unknown' },
+];
+const timeEstimates: { key: number; label: string }[] = [
+  { key: 15, label: '15m' },
+  { key: 30, label: '30m' },
+  { key: 45, label: '45m' },
+  { key: 60, label: '1h' },
+  { key: 90, label: '1.5h' },
+  { key: 120, label: '2h' },
+  { key: 180, label: '3h' },
+  { key: 240, label: '4h' },
+];
+
+const priorityColorsClasses: { key: TaskPriority; color: string }[] = [
+  { key: 'low', color: '#10B981' },
+  { key: 'medium', color: '#F59E0B' },
+  { key: 'high', color: '#EF4444' },
+  { key: 'unknown', color: '#9CA3AF' },
 ];
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
@@ -187,185 +208,195 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
         {/* Button Row: Course, Type, Priority, Estimated, More */}
         <div className='flex gap-[9px] items-center'>
           {/* Course Button */}
-          <Popover placement='bottom-start'>
-            <PopoverTrigger>
-              <Button
-                className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
-                startContent={<BookOpen className='w-5 h-5' />}
-              >
-                <span className='text-[12px] text-black'>
-                  {selectedCourse?.name || 'Course'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className='p-2'>
-                <Controller
-                  control={control}
-                  name='courseId'
-                  render={({ field }) => (
-                    <Select
-                      items={courses}
-                      placeholder='Select a course'
-                      selectedKeys={field.value ? [field.value.toString()] : []}
-                      onSelectionChange={keys => {
-                        const selected = Array.from(keys)[0];
-                        field.onChange(Number(selected) || undefined);
-                      }}
-                      classNames={{
-                        trigger: 'w-[200px]',
-                      }}
-                    >
-                      {course => (
-                        <SelectItem key={course.id.toString()}>
-                          {course.name}
-                        </SelectItem>
-                      )}
-                    </Select>
+          <Controller
+            control={control}
+            name='courseId'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={<BookOpen className='w-5 h-5' />}
+                  >
+                    <span className='text-[12px] text-black'>
+                      {selectedCourse?.name || 'Course'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={courses}
+                  selectedKeys={field.value ? [field.value.toString()] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0];
+                    field.onChange(selected ? Number(selected) : undefined);
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {course => (
+                    <DropdownItem key={course.id.toString()}>
+                      {course.name}
+                    </DropdownItem>
                   )}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
 
           {/* Type Button */}
-          <Popover placement='bottom-start'>
-            <PopoverTrigger>
-              <Button
-                className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
-                startContent={<Tag className='w-5 h-5' />}
-              >
-                <span className='text-[12px] text-black'>
-                  {taskTypes.find(t => t.key === taskType)?.label || 'Type'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className='p-2'>
-                <Controller
-                  control={control}
-                  name='type'
-                  render={({ field }) => (
-                    <Select
-                      items={taskTypes}
-                      selectedKeys={field.value ? [field.value] : []}
-                      onSelectionChange={keys => {
-                        const selected = Array.from(keys)[0] as TaskType;
-                        field.onChange(selected || 'reading');
-                      }}
-                      classNames={{
-                        trigger: 'w-[200px]',
-                      }}
-                    >
-                      {type => (
-                        <SelectItem key={type.key}>
-                          {type.emoji} {type.label}
-                        </SelectItem>
-                      )}
-                    </Select>
+          <Controller
+            control={control}
+            name='type'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white flex items-center justify-center'
+                    startContent={
+                      field.value ? (
+                        <span>
+                          {taskTypes.find(t => t.key === field.value)?.emoji}
+                        </span>
+                      ) : (
+                        <Tag className='w-5 h-5' />
+                      )
+                    }
+                  >
+                    <span className='text-[12px] text-black'>
+                      {taskTypes.find(t => t.key === field.value)?.label ||
+                        'Type'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={taskTypes}
+                  selectedKeys={field.value ? [field.value] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0] as TaskType;
+                    field.onChange(selected || 'reading');
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {type => (
+                    <DropdownItem key={type.key}>
+                      {type.emoji} {type.label}
+                    </DropdownItem>
                   )}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
 
           {/* Priority Button */}
-          <Popover placement='bottom-start'>
-            <PopoverTrigger>
-              <Button
-                className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
-                startContent={<Flag className='w-5 h-5' />}
-              >
-                <span className='text-[12px] text-black'>
-                  {priorities.find(p => p.key === priority)?.label ||
-                    'Priority'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className='p-2'>
-                <Controller
-                  control={control}
-                  name='priority'
-                  render={({ field }) => (
-                    <Select
-                      selectedKeys={field.value ? [field.value] : []}
-                      onSelectionChange={keys => {
-                        const selected = Array.from(keys)[0] as TaskPriority;
-                        field.onChange(selected || 'medium');
-                      }}
-                      classNames={{
-                        trigger: 'w-[200px]',
-                      }}
-                    >
-                      {priorities.map(priority => (
-                        <SelectItem key={priority.key}>
-                          {priority.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
+          <Controller
+            control={control}
+            name='priority'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={
+                      <Flag
+                        className='w-5 h-5'
+                        color={
+                          priorityColorsClasses.find(p => p.key === field.value)
+                            ?.color
+                        }
+                      />
+                    }
+                  >
+                    <span className='text-[12px] text-black'>
+                      {priorities.find(p => p.key === priority)?.label ||
+                        'Priority'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={priorities}
+                  selectedKeys={field.value ? [field.value] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0] as TaskPriority;
+                    field.onChange(selected || 'medium');
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {priority => (
+                    <DropdownItem key={priority.key}>
+                      {priority.label}
+                    </DropdownItem>
                   )}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
 
           {/* Estimated Button */}
-          <Popover placement='bottom-start'>
-            <PopoverTrigger>
-              <Button
-                className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
-                startContent={<Clock className='w-5 h-5' />}
-              >
-                <span className='text-[12px] text-black'>
-                  {estimateMinutes ? `${estimateMinutes}m` : 'Estimated'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className='p-2'>
-                <Controller
-                  control={control}
-                  name='estimateMinutes'
-                  rules={{
-                    required: {
-                      value: true,
-                      message: 'Estimated time is required',
-                    },
-                    min: {
-                      value: 1,
-                      message: 'Estimated time must be at least 1 minute',
-                    },
+          <Controller
+            control={control}
+            name='estimateMinutes'
+            rules={{
+              required: {
+                value: true,
+                message: 'Estimated time is required',
+              },
+              min: {
+                value: 1,
+                message: 'Estimated time must be at least 1 minute',
+              },
+            }}
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={<Clock className='w-5 h-5' />}
+                  >
+                    <span className='text-[12px] text-black'>
+                      {estimateMinutes
+                        ? timeEstimates.find(t => t.key === estimateMinutes)
+                            ?.label || `${estimateMinutes}m`
+                        : 'Estimated'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={timeEstimates}
+                  selectedKeys={field.value ? [field.value.toString()] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0];
+                    field.onChange(selected ? Number(selected) : undefined);
                   }}
-                  render={({ field }) => (
-                    <Input
-                      type='number'
-                      placeholder='Minutes'
-                      value={field.value?.toString() || ''}
-                      onChange={e =>
-                        field.onChange(parseInt(e.target.value) || 0)
-                      }
-                      className='w-[200px]'
-                      classNames={{
-                        input: 'text-sm',
-                        inputWrapper: 'border-2 border-[#d4d4d8] rounded-[8px]',
-                      }}
-                      errorMessage={errors.estimateMinutes?.message}
-                      isInvalid={!!errors.estimateMinutes}
-                    />
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {timeEstimate => (
+                    <DropdownItem key={timeEstimate.key.toString()}>
+                      {timeEstimate.label}
+                    </DropdownItem>
                   )}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
 
           {/* More Options Button */}
-          <Button
+          {/* <Button
             isIconOnly
             className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] w-[40px] bg-white'
           >
             <MoreHorizontal className='w-5 h-5' />
-          </Button>
+          </Button> */}
         </div>
 
         {/* Divider */}
