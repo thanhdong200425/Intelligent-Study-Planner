@@ -32,11 +32,18 @@ const TaskModal: React.FC<TaskModalProps> = ({ title = 'Add task' }) => {
         onClose={() => setIsAddTaskModalOpen(false)}
         size='2xl'
         scrollBehavior='inside'
+        classNames={{
+          base: 'rounded-[20px]',
+          body: 'p-0',
+        }}
+        hideCloseButton
       >
         <ModalContent>
-          <ModalHeader>Add New Task</ModalHeader>
-          <ModalBody>
-            <TaskForm onClose={() => setIsAddTaskModalOpen(false)} />
+          <ModalBody className='p-5'>
+            <TaskForm
+              onClose={() => setIsAddTaskModalOpen(false)}
+              onCancel={() => setIsAddTaskModalOpen(false)}
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

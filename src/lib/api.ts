@@ -80,8 +80,8 @@ apiClient.interceptors.response.use(
   async error => {
     const originalRequest = error.config;
     if (
-      originalRequest.url?.includes('/auth/login') ||
-      originalRequest.url?.includes('/auth/refresh')
+      originalRequest.url?.includes('/auth/login')
+      // originalRequest.url?.includes('/auth/refresh')
     )
       return Promise.reject(error);
 

@@ -22,6 +22,7 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 export interface Task {
   id: string;
   title: string;
+  description?: string;
   courseId?: string;
   type: TaskType;
   estimateMinutes: number;

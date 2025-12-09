@@ -8,3 +8,4 @@ export * from './home';
 export * from './panels';
 export * from './tasks';
 export * from './focus';
+export * from './inputs';
