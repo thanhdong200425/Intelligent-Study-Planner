@@ -11,10 +11,14 @@ export interface Deadline {
   id: string;
   title: string;
   courseId: string;
+  subject?: string;     // thêm
   dueDate: Date;
+  daysLeft?: number;    // thêm
   priority: 'low' | 'medium' | 'high';
   completed?: boolean;
+
 }
+
 
 export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
@@ -23,14 +27,18 @@ export interface Task {
   id: string;
   title: string;
   courseId?: string;
+  subject?: string;     // thêm
+  daysLeft?: number;    // thêm
   type: TaskType;
   estimateMinutes: number;
   deadlineId?: string;
   completed?: boolean;
   actualMinutes?: number;
   priority?: TaskPriority;
+  durationMinutes?: number;
   course?: Course;
 }
+
 
 export interface AvailabilityWindow {
   id: string;
@@ -106,6 +114,11 @@ export interface UserProfile {
   dailyGoal: number;
 }
 
+export enum Priority {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
+}
 export interface EventType {
   id: number;
   userId: number;
