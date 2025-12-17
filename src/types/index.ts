@@ -19,6 +19,15 @@ export interface Deadline {
 export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
+export interface ExtractedTask {
+  title: string;
+  description?: string;
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: string; // YYYY-MM-DD format
+  estimateMinutes?: number;
+  type?: TaskType;
+}
+
 export interface Task {
   id: string;
   title: string;

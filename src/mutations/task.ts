@@ -4,8 +4,9 @@ import {
   deleteTask,
   handleToggleCompleteStatus,
   updateTask,
+  sendImageToModel,
 } from '@/services';
-import { Task } from '@/types';
+import { Task, ExtractedTask } from '@/types';
 import { addToast } from '@heroui/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -145,6 +146,49 @@ export const useDeleteTaskMutation = ({
         shouldShowTimeoutProgress: true,
       });
       console.error('Failed to add task:', error);
+      onError?.(error);
+    },
+  });
+};
+
+export interface AnalyzeImageMutationProps {
+  onSuccess?: (data: {
+    tasks: ExtractedTask[];
+    message: string;
+    statusCode: number;
+  }) => void;
+  onError?: (error: Error) => void;
+}
+
+export const useSendImageToModelMutation = ({
+  onSuccess,
+  onError,
+}: AnalyzeImageMutationProps) => {
+  return useMutation({
+    mutationFn: ({
+      file,
+      additionalContext,
+    }: {
+      file: File;
+      additionalContext?: string;
+    }) => sendImageToModel(file, additionalContext),
+    onSuccess: data => {
+      addToast({
+        title: 'Image analyzed successfully',
+        color: 'success',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+      onSuccess?.(data);
+    },
+    onError: error => {
+      addToast({
+        title: 'Failed to analyze image',
+        color: 'danger',
+        timeout: 2000,
+        shouldShowTimeoutProgress: true,
+      });
+      console.error('Failed to analyze image:', error);
       onError?.(error);
     },
   });
