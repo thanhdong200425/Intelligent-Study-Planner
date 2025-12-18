@@ -107,3 +107,15 @@ export const sendImageToModel = async (
     throw err;
   }
 };
+
+export const createMultipleTasks = async (
+  tasks: TaskFormData[]
+): Promise<Task[]> => {
+  try {
+    const response = await apiClient.post(`${endpoint}/add-multiple`, tasks);
+    return response.data;
+  } catch (err) {
+    console.log('Error creating multiple tasks: ', err);
+    throw err;
+  }
+};

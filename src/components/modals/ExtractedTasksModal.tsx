@@ -10,9 +10,8 @@ import {
 } from '@heroui/react';
 import { X, Zap, Calendar, Clock } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
-import { ExtractedTask } from '@/types';
-import { useCreateTaskMutation } from '@/mutations';
-import { TaskFormData } from '@/components/forms/TaskForm';
+import { ExtractedTask, TaskType } from '@/types';
+import { useCreateMultipleTasksMutation } from '@/mutations';
 
 interface ExtractedTasksModalProps {
   isOpen: boolean;
@@ -100,7 +99,9 @@ const ExtractedTasksModal: React.FC<ExtractedTasksModalProps> = ({
   );
   const [creatingTasks, setCreatingTasks] = useState<Set<number>>(new Set());
 
-  const { mutateAsync: createTask } = useCreateTaskMutation({});
+  const { mutateAsync: createMultipleTasks } = useCreateMultipleTasksMutation(
+    {}
+  );
 
   const handleToggleTask = (index: number) => {
     const newSelected = new Set(selectedTasks);
@@ -112,53 +113,23 @@ const ExtractedTasksModal: React.FC<ExtractedTasksModalProps> = ({
     setSelectedTasks(newSelected);
   };
 
-  const handleCreateTask = async (task: ExtractedTask, index: number) => {
-    if (creatingTasks.has(index)) return;
-
-    setCreatingTasks(prev => new Set(prev).add(index));
-
-    const taskData: TaskFormData = {
-      title: task.title,
-      description: task.description,
-      type: task.type || 'other',
-      estimateMinutes: task.estimateMinutes || 60,
-      priority:
-        task.priority === 'low' ||
-        task.priority === 'medium' ||
-        task.priority === 'high'
-          ? task.priority
-          : 'medium',
-    };
-
-    try {
-      await createTask(taskData);
-      setCreatingTasks(prev => {
-        const next = new Set(prev);
-        next.delete(index);
-        return next;
-      });
-      setSelectedTasks(prev => {
-        const next = new Set(prev);
-        next.delete(index);
-        return next;
-      });
-    } catch (error) {
-      setCreatingTasks(prev => {
-        const next = new Set(prev);
-        next.delete(index);
-        return next;
-      });
-    }
-  };
-
   const handleCreateSelected = async () => {
-    const tasksToCreate = Array.from(selectedTasks).filter(
+    const selectedTaskIndexes = Array.from(selectedTasks).filter(
       index => !creatingTasks.has(index)
     );
 
-    for (const index of tasksToCreate) {
-      await handleCreateTask(tasks[index], index);
-    }
+    const taskToCreate = tasks
+      .filter((_, index) => selectedTaskIndexes.includes(index))
+      .map(newTask => ({
+        title: newTask.title,
+        priority: newTask.priority,
+        estimateMinutes: newTask.estimateMinutes || 60,
+        type: (newTask.type as TaskType) || 'other',
+        ...(newTask.description ? { description: newTask.description } : {}),
+        ...(newTask.dueDate ? { dueDate: newTask.dueDate } : {}),
+      }));
+    await createMultipleTasks(taskToCreate);
+    onClose();
   };
 
   const allTasksCreated = selectedTasks.size === 0 && tasks.length > 0;

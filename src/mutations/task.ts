@@ -5,6 +5,7 @@ import {
   handleToggleCompleteStatus,
   updateTask,
   sendImageToModel,
+  createMultipleTasks,
 } from '@/services';
 import { Task, ExtractedTask } from '@/types';
 import { addToast } from '@heroui/react';
@@ -189,6 +190,36 @@ export const useSendImageToModelMutation = ({
         shouldShowTimeoutProgress: true,
       });
       console.error('Failed to analyze image:', error);
+      onError?.(error);
+    },
+  });
+};
+
+export const useCreateMultipleTasksMutation = ({
+  onSuccess,
+  onError,
+}: MutationProps) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tasks: TaskFormData[]) => createMultipleTasks(tasks),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      addToast({
+        title: 'Tasks created successfully',
+        color: 'success',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      onSuccess?.();
+    },
+    onError: error => {
+      addToast({
+        title: 'Failed to create tasks',
+        color: 'danger',
+        timeout: 1000,
+        shouldShowTimeoutProgress: true,
+      });
+      console.error('Failed to create tasks:', error);
       onError?.(error);
     },
   });
