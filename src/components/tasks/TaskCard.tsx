@@ -272,10 +272,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
         onClose={() => setIsEditModalOpen(false)}
         size='2xl'
         scrollBehavior='inside'
+        hideCloseButton
+        classNames={{
+          base: 'rounded-[20px]',
+          body: 'p-0',
+        }}
       >
         <ModalContent>
-          <ModalHeader>Edit Task</ModalHeader>
-          <ModalBody>
+          <ModalBody className='p-5'>
             <TaskForm task={task} onClose={() => setIsEditModalOpen(false)} />
           </ModalBody>
         </ModalContent>

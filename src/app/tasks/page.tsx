@@ -12,7 +12,7 @@ export default function TasksPage() {
           isShowSearchBar={false}
           isShowNotification={false}
         >
-          <TaskModal />
+          <TaskModal showAdditionalButton={true} />
         </HeaderBar>
 
         {/* Main Content */}

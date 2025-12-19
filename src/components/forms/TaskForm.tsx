@@ -1,17 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, TaskType, TaskPriority } from '@/types';
 import { Controller, useForm } from 'react-hook-form';
-import { Input, Select, SelectItem, Button, addToast } from '@heroui/react';
+import {
+  Input,
+  Select,
+  SelectItem,
+  Button,
+  addToast,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourses } from '@/services/course';
 import apiClient from '@/lib/api';
-import { X } from 'lucide-react';
+import {
+  X,
+  BookOpen,
+  Tag,
+  Flag,
+  Clock,
+  MoreHorizontal,
+  Paperclip,
+} from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTask } from '@/services';
 import { useCreateTaskMutation, useUpdateTaskMutation } from '@/mutations';
+import { HeadingInput } from '../inputs';
 
 interface TaskFormProps {
   task?: Task;
@@ -21,41 +43,12 @@ interface TaskFormProps {
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
   courseId: z.number().optional(),
   type: z.enum(['reading', 'coding', 'writing', 'pset', 'other']),
   estimateMinutes: z.number().min(1, 'Estimate must be at least 1 minute'),
   priority: z.enum(['low', 'medium', 'high', 'unknown']).optional(),
 });
-
-const getTaskTypeEmoji = (type: TaskType): string => {
-  switch (type) {
-    case 'reading':
-      return '📖';
-    case 'coding':
-      return '💻';
-    case 'writing':
-      return '✍️';
-    case 'pset':
-      return '📝';
-    default:
-      return '📋';
-  }
-};
-
-const getTaskTypeLabel = (type: TaskType): string => {
-  switch (type) {
-    case 'reading':
-      return 'Reading';
-    case 'coding':
-      return 'Coding';
-    case 'writing':
-      return 'Writing';
-    case 'pset':
-      return 'Pset';
-    default:
-      return 'Task';
-  }
-};
 
 const taskTypes: { key: TaskType; label: string; emoji: string }[] = [
   { key: 'reading', label: 'Reading', emoji: '📖' },
@@ -69,6 +62,23 @@ const priorities: { key: TaskPriority; label: string }[] = [
   { key: 'medium', label: 'Medium' },
   { key: 'high', label: 'High' },
   { key: 'unknown', label: 'Unknown' },
+];
+const timeEstimates: { key: number; label: string }[] = [
+  { key: 15, label: '15m' },
+  { key: 30, label: '30m' },
+  { key: 45, label: '45m' },
+  { key: 60, label: '1h' },
+  { key: 90, label: '1.5h' },
+  { key: 120, label: '2h' },
+  { key: 180, label: '3h' },
+  { key: 240, label: '4h' },
+];
+
+const priorityColorsClasses: { key: TaskPriority; color: string }[] = [
+  { key: 'low', color: '#10B981' },
+  { key: 'medium', color: '#F59E0B' },
+  { key: 'high', color: '#EF4444' },
+  { key: 'unknown', color: '#9CA3AF' },
 ];
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
@@ -90,6 +100,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
   } = useForm<TaskFormValues>({
     defaultValues: {
       title: task?.title || '',
+      description: task?.description || '',
       courseId: task?.courseId ? Number(task.courseId) : undefined,
       type: task?.type || 'reading',
       priority: task?.priority || 'medium',
@@ -103,6 +114,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
     onSuccess: () => {
       reset({
         title: '',
+        description: '',
         courseId: undefined,
         type: 'coding',
         priority: 'low',
@@ -144,17 +156,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
   }
 
   const courseId = watch('courseId');
+  const taskType = watch('type');
+  const priority = watch('priority');
+  const estimateMinutes = watch('estimateMinutes');
+  const selectedCourse = courses.find(c => c.id === courseId);
 
   return (
-    <div className='bg-white  relative rounded-[10px] w-full py-2'>
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmitHandler)} className='px-6 pb-6'>
-        <div className='flex flex-col gap-4'>
-          {/* Task Title */}
-          <div className='flex flex-col gap-2'>
-            <label className='text-sm text-neutral-950 leading-3.5'>
-              Task Title
-            </label>
+    <form onSubmit={handleSubmit(onSubmitHandler)} className='w-full'>
+      <div className='flex flex-col gap-[15px] pt-5'>
+        {/* Task Name and Description */}
+        <div className='flex flex-col gap-[9px]'>
+          <div className='flex flex-col gap-[9px]'>
             <Controller
               control={control}
               name='title'
@@ -165,16 +177,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
                 },
               }}
               render={({ field }) => (
-                <Input
+                <HeadingInput
                   {...field}
-                  required
-                  placeholder='Enter task title'
-                  className='w-full'
-                  classNames={{
-                    input: 'text-sm text-[#717182]',
-                    inputWrapper:
-                      'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
-                  }}
+                  placeholder='Task name'
+                  className='text-[20px]'
                   errorMessage={errors.title?.message}
                   isInvalid={!!errors.title}
                 />
@@ -182,186 +188,251 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onCancel, onClose }) => {
             />
           </div>
 
-          {/* Course */}
-          <div className='flex flex-col gap-2'>
-            <label className='text-sm text-neutral-950 leading-[14px]'>
-              Course
-            </label>
+          <div className='flex flex-col gap-[9px]'>
             <Controller
               control={control}
-              name='courseId'
+              name='description'
               render={({ field }) => (
-                <Select
-                  items={courses}
-                  placeholder='Select a course'
-                  isClearable
-                  className='w-full'
-                  selectedKeys={field.value ? [field.value.toString()] : []}
-                  onSelectionChange={keys => {
-                    const selected = Array.from(keys)[0];
-                    field.onChange(Number(selected) || undefined);
-                  }}
-                  classNames={{
-                    trigger:
-                      'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
-                    value: 'text-sm text-[#717182]',
-                  }}
-                  errorMessage={errors.courseId?.message}
-                  isInvalid={!!errors.courseId}
-                >
-                  {course => (
-                    <SelectItem key={course.id.toString()}>
-                      {course.name}
-                    </SelectItem>
-                  )}
-                </Select>
-              )}
-            />
-          </div>
-
-          {/* Task Type and Priority Row */}
-          <div className='flex gap-4'>
-            {/* Task Type */}
-            <div className='flex flex-col gap-2 flex-1'>
-              <label className='text-sm text-neutral-950 leading-[14px]'>
-                Task Type
-              </label>
-              <Controller
-                control={control}
-                name='type'
-                render={({ field }) => (
-                  <Select
-                    items={taskTypes}
-                    selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={keys => {
-                      const selected = Array.from(keys)[0] as TaskType;
-                      field.onChange(selected || 'reading');
-                    }}
-                    className='w-full'
-                    isClearable={true}
-                    classNames={{
-                      trigger:
-                        'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
-                      value: 'text-sm text-neutral-950',
-                    }}
-                    renderValue={items => {
-                      return items.map(item => {
-                        const taskType = taskTypes.find(
-                          t => t.key === item.data?.key
-                        );
-                        return (
-                          <div
-                            key={item.key}
-                            className='flex items-center gap-2'
-                          >
-                            <span className='text-sm text-neutral-950'>
-                              {taskType?.emoji}
-                            </span>
-                            <span className='text-sm text-neutral-950'>
-                              {taskType?.label}
-                            </span>
-                          </div>
-                        );
-                      });
-                    }}
-                  >
-                    {type => (
-                      <SelectItem key={type.key}>
-                        {type.emoji} {type.label}
-                      </SelectItem>
-                    )}
-                  </Select>
-                )}
-              />
-            </div>
-
-            {/* Priority */}
-            <div className='flex flex-col gap-2 flex-1'>
-              <label className='text-sm text-neutral-950 leading-[14px]'>
-                Priority
-              </label>
-              <Controller
-                control={control}
-                name='priority'
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={keys => {
-                      const selected = Array.from(keys)[0] as TaskPriority;
-                      field.onChange(selected || 'medium');
-                    }}
-                    className='w-full'
-                    classNames={{
-                      trigger:
-                        'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
-                      value: 'text-sm text-neutral-950',
-                    }}
-                  >
-                    {priorities.map(priority => (
-                      <SelectItem key={priority.key}>
-                        {priority.label}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Estimated Time */}
-          <div className='flex flex-col gap-2'>
-            <label className='text-sm text-neutral-950 leading-[14px]'>
-              Estimated Time (minutes)
-            </label>
-            <Controller
-              control={control}
-              name='estimateMinutes'
-              rules={{
-                required: {
-                  value: true,
-                  message: 'Estimated time is required',
-                },
-                min: {
-                  value: 1,
-                  message: 'Estimated time must be at least 1 minute',
-                },
-              }}
-              render={({ field }) => (
-                <Input
+                <HeadingInput
                   {...field}
-                  type='number'
-                  value={field.value?.toString() || ''}
-                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                  className='w-full'
-                  classNames={{
-                    input: 'text-sm text-neutral-950',
-                    inputWrapper:
-                      'bg-[#f3f3f5] border-[0.8px] border-[rgba(0,0,0,0)] rounded-[8px] h-[36px]',
-                  }}
-                  errorMessage={errors.estimateMinutes?.message}
-                  isInvalid={!!errors.estimateMinutes}
+                  placeholder='Description'
+                  className='text-[16px] font-normal!'
+                  errorMessage={errors.description?.message}
+                  isInvalid={!!errors.description}
                 />
               )}
             />
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className='flex gap-2 justify-end mt-8'>
-          <Button
-            type='submit'
-            isLoading={isSubmitting}
-            isDisabled={!isDirty || isSubmitting}
-            className='bg-[#101828] text-white rounded-[8px] h-[36px] px-4 min-w-[89px]'
+        {/* Button Row: Course, Type, Priority, Estimated, More */}
+        <div className='flex gap-[9px] items-center'>
+          {/* Course Button */}
+          <Controller
+            control={control}
+            name='courseId'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={<BookOpen className='w-5 h-5' />}
+                  >
+                    <span className='text-[12px] text-black'>
+                      {selectedCourse?.name || 'Course'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={courses}
+                  selectedKeys={field.value ? [field.value.toString()] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0];
+                    field.onChange(selected ? Number(selected) : undefined);
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {course => (
+                    <DropdownItem key={course.id.toString()}>
+                      {course.name}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
+
+          {/* Type Button */}
+          <Controller
+            control={control}
+            name='type'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white flex items-center justify-center'
+                    startContent={
+                      field.value ? (
+                        <span>
+                          {taskTypes.find(t => t.key === field.value)?.emoji}
+                        </span>
+                      ) : (
+                        <Tag className='w-5 h-5' />
+                      )
+                    }
+                  >
+                    <span className='text-[12px] text-black'>
+                      {taskTypes.find(t => t.key === field.value)?.label ||
+                        'Type'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={taskTypes}
+                  selectedKeys={field.value ? [field.value] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0] as TaskType;
+                    field.onChange(selected || 'reading');
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {type => (
+                    <DropdownItem key={type.key}>
+                      {type.emoji} {type.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
+
+          {/* Priority Button */}
+          <Controller
+            control={control}
+            name='priority'
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={
+                      <Flag
+                        className='w-5 h-5'
+                        color={
+                          priorityColorsClasses.find(p => p.key === field.value)
+                            ?.color
+                        }
+                      />
+                    }
+                  >
+                    <span className='text-[12px] text-black'>
+                      {priorities.find(p => p.key === priority)?.label ||
+                        'Priority'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={priorities}
+                  selectedKeys={field.value ? [field.value] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0] as TaskPriority;
+                    field.onChange(selected || 'medium');
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {priority => (
+                    <DropdownItem key={priority.key}>
+                      {priority.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
+
+          {/* Estimated Button */}
+          <Controller
+            control={control}
+            name='estimateMinutes'
+            rules={{
+              required: {
+                value: true,
+                message: 'Estimated time is required',
+              },
+              min: {
+                value: 1,
+                message: 'Estimated time must be at least 1 minute',
+              },
+            }}
+            render={({ field }) => (
+              <Dropdown placement='bottom-start'>
+                <DropdownTrigger>
+                  <Button
+                    className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] px-4 bg-white'
+                    startContent={<Clock className='w-5 h-5' />}
+                  >
+                    <span className='text-[12px] text-black'>
+                      {estimateMinutes
+                        ? timeEstimates.find(t => t.key === estimateMinutes)
+                            ?.label || `${estimateMinutes}m`
+                        : 'Estimated'}
+                    </span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={timeEstimates}
+                  selectedKeys={field.value ? [field.value.toString()] : []}
+                  selectionMode='single'
+                  onSelectionChange={keys => {
+                    const selected = Array.from(keys)[0];
+                    field.onChange(selected ? Number(selected) : undefined);
+                  }}
+                  classNames={{
+                    base: 'w-[200px]',
+                  }}
+                >
+                  {timeEstimate => (
+                    <DropdownItem key={timeEstimate.key.toString()}>
+                      {timeEstimate.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            )}
+          />
+
+          {/* More Options Button */}
+          {/* <Button
+            isIconOnly
+            className='border-2 border-[#d4d4d8] rounded-[8px] h-[31px] w-[40px] bg-white'
           >
-            <span className='text-sm text-white'>
-              {isEditMode ? 'Update Task' : 'Add Task'}
-            </span>
-          </Button>
+            <MoreHorizontal className='w-5 h-5' />
+          </Button> */}
         </div>
-      </form>
-    </div>
+
+        {/* Divider */}
+        <div className='w-full h-px bg-[rgba(17,17,17,0.15)]' />
+
+        {/* Footer: Paperclip, Cancel, Add Task */}
+        <div className='flex items-center justify-between'>
+          <Button
+            isIconOnly
+            className='rounded-[12px] w-[40px] h-[40px] bg-transparent'
+          >
+            <Paperclip className='w-5 h-5' />
+          </Button>
+
+          <div className='flex gap-[11px] items-center'>
+            <Button
+              type='button'
+              onPress={onCancel || onClose}
+              className='bg-[rgba(212,212,216,0.4)] rounded-[12px] h-[40px] px-4'
+            >
+              <span className='text-[14px] text-black'>Cancel</span>
+            </Button>
+            <Button
+              type='submit'
+              isLoading={isSubmitting}
+              isDisabled={!isDirty || isSubmitting}
+              className='bg-[#101828] rounded-[12px] h-[40px] px-4'
+            >
+              <span className='text-[14px] text-white'>
+                {isEditMode ? 'Update Task' : 'Add Task'}
+              </span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </form>
   );
 };
 

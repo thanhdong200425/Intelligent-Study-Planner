@@ -26,6 +26,7 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 export interface Task {
   id: string;
   title: string;
+  description?: string;
   courseId?: string;
   subject?: string;     // thêm
   daysLeft?: number;    // thêm
