@@ -10,7 +10,16 @@ import {
 import { TaskCard } from '@/components/tasks/TaskCard';
 import StatCard from '@/components/home/StatCard';
 import { getTodayData } from '@/services';
-import { CheckSquare, Clock, Flame, Target } from 'lucide-react';
+import {
+  ArrowRight,
+  Calendar,
+  CheckSquare,
+  Clock,
+  Flame,
+  Target,
+} from 'lucide-react';
+import { Button } from '@heroui/react';
+import { useRouter } from 'next/navigation';
 
 // Helper function to format time in hours and minutes
 const formatTime = (minutes: number): string => {
@@ -26,6 +35,7 @@ export default function TodayPage() {
     queryKey: ['today'],
     queryFn: getTodayData,
   });
+  const router = useRouter();
 
   // Calculate dynamic values
   const tasksRemaining = useMemo(() => {
@@ -101,9 +111,14 @@ export default function TodayPage() {
                       remaining
                     </p>
                   </div>
-                  <button className='px-4 py-2 rounded-lg text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors focus:outline-none'>
-                    View All →
-                  </button>
+                  <Button
+                    variant='bordered'
+                    endContent={<ArrowRight className='size-4' />}
+                    className='px-4 py-2 rounded-lg text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors focus:outline-none'
+                    onPress={() => router.push('/tasks')}
+                  >
+                    View All
+                  </Button>
                 </div>
 
                 <div className='space-y-3'>
@@ -142,9 +157,14 @@ export default function TodayPage() {
                       <DeadlineCard key={deadline.id} deadline={deadline} />
                     ))
                   )}
-                  <button className='w-full mt-2 px-4 py-2 rounded-lg text-sm text-gray-600 border border-gray-100 hover:bg-gray-50 transition-colors focus:outline-none'>
+                  <Button
+                    endContent={<Calendar className='size-4' />}
+                    variant='bordered'
+                    className='w-full mt-2 px-4 py-2 rounded-lg text-sm text-gray-600 border border-gray-100 hover:bg-gray-50 transition-colors focus:outline-none'
+                    onPress={() => router.push('/planner')}
+                  >
                     View Calendar
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
