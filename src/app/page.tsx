@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { SidebarNav, HeaderBar } from '@/components';
 import {
   DashboardHero,
@@ -8,94 +9,74 @@ import {
 } from '@/components/today/DashboardWidgets';
 import { TaskCard } from '@/components/tasks/TaskCard';
 import StatCard from '@/components/home/StatCard';
-import type { Task, Deadline } from '@/types';
+import { getTodayData } from '@/services';
 import { CheckSquare, Clock, Flame, Target } from 'lucide-react';
 
-// --- Mock Data ---
-const MOCK_TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Complete Chapter 5 exercises',
-    subject: 'Computer Science 101',
-    priority: 'high',
-    durationMinutes: 90,
-    estimateMinutes: 90,
-    completed: false,
-    type: 'pset',
-  },
-  {
-    id: '2',
-    title: 'Build portfolio website',
-    subject: 'Web Development',
-    priority: 'high',
-    durationMinutes: 180,
-    estimateMinutes: 180,
-    completed: false,
-    type: 'coding',
-  },
-  {
-    id: '3',
-    title: 'Read research paper on Neural Networks',
-    subject: 'Machine Learning',
-    priority: 'medium',
-    durationMinutes: 60,
-    estimateMinutes: 60,
-    completed: false,
-    type: 'reading',
-  },
-  {
-    id: '4',
-    title: 'Review calculus notes',
-    subject: 'Mathematics',
-    priority: 'medium',
-    durationMinutes: 45,
-    estimateMinutes: 45,
-    completed: true,
-    type: 'reading',
-  },
-  {
-    id: '5',
-    title: 'Write essay outline',
-    subject: 'English Literature',
-    priority: 'low',
-    durationMinutes: 60,
-    estimateMinutes: 60,
-    completed: false,
-    type: 'writing',
-  },
-];
-
-const MOCK_DEADLINES: Deadline[] = [
-  {
-    id: '1',
-    title: 'Final Project Submission',
-    subject: 'Web Development',
-    daysLeft: 2,
-    priority: 'high',
-    courseId: 'course1',
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: '2',
-    title: 'Midterm Exam',
-    subject: 'Machine Learning',
-    daysLeft: 3,
-    priority: 'high',
-    courseId: 'course2',
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    title: 'Lab Report',
-    subject: 'Physics',
-    daysLeft: 5,
-    priority: 'medium',
-    courseId: 'course3',
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-  },
-];
+// Helper function to format time in hours and minutes
+const formatTime = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+};
 
 export default function TodayPage() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['today'],
+    queryFn: getTodayData,
+  });
+
+  // Calculate dynamic values
+  const tasksRemaining = useMemo(() => {
+    if (!data) return 0;
+    return data.stats.totalOpenTasks - data.stats.tasksCompletedToday;
+  }, [data]);
+
+  const tasksCompletedValue = useMemo(() => {
+    if (!data) return '0/0';
+    return `${data.stats.tasksCompletedToday}/${data.stats.totalOpenTasks}`;
+  }, [data]);
+
+  const timeRemainingValue = useMemo(() => {
+    if (!data) return '0m';
+    return formatTime(data.stats.timeRemaining);
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex'>
+        <SidebarNav />
+        <div className='flex-1 flex flex-col overflow-hidden'>
+          <HeaderBar title='Today' description='Your daily dashboard' />
+          <main className='flex-1 flex items-center justify-center'>
+            <div className='text-gray-500'>Loading...</div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex'>
+        <SidebarNav />
+        <div className='flex-1 flex flex-col overflow-hidden'>
+          <HeaderBar title='Today' description='Your daily dashboard' />
+          <main className='flex-1 flex items-center justify-center'>
+            <div className='text-red-500'>
+              Error loading today's data. Please try again.
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  const todaysTasks = data?.todaysTasks || [];
+  const upcomingDeadlines = data?.upcomingDeadlines || [];
+  const stats = data?.stats;
+
   return (
     <div className='min-h-screen bg-gray-50 flex'>
       <SidebarNav />
@@ -115,7 +96,10 @@ export default function TodayPage() {
                     <h3 className='text-gray-800 font-semibold'>
                       Today's Tasks
                     </h3>
-                    <p className='text-sm text-gray-500'>4 tasks remaining</p>
+                    <p className='text-sm text-gray-500'>
+                      {tasksRemaining} {tasksRemaining === 1 ? 'task' : 'tasks'}{' '}
+                      remaining
+                    </p>
                   </div>
                   <button className='px-4 py-2 rounded-lg text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors focus:outline-none'>
                     View All →
@@ -123,9 +107,17 @@ export default function TodayPage() {
                 </div>
 
                 <div className='space-y-3'>
-                  {MOCK_TASKS.map(task => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
+                  {todaysTasks.length === 0 ? (
+                    <div className='bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center'>
+                      <p className='text-gray-500'>
+                        No tasks for today. Great job! 🎉
+                      </p>
+                    </div>
+                  ) : (
+                    todaysTasks.map(task => (
+                      <TaskCard key={task.id} task={task} />
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -141,9 +133,15 @@ export default function TodayPage() {
                 </div>
 
                 <div className='bg-white p-4 rounded-xl shadow-sm border border-gray-100'>
-                  {MOCK_DEADLINES.map(deadline => (
-                    <DeadlineCard key={deadline.id} deadline={deadline} />
-                  ))}
+                  {upcomingDeadlines.length === 0 ? (
+                    <p className='text-center text-gray-500 py-4'>
+                      No upcoming deadlines
+                    </p>
+                  ) : (
+                    upcomingDeadlines.map(deadline => (
+                      <DeadlineCard key={deadline.id} deadline={deadline} />
+                    ))
+                  )}
                   <button className='w-full mt-2 px-4 py-2 rounded-lg text-sm text-gray-600 border border-gray-100 hover:bg-gray-50 transition-colors focus:outline-none'>
                     View Calendar
                   </button>
@@ -155,28 +153,28 @@ export default function TodayPage() {
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-8'>
               <StatCard
                 icon={<CheckSquare className='size-6' />}
-                value='1/5'
+                value={tasksCompletedValue}
                 title='Tasks Completed'
                 bgColor='bg-blue-50'
                 iconColor='text-blue-600'
               />
               <StatCard
                 icon={<Clock className='size-6' />}
-                value='6h 30m'
+                value={timeRemainingValue}
                 title='Time Remaining'
                 bgColor='bg-orange-50'
                 iconColor='text-orange-600'
               />
               <StatCard
                 icon={<Target className='size-6' />}
-                value='2'
+                value={stats?.highPriorityCount.toString() || '0'}
                 title='High Priority'
                 bgColor='bg-red-50'
                 iconColor='text-red-600'
               />
               <StatCard
                 icon={<Flame className='size-6' />}
-                value='7'
+                value={stats?.dayStreak.toString() || '0'}
                 title='Day Streak'
                 bgColor='bg-green-50'
                 iconColor='text-green-600'
