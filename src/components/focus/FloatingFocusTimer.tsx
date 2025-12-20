@@ -30,7 +30,9 @@ export const FloatingFocusTimer: React.FC = () => {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
   const isOnFocusPage = pathname === '/session';
-  const isOnAuthPage = ['/auth', '/verify'].some(route => pathname.startsWith(route));
+  const isOnAuthPage = ['/auth', '/verify'].some(route =>
+    pathname.startsWith(route)
+  );
 
   const label = useMemo(() => {
     if (!activeSession) return null;

@@ -80,7 +80,7 @@ const formatTime = (minutes?: number): string => {
 };
 
 interface TodayTasksSidebarProps {
-  selectedTaskId?: string;
+  selectedTaskId?: number;
   onSelectTask?: (task: Task) => void;
 }
 

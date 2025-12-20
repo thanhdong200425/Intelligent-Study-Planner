@@ -1,5 +1,5 @@
 import apiClient from '@/lib/api';
-import { Task } from '@/types';
+import { Task, ExtractedTask } from '@/types';
 import { sendRequestFromServer } from './serverActions';
 import { TaskFormData } from '@/components/forms/TaskForm';
 
@@ -64,6 +64,58 @@ export const deleteTask = async (taskId: number): Promise<boolean> => {
     return response.data;
   } catch (err) {
     console.log('Error creating task: ', err);
+    throw err;
+  }
+};
+
+/* 
+  This function sends an image to the model to be analyzed for tasks and see preview of the tasks without creating them.
+  @param file - the image file to send to the model
+  @param additionalContext - additional context to add to the prompt
+  @returns the tasks extracted from the image
+*/
+
+interface SendImageToModelResponse {
+  tasks: ExtractedTask[];
+  message: string;
+  statusCode: number;
+}
+
+export const sendImageToModel = async (
+  file: File,
+  additionalContext?: string
+): Promise<SendImageToModelResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (additionalContext) {
+      formData.append('additionalContext', additionalContext);
+    }
+
+    const response = await apiClient.post(
+      '/tasks/image/preview-image-tasks',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.log('Error sending image to model: ', err);
+    throw err;
+  }
+};
+
+export const createMultipleTasks = async (
+  tasks: TaskFormData[]
+): Promise<Task[]> => {
+  try {
+    const response = await apiClient.post(`${endpoint}/add-multiple`, tasks);
+    return response.data;
+  } catch (err) {
+    console.log('Error creating multiple tasks: ', err);
     throw err;
   }
 };

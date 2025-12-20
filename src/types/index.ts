@@ -8,31 +8,38 @@ export interface Course {
 }
 
 export interface Deadline {
-  id: string;
+  id: number;
   title: string;
-  courseId: string;
-  subject?: string;     // thêm
+  courseId: number;
+  subject?: string;
   dueDate: Date;
-  daysLeft?: number;    // thêm
+  daysLeft?: number;
   priority: 'low' | 'medium' | 'high';
   completed?: boolean;
-
 }
-
 
 export type TaskType = 'reading' | 'coding' | 'writing' | 'pset' | 'other';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'unknown';
 
-export interface Task {
-  id: string;
+export interface ExtractedTask {
   title: string;
   description?: string;
-  courseId?: string;
-  subject?: string;     // thêm
-  daysLeft?: number;    // thêm
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: string; // YYYY-MM-DD format
+  estimateMinutes?: number;
+  type?: TaskType;
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  courseId?: number;
+  subject?: string;
+  daysLeft?: number;
   type: TaskType;
   estimateMinutes: number;
-  deadlineId?: string;
+  deadlineId?: number;
   completed?: boolean;
   actualMinutes?: number;
   priority?: TaskPriority;
@@ -40,17 +47,16 @@ export interface Task {
   course?: Course;
 }
 
-
 export interface AvailabilityWindow {
-  id: string;
+  id: number;
   dayOfWeek: number; // 0-6 (Sunday-Saturday)
   startTime: string; // HH:MM format
   endTime: string; // HH:MM format
 }
 
 export interface TimeBlock {
-  id: string;
-  taskId: string;
+  id: number;
+  taskId: number;
   startTime: Date;
   endTime: Date;
   isBreak?: boolean;
@@ -60,7 +66,7 @@ export interface TimeBlock {
 }
 
 export interface Habit {
-  id: string;
+  id: number;
   name: string;
   targetMinutes: number;
   currentStreak: number;
@@ -69,22 +75,22 @@ export interface Habit {
 }
 
 export interface HabitCompletion {
-  id: string;
-  habitId: string;
+  id: number;
+  habitId: number;
   date: Date;
   minutes: number;
 }
 
 export interface WeeklySummary {
-  id: string;
+  id: number;
   weekStart: Date;
   weekEnd: Date;
   tasksCompleted: number;
   tasksOverdue: number;
   totalActualTime: number;
   totalPredictedTime: number;
-  timePerCourse: { [courseId: string]: number };
-  habitStreaks: { [habitId: string]: number };
+  timePerCourse: { [courseId: number]: number };
+  habitStreaks: { [habitId: number]: number };
   mostProductiveTimeSlot?: {
     day: string;
     timeRange: string;
