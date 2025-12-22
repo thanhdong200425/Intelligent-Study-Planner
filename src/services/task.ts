@@ -119,3 +119,16 @@ export const createMultipleTasks = async (
     throw err;
   }
 };
+
+// Request an ephemeral token from the server
+export const requestEphemeralToken = async () => {
+  try {
+    const response = await apiClient.post(
+      `${endpoint}/live/request-ephemeral-token`
+    );
+    return response.data;
+  } catch (err) {
+    console.log('Error requesting ephemeral token: ', err);
+    throw err;
+  }
+};
