@@ -1,15 +1,10 @@
 'use client';
 import React, { useState } from 'react';
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-} from '@heroui/react';
-import { Plus, Upload } from 'lucide-react';
+import { Button, Modal, ModalBody, ModalContent } from '@heroui/react';
+import { Plus, Upload, Mic } from 'lucide-react';
 import TaskForm from '@/components/forms/TaskForm';
 import UploadImageModal from '@/components/modals/UploadImageModal';
+import VoiceModeModal from '@/components/modals/VoiceModeModal';
 
 interface TaskModalProps {
   title?: string;
@@ -22,6 +17,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 }) => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
+  const [isVoiceModeModalOpen, setIsVoiceModeModalOpen] = useState(false);
 
   const handleImageUpload = (file: File) => {
     // TODO: Implement image upload logic
@@ -33,14 +29,24 @@ const TaskModal: React.FC<TaskModalProps> = ({
   return (
     <>
       {showAdditionalButton && (
-        <Button
-          color='default'
-          variant='light'
-          startContent={<Upload className='w-4 h-4' />}
-          onPress={() => setIsUploadImageModalOpen(true)}
-        >
-          Upload image
-        </Button>
+        <>
+          <Button
+            color='default'
+            variant='light'
+            startContent={<Mic className='w-4 h-4' />}
+            onPress={() => setIsVoiceModeModalOpen(true)}
+          >
+            Voice mode
+          </Button>
+          <Button
+            color='default'
+            variant='light'
+            startContent={<Upload className='w-4 h-4' />}
+            onPress={() => setIsUploadImageModalOpen(true)}
+          >
+            Upload image
+          </Button>
+        </>
       )}
       <Button
         color='default'
@@ -76,6 +82,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
         isOpen={isUploadImageModalOpen}
         onClose={() => setIsUploadImageModalOpen(false)}
         onImageUpload={handleImageUpload}
+      />
+
+      <VoiceModeModal
+        isOpen={isVoiceModeModalOpen}
+        onClose={() => setIsVoiceModeModalOpen(false)}
       />
     </>
   );

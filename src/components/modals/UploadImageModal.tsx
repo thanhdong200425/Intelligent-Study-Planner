@@ -8,7 +8,7 @@ import { useSendImageToModelMutation } from '@/mutations';
 import ExtractedTasksModal from './ExtractedTasksModal';
 import { ExtractedTask } from '@/types';
 
-interface UploadImageModalProps {
+export interface UploadImageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImageUpload?: (file: File) => void;
