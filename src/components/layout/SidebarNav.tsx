@@ -123,12 +123,12 @@ export default function SidebarNav() {
               >
                 <Avatar
                   showFallback
-                  name={userProfile?.email?.charAt(0).toUpperCase() || ''}
-                  src={userProfile?.name || ''}
+                  name={userProfile?.name || userProfile?.email || ''}
+                  src={userProfile?.avatar || ''}
                   className='w-10 h-10 text-sm font-medium text-white'
-                  style={{
-                    background:
-                      'linear-gradient(135deg, #6675FF 0%, #7B5BFF 100%)',
+                  classNames={{
+                    base: 'bg-gradient-to-br from-blue-500 to-purple-600',
+                    name: 'text-white',
                   }}
                 />
               </Button>
@@ -138,12 +138,12 @@ export default function SidebarNav() {
                 <div className='flex items-center gap-3 px-4 pt-4 pb-3'>
                   <Avatar
                     showFallback
-                    name={userProfile?.email?.charAt(0).toUpperCase() || ''}
-                    src={userProfile?.name || ''}
+                    name={userProfile?.name || userProfile?.email || ''}
+                    src={userProfile?.avatar || ''}
                     className='w-10 h-10 text-sm font-medium text-white'
-                    style={{
-                      background:
-                        'linear-gradient(135deg, #6675FF 0%, #7B5BFF 100%)',
+                    classNames={{
+                      base: 'bg-gradient-to-br from-blue-500 to-purple-600',
+                      name: 'text-white',
                     }}
                   />
                   <div>

@@ -5,10 +5,10 @@ import React, { useEffect, useState } from 'react';
 import SidebarNav from '@/components/layout/SidebarNav';
 import HeaderBar from '@/components/layout/HeaderBar';
 import {
-  ProfileDetails,
-  StudyPreferences,
   NotificationSettings,
+  ProfileDetails,
   ProfileStats,
+  StudyPreferences,
 } from '@/components/home';
 
 import { useForm } from 'react-hook-form';
@@ -16,7 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getProfile, type UpdateUserRequest } from '@/services/user';
 import { useUpdateProfileMutation } from '@/mutations/user';
 import type { UserProfile } from '../../types';
-import { da } from 'date-fns/locale';
 
 const ProfilePage: React.FC = () => {
   const { data, isLoading, error } = useQuery({
@@ -124,6 +123,7 @@ const ProfilePage: React.FC = () => {
   const bioValue = getValues('bio');
   const nameValue = getValues('name');
   const emailValue = getValues('email');
+  const avatar = getValues('avatar');
 
   return (
     <div className='flex min-h-screen bg-gray-50'>
@@ -142,6 +142,7 @@ const ProfilePage: React.FC = () => {
             register={register}
             name={nameValue}
             email={emailValue}
+            avatar={avatar ? avatar : ''}
             location={locationValue}
             joinedDate={data?.createdAt || ''}
             onSave={handleSave}

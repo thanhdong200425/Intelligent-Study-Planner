@@ -11,6 +11,7 @@ export interface LoginResponse {
     id: number;
     email: string;
     name: string | null;
+    avatar?: string | null;
   };
 }
 
