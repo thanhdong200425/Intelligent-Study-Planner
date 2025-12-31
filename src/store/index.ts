@@ -35,16 +35,26 @@ const userPersistConfig = {
   whitelist: ['profile'],
 };
 
+const spotifyPersistConfig = {
+  key: 'spotify',
+  storage,
+  whitelist: ['accessToken', 'isConnected'],
+};
+
 const persistedAppReducer = persistReducer(appPersistConfig, appReducer);
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
+const persistedSpotifyReducer = persistReducer(
+  spotifyPersistConfig,
+  spotifyReducer
+);
 
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
     user: persistedUserReducer,
     app: persistedAppReducer,
-    spotify: spotifyReducer,
+    spotify: persistedSpotifyReducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
