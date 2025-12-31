@@ -283,70 +283,62 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
     }
   }, [timerSettings, activeMode, isRunning, resetToModeDefault]);
 
-  // Timer countdown
+  // Timer countdown - uses actual elapsed time for accuracy
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || !startTime) return;
 
     const id = setInterval(() => {
-      setRemainingTime(prev => {
-        if (prev <= 1) {
-          clearInterval(id);
-          setIsRunning(false);
+      const now = new Date();
+      const elapsedSeconds = differenceInSeconds(now, startTime);
+      const totalDurationSeconds = timerSettings[activeMode] * 60;
+      const newRemainingTime = Math.max(0, totalDurationSeconds - elapsedSeconds);
 
-          // Play sound when timer ends (if enabled)
-          if (preferences.timerSounds) {
-            playTimerEndSound();
-          }
+      setRemainingTime(newRemainingTime);
 
-          // Track completion
-          if (activeMode === 'focus') {
-            // Calculate actual minutes based on startTime and endTime
-            const endTime = new Date();
-            const durationMinutes = startTime
-              ? differenceInMinutes(endTime, startTime)
-              : 0;
+      if (newRemainingTime === 0) {
+        clearInterval(id);
+        setIsRunning(false);
 
-            // Update timer session end time and actual minutes
-            if (currentTimerSessionId) {
-              updateTimerSession({
-                id: currentTimerSessionId,
-                data: {
-                  endTime: endTime.toISOString(),
-                  durationMinutes,
-                  status: 'completed',
-                },
-              });
-            }
-
-            setCompletedSessions(prev => prev + 1);
-            const sessionDuration = timerSettings.focus * 60;
-            setTotalFocusTime(prev => prev + sessionDuration);
-          }
-
-          // Clear current session state
-          setStartTime(null);
-          setCurrentTimerSessionId(null);
-
-          // Auto-switch to next mode and start timer (pass updated count)
-          autoSwitchToNextMode(completedSessions);
-
-          return 0;
+        // Play sound when timer ends (if enabled)
+        if (preferences.timerSounds) {
+          playTimerEndSound();
         }
-        return prev - 1;
-      });
+
+        // Track completion
+        if (activeMode === 'focus') {
+          // Calculate actual minutes based on startTime and endTime
+          const endTime = new Date();
+          const durationMinutes = differenceInMinutes(endTime, startTime);
+
+          // Update timer session end time and actual minutes
+          if (currentTimerSessionId) {
+            updateTimerSession({
+              id: currentTimerSessionId,
+              data: {
+                endTime: endTime.toISOString(),
+                durationMinutes,
+                status: 'completed',
+              },
+            });
+          }
+
+          setCompletedSessions(prev => prev + 1);
+          const sessionDuration = timerSettings.focus * 60;
+          setTotalFocusTime(prev => prev + sessionDuration);
+        }
+
+        // Clear current session state
+        setStartTime(null);
+        setCurrentTimerSessionId(null);
+
+        // Auto-switch to next mode and start timer (pass updated count)
+        autoSwitchToNextMode(completedSessions);
+      }
     }, 1000);
 
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isRunning,
-    activeMode,
-    timerSettings.focus,
-    preferences.timerSounds,
-    currentTimerSessionId,
-    startTime,
-    autoSwitchToNextMode,
-  ]);
+  }, [isRunning, startTime, activeMode, timerSettings]);
 
   // Calculate timer display values and progress
   const {

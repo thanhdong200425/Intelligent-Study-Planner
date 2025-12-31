@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Input, Textarea, Button, Avatar, Tooltip } from '@heroui/react';
+import { Avatar, Button, Input, Textarea, Tooltip } from '@heroui/react';
 import {
   CameraIcon,
-  PlannerIcon,
-  LocationIcon,
   EditIcon,
+  LocationIcon,
+  PlannerIcon,
 } from '@/components/icons/Icons';
 import { BaseButton } from '@/components/buttons';
 import type { UseFormRegister } from 'react-hook-form';
@@ -22,6 +22,7 @@ interface ProfileDetailsProps {
   location: string;
   joinedDate: string;
   onSave?: () => void;
+  avatar?: string;
 }
 
 const ProfileDetails: React.FC<ProfileDetailsProps> = ({
@@ -30,12 +31,13 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({
   email,
   location,
   joinedDate,
+  avatar,
   onSave,
 }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const joinedMonthYear = useMemo(() => {
-    const joinedMonth = getMonth(joinedDate) + 1;
-    const joinedYear = getYear(joinedDate);
+    const joinedMonth = Number(getMonth(joinedDate));
+    const joinedYear = Number(getYear(joinedDate));
 
     return `${monthNames[joinedMonth]} ${joinedYear}`;
   }, [joinedDate]);
@@ -62,6 +64,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({
           {/* Avatar with Camera Button */}
           <div className='relative'>
             <Avatar
+              src={avatar ?? ''}
               name={name}
               size='lg'
               radius='full'

@@ -75,6 +75,7 @@ const FocusSettingsModal: React.FC<FocusSettingsModalProps> = ({
       window.location.href = `${baseURL}/spotify/auth/login`;
     }
   };
+
   return (
     <Modal
       isOpen={isOpen}

@@ -22,21 +22,39 @@ const appPersistConfig = {
   whitelist: ['sidebarCollapsed', 'theme', 'language'], // Only persist these fields
 };
 
-const userPersistConfig = {
+// Persist configuration for auth slice (user data, access token)
+const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['user'],
+  whitelist: ['user', 'accessToken', 'isAuthenticated'],
+};
+
+const userPersistConfig = {
+  key: 'user',
+  storage,
+  whitelist: ['profile'],
+};
+
+const spotifyPersistConfig = {
+  key: 'spotify',
+  storage,
+  whitelist: ['accessToken', 'isConnected'],
 };
 
 const persistedAppReducer = persistReducer(appPersistConfig, appReducer);
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
+const persistedSpotifyReducer = persistReducer(
+  spotifyPersistConfig,
+  spotifyReducer
+);
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
+    auth: persistedAuthReducer,
     user: persistedUserReducer,
     app: persistedAppReducer,
-    spotify: spotifyReducer,
+    spotify: persistedSpotifyReducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

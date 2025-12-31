@@ -34,7 +34,7 @@ function CallbackContent() {
           if (access_token) {
             dispatch(setSpotifyAccessToken(access_token));
           }
-          router.push('/');
+          router.push('/spotify/player');
         })
         .catch(err => {
           console.error('Spotify auth error:', err);
