@@ -22,6 +22,8 @@ const endpoint = {
   login: '/auth/login',
   logout: '/auth/logout',
   refresh: '/auth/refresh',
+  googleLogin: '/auth/google',
+  githubLogin: '/auth/github',
 };
 
 export const checkAuthMode = async (
@@ -88,5 +90,23 @@ export const refreshAccessToken = async (): Promise<{
   } catch (err: any) {
     console.log('Error: ', err);
     throw new Error(err.response?.data?.message || 'Token refresh failed');
+  }
+};
+
+export const googleLogin = () => {
+  try {
+    window.location.href = apiClient.defaults.baseURL + endpoint.googleLogin;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Google login failed');
+  }
+};
+
+export const githubLogin = () => {
+  try {
+    window.location.href = apiClient.defaults.baseURL + endpoint.githubLogin;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(err.response?.data?.message || 'Github login failed');
   }
 };
