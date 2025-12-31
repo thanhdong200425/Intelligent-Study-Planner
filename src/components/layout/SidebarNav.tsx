@@ -25,6 +25,8 @@ import { useAppSelector } from '@/store/hooks';
 import { useLogoutMutation } from '@/mutations/auth';
 import { useDispatch } from 'react-redux';
 import { setSidebarCollapsed } from '@/store/slices/appSlice';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile } from '@/services/user';
 
 interface MenuItem {
   href: string;
@@ -75,7 +77,10 @@ export default function SidebarNav() {
   const collapsed = useAppSelector(state => state.app.sidebarCollapsed);
   const pathname = usePathname();
   const router = useRouter();
-  const userProfile = useAppSelector(state => state.auth.user);
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getProfile,
+  });
   const { mutate: triggerLogout, isPending: isLoggingOut } =
     useLogoutMutation();
   const dispatch = useDispatch();
@@ -136,16 +141,6 @@ export default function SidebarNav() {
             <PopoverContent className='p-0'>
               <div className='w-[240px] rounded-lg border border-gray-200 bg-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]'>
                 <div className='flex items-center gap-3 px-4 pt-4 pb-3'>
-                  <Avatar
-                    showFallback
-                    name={userProfile?.name || userProfile?.email || ''}
-                    src={userProfile?.avatar || ''}
-                    className='w-10 h-10 text-sm font-medium text-white'
-                    classNames={{
-                      base: 'bg-gradient-to-br from-blue-500 to-purple-600',
-                      name: 'text-white',
-                    }}
-                  />
                   <div>
                     <p className='text-sm font-medium text-[#101828]'>
                       {userProfile?.name || ''}

@@ -33,38 +33,6 @@ const initialState: UserState = {
     REMOVE ALL API LOGIC — asyncThunk now acts as local actions
    =========================================================== */
 
-// Fake fetch (no API call)
-export const fetchUserProfile = createAsyncThunk(
-  'user/fetchUserProfile',
-  async (_, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as any;
-      // Return local Redux state only
-      return state.user.profile;
-    } catch (error: any) {
-      return rejectWithValue('Failed to load user profile');
-    }
-  }
-);
-
-// Fake update (no API call)
-export const updateUserProfile = createAsyncThunk(
-  'user/updateUserProfile',
-  async (profileData: UpdateUserRequest, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as any;
-      const current = state.user.profile;
-
-      return {
-        ...current,
-        ...profileData,
-      };
-    } catch (error: any) {
-      return rejectWithValue('Failed to update user profile');
-    }
-  }
-);
-
 // Update preferences locally
 export const updateUserPreferences = createAsyncThunk(
   'user/updateUserPreferences',
@@ -114,35 +82,6 @@ const userSlice = createSlice({
     },
   },
   extraReducers: builder => {
-    // Fake fetch
-    builder
-      .addCase(fetchUserProfile.pending, state => {
-        state.isLoading = true;
-      })
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.isLoading = false;
-        // Không thay đổi dữ liệu — chỉ giữ nguyên
-        state.profile = action.payload;
-      })
-      .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      });
-
-    // Fake update
-    builder
-      .addCase(updateUserProfile.pending, state => {
-        state.isUpdating = true;
-      })
-      .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.isUpdating = false;
-        state.profile = action.payload;
-      })
-      .addCase(updateUserProfile.rejected, (state, action) => {
-        state.isUpdating = false;
-        state.error = action.payload as string;
-      });
-
     // Update preferences locally
     builder.addCase(updateUserPreferences.fulfilled, (state, action) => {
       if (state.profile) {

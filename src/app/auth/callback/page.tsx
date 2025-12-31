@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { setAccessToken, setAuthData } from '@/store/slices/authSlice';
 import apiClient from '@/lib/api';
 import { addToast } from '@heroui/react';
+import { getProfile } from '@/services/user';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -32,13 +33,12 @@ export default function AuthCallback() {
         dispatch(setAccessToken(token));
 
         // Fetch user data using the access token (follows normal login flow)
-        const response = await apiClient.get('/user');
-        const userData = response.data;
+        const response = await getProfile();
 
         // Set complete auth data (user + token), same as normal login
         dispatch(
           setAuthData({
-            user: userData,
+            user: response,
             accessToken: token,
           })
         );
