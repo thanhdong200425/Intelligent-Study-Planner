@@ -1,22 +1,17 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Eye, EyeOff, Facebook, Lock, Mail, Twitter } from 'lucide-react';
+import React, { useState } from 'react';
+import { Twitter } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  Form,
-  Input,
-  Checkbox,
-  Button,
-  Divider,
-  Link,
-  addToast,
-} from '@heroui/react';
+import { Form, Input, Button, addToast } from '@heroui/react';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { checkAuthMode } from '@/services';
+import { useAppDispatch } from '@/store/hooks';
+import { checkAuthMode, githubLogin, googleLogin } from '@/services';
 import { setTemporaryEmail } from '@/store/slices/appSlice';
 import { BaseButton, BaseDivider } from '@/components';
+import Image from 'next/image';
+import Google from '@/assets/google.svg';
+import Github from '@/assets/github.svg';
 
 export interface AuthFormProps {
   email: string;
@@ -51,6 +46,14 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
     await handleCheckType(data);
   };
 
+  const onGoogleLogin = () => {
+    googleLogin();
+  };
+
+  const onGithubLogin = () => {
+    githubLogin();
+  };
+
   // Check whether to login or register based on email
   const handleCheckType = async (data: Pick<AuthFormProps, 'email'>) => {
     try {
@@ -68,6 +71,7 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
       });
     }
   };
+
   return (
     <Form
       onSubmit={handleSubmit(onSubmit)}
@@ -105,41 +109,6 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
         )}
       />
 
-      {/* Password */}
-      {/*<Controller
-        name='password'
-        control={control}
-        rules={{
-          required: 'Please enter your password.',
-          minLength: {
-            value: 8,
-            message: 'Password must be at least 8 characters.',
-          },
-        }}
-        render={({ field }) => (
-          <Input
-            {...field}
-            type={showPassword ? 'text' : 'password'}
-            label='Password'
-            placeholder='••••••••'
-            variant='bordered'
-            isInvalid={!!errors.password}
-            errorMessage={errors.password?.message}
-            startContent={<Lock size={18} className='text-slate-400' />}
-            endContent={
-              <button
-                type='button'
-                className='text-slate-500'
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                onClick={() => setShowPassword(s => !s)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            }
-          />
-        )}
-      />*/}
-
       <BaseButton
         type='submit'
         isValid={isValid}
@@ -154,19 +123,23 @@ const AuthForm = ({ redirectTo }: AuthFormComponentProps) => {
           type='button'
           variant='bordered'
           className='w-full'
-          startContent={<Facebook size={18} />}
-          onClick={() => console.log('Facebook')}
+          startContent={
+            <Image src={Google} alt='Google' width={20} height={20} />
+          }
+          onPress={onGoogleLogin}
         >
-          Sign In With Facebook
+          Sign In With Google
         </Button>
         <Button
           type='button'
           variant='bordered'
           className='w-full'
-          startContent={<Twitter size={18} />}
-          onClick={() => console.log('Twitter')}
+          startContent={
+            <Image src={Github} alt='Github' width={20} height={20} />
+          }
+          onPress={onGithubLogin}
         >
-          Sign In With Twitter
+          Sign In With Github
         </Button>
       </div>
     </Form>
