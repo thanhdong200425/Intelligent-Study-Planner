@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   ListTodo,
   LogOut,
+  MessageSquare,
   Timer,
   UserRound,
 } from 'lucide-react';
@@ -162,6 +163,17 @@ export default function SidebarNav() {
                     }
                   >
                     Profile
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant='light'
+                    onPress={() => router.push('/feedback')}
+                    className='justify-start gap-3 rounded-[8px] text-sm font-normal text-[#364153] hover:bg-[#F2F4F7]'
+                    startContent={
+                      <MessageSquare className='size-4 text-[#364153]' />
+                    }
+                  >
+                    Feedback
                   </Button>
                   <Button
                     fullWidth

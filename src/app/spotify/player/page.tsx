@@ -84,9 +84,7 @@ export default function SpotifyPlayerPage() {
               </h3>
               <ul className='list-disc list-inside space-y-1 ml-2'>
                 <li>Spotify Premium account is required</li>
-                <li>
-                  Keep this browser tab open to maintain the connection
-                </li>
+                <li>Keep this browser tab open to maintain the connection</li>
                 <li>
                   The player will appear as "StudyGo Web Player" in your Spotify
                   devices
