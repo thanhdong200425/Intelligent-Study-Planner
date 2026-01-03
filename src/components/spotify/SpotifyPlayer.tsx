@@ -116,10 +116,13 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       );
 
       // Player state changed
-      spotifyPlayer.addListener('player_state_changed', (state: PlayerState) => {
-        if (!state) return;
-        setPlayerState(state);
-      });
+      spotifyPlayer.addListener(
+        'player_state_changed',
+        (state: PlayerState) => {
+          if (!state) return;
+          setPlayerState(state);
+        }
+      );
 
       spotifyPlayer.connect();
       setPlayer(spotifyPlayer);

@@ -291,7 +291,10 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
       const now = new Date();
       const elapsedSeconds = differenceInSeconds(now, startTime);
       const totalDurationSeconds = timerSettings[activeMode] * 60;
-      const newRemainingTime = Math.max(0, totalDurationSeconds - elapsedSeconds);
+      const newRemainingTime = Math.max(
+        0,
+        totalDurationSeconds - elapsedSeconds
+      );
 
       setRemainingTime(newRemainingTime);
 
