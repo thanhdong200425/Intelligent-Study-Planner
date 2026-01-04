@@ -22,8 +22,6 @@ const shouldSkipAuth = (config: AxiosRequestConfig): boolean => {
     return (
       pathname.includes('/auth/login') ||
       pathname.includes('/auth/signin') ||
-      pathname.includes('/auth/logout') ||
-      pathname.includes('/auth/signout') ||
       pathname.includes('/auth/refresh')
     );
   } catch {
@@ -31,8 +29,6 @@ const shouldSkipAuth = (config: AxiosRequestConfig): boolean => {
     return (
       pathname.includes('/auth/login') ||
       pathname.includes('/auth/signin') ||
-      pathname.includes('/auth/logout') ||
-      pathname.includes('/auth/signout') ||
       pathname.includes('/auth/refresh')
     );
   }
