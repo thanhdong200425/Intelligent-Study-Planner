@@ -1,6 +1,6 @@
 import { createTimerSession, updateTimerSession } from '@/services';
 import { addToast } from '@heroui/react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MutationProps } from './task';
 
 export interface CreateTimerSessionData {
@@ -21,9 +21,11 @@ export const useCreateTimerSessionMutation = ({
   onError,
   onSuccess,
 }: Pick<MutationProps, 'onError'> & { onSuccess?: (id: number) => void }) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateTimerSessionData) => createTimerSession(data),
     onSuccess: data => {
+      queryClient.invalidateQueries({ queryKey: ['timerSession'] });
       addToast({
         title: 'Timer session created successfully',
         color: 'success',
@@ -49,10 +51,12 @@ export const useUpdateTimerSessionMutation = ({
   onSuccess,
   onError,
 }: MutationProps) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateTimerSessionData }) =>
       updateTimerSession(id, data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timerSession'] });
       addToast({
         title: 'Timer session updated successfully',
         color: 'success',

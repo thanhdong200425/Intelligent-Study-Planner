@@ -18,9 +18,10 @@ import {
   useTimerDisplay,
   useAmbientSound,
   useAmbientPreset,
+  useActiveTimerSession,
+  useTodayTimerSessions,
 } from '@/hooks';
 import type { Task } from '@/types';
-import { getActiveTimerSession, getTodayTimerSessions } from '@/services';
 
 type TimerMode = 'focus' | 'break' | 'long_break';
 
@@ -33,6 +34,10 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   const { preferences, updatePreferences } = useTimerPreferences();
   const { selectedPreset: selectedAmbientPreset } = useAmbientPreset();
 
+  // Fetch active session and today's sessions from database
+  const { data: activeSession } = useActiveTimerSession();
+  const { data: todaySessions = [] } = useTodayTimerSessions();
+
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [activeMode, setActiveMode] = useState<TimerMode>('focus');
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -42,12 +47,22 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
       seconds: 0,
     })
   );
-  const [completedSessions, setCompletedSessions] = useState(0);
-  const [totalFocusTime, setTotalFocusTime] = useState(0); // in seconds
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [currentTimerSessionId, setCurrentTimerSessionId] = useState<
     number | null
   >(null);
+
+  // Calculate stats from today's sessions
+  const completedSessions = todaySessions.filter(
+    session => session.type === 'focus' && session.status === 'completed'
+  ).length;
+
+  const totalFocusTime =
+    todaySessions
+      .filter(
+        session => session.type === 'focus' && session.status === 'completed'
+      )
+      .reduce((sum, session) => sum + (session.durationMinutes ?? 0), 0) * 60; // convert to seconds
 
   // Play ambient sound only when timer is running
   useAmbientSound(selectedAmbientPreset, isRunning);
@@ -59,76 +74,48 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
   });
   const { mutate: updateTimerSession } = useUpdateTimerSessionMutation({});
 
-  // Load today's stats (completed focus sessions + total focus time) from backend
+  // Restore timer state from active session
   useEffect(() => {
-    const loadTodayStats = async () => {
-      const sessions = await getTodayTimerSessions();
+    if (activeSession) {
+      const sessionStartTime = new Date(activeSession.startTime);
+      const now = new Date();
 
-      // Only count completed focus sessions for stats
-      const completedFocusSessions = sessions.filter(
-        session => session.type === 'focus' && session.status === 'completed'
+      // Calculate the duration of the session based on type
+      const sessionType = activeSession.type as TimerMode;
+
+      const totalDurationSeconds = timerSettings[sessionType] * 60;
+
+      // Calculate elapsed time
+      const elapsedSeconds = differenceInSeconds(now, sessionStartTime);
+
+      // Calculate remaining time
+      const calculatedRemainingTime = Math.max(
+        0,
+        totalDurationSeconds - elapsedSeconds
       );
 
-      const totalMinutes = completedFocusSessions.reduce(
-        (sum, session) => sum + (session.durationMinutes ?? 0),
-        0
-      );
-
-      setCompletedSessions(completedFocusSessions.length);
-      setTotalFocusTime(totalMinutes * 60); // convert minutes to seconds
-    };
-
-    loadTodayStats();
-  }, []);
-
-  // Restore timer state on mount
-  useEffect(() => {
-    const restoreTimerState = async () => {
-      const activeSession = await getActiveTimerSession();
-
-      if (activeSession) {
-        const sessionStartTime = new Date(activeSession.startTime);
-        const now = new Date();
-
-        // Calculate the duration of the session based on type
-        const sessionType = activeSession.type as TimerMode;
-
-        const totalDurationSeconds = timerSettings[sessionType] * 60;
-
-        // Calculate elapsed time
-        const elapsedSeconds = differenceInSeconds(now, sessionStartTime);
-
-        // Calculate remaining time
-        const calculatedRemainingTime = Math.max(
-          0,
-          totalDurationSeconds - elapsedSeconds
-        );
-
-        // If timer has expired, mark it as completed
-        if (calculatedRemainingTime === 0) {
-          updateTimerSession({
-            id: activeSession.id,
-            data: {
-              endTime: new Date(
-                sessionStartTime.getTime() + totalDurationSeconds * 1000
-              ).toISOString(),
-              durationMinutes: Math.floor(totalDurationSeconds / 60),
-              status: 'completed',
-            },
-          });
-        } else {
-          // Restore the timer state
-          setCurrentTimerSessionId(activeSession.id);
-          setStartTime(sessionStartTime);
-          setActiveMode(sessionType);
-          setRemainingTime(calculatedRemainingTime);
-          setIsRunning(true);
-        }
+      // If timer has expired, mark it as completed
+      if (calculatedRemainingTime === 0) {
+        updateTimerSession({
+          id: activeSession.id,
+          data: {
+            endTime: new Date(
+              sessionStartTime.getTime() + totalDurationSeconds * 1000
+            ).toISOString(),
+            durationMinutes: Math.floor(totalDurationSeconds / 60),
+            status: 'completed',
+          },
+        });
+      } else {
+        // Restore the timer state
+        setCurrentTimerSessionId(activeSession.id);
+        setStartTime(sessionStartTime);
+        setActiveMode(sessionType);
+        setRemainingTime(calculatedRemainingTime);
+        setIsRunning(true);
       }
-    };
-
-    restoreTimerState();
-  }, [timerSettings, updateTimerSession]);
+    }
+  }, [activeSession, timerSettings, updateTimerSession]);
 
   const resetToModeDefault = useCallback(
     (mode: TimerMode) => {
@@ -324,10 +311,7 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
               },
             });
           }
-
-          setCompletedSessions(prev => prev + 1);
-          const sessionDuration = timerSettings.focus * 60;
-          setTotalFocusTime(prev => prev + sessionDuration);
+          // Stats will automatically update via query invalidation
         }
 
         // Clear current session state
