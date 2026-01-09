@@ -4,6 +4,7 @@ import {
   getWeeklyStudyHours,
   getTaskDistribution,
   getStudyTimeByCourse,
+  getFocusHoursHeatmap,
 } from '@/services/analytics';
 
 export const useAnalyticsStats = () => {
@@ -31,5 +32,12 @@ export const useStudyTimeByCourse = () => {
   return useQuery({
     queryKey: ['analytics', 'study-time-by-course'],
     queryFn: getStudyTimeByCourse,
+  });
+};
+
+export const useFocusHoursHeatmap = () => {
+  return useQuery({
+    queryKey: ['analytics', 'focus-hours-heatmap'],
+    queryFn: getFocusHoursHeatmap,
   });
 };

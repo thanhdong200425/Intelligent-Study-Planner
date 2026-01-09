@@ -25,11 +25,17 @@ export interface StudyTimeByCourse {
   hours: number;
 }
 
+export interface FocusHoursHeatmapData {
+  date: string;
+  hours: number;
+}
+
 const endpoint = {
   stats: '/analytics/stats',
   weeklyStudyHours: '/analytics/weekly-study-hours',
   taskDistribution: '/analytics/task-distribution',
   studyTimeByCourse: '/analytics/study-time-by-course',
+  focusHoursHeatmap: '/analytics/focus-hours-heatmap',
 };
 
 export const getAnalyticsStats = async (): Promise<AnalyticsStats> => {
@@ -82,6 +88,22 @@ export const getStudyTimeByCourse = async (): Promise<StudyTimeByCourse[]> => {
     console.log('Error: ', err);
     throw new Error(
       err.response?.data?.message || 'Failed to fetch study time by course'
+    );
+  }
+};
+
+export const getFocusHoursHeatmap = async (): Promise<
+  FocusHoursHeatmapData[]
+> => {
+  try {
+    const response = await apiClient.get<FocusHoursHeatmapData[]>(
+      endpoint.focusHoursHeatmap
+    );
+    return response.data;
+  } catch (err: any) {
+    console.log('Error: ', err);
+    throw new Error(
+      err.response?.data?.message || 'Failed to fetch focus hours heatmap'
     );
   }
 };
