@@ -1,17 +1,29 @@
+'use client';
+
 import React from 'react';
 import { Card } from '@heroui/react';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-
-const data = [
-  { name: 'Reading', value: 30, color: '#3b82f6' },
-  { name: 'Coding', value: 24, color: '#8b5cf6' },
-  { name: 'Writing', value: 15, color: '#10b981' },
-  { name: 'Pset', value: 21, color: '#f59e0b' },
-  { name: 'Others', value: 10, color: '#6b7280' },
-];
+import { useTaskDistribution } from '@/hooks/useAnalyticsStats';
 
 export const TaskDistributionChart: React.FC = () => {
+  const { data, isLoading } = useTaskDistribution();
+
+  // Calculate percentages from counts
+  const chartData = React.useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    if (total === 0) return [];
+
+    return data.map((item) => ({
+      ...item,
+      percentage: Math.round((item.value / total) * 100),
+    }));
+  }, [data]);
+
+  const hasData = chartData.length > 0;
+
   return (
     <Card className='p-6 shadow-sm'>
       {/* Header */}
@@ -27,35 +39,44 @@ export const TaskDistributionChart: React.FC = () => {
         </button>
       </div>
 
-      {/* Chart */}
+      {/* Chart / Loading / Empty State */}
       <div className='h-[300px]'>
-        <ResponsiveContainer width='100%' height='100%'>
-          <PieChart>
-            <Pie
-              data={data}
-              cx='50%'
-              cy='50%'
-              labelLine={false}
-              label={entry => `${entry.name} ${entry.value}%`}
-              outerRadius={80}
-              fill='#8884d8'
-              dataKey='value'
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '12px',
-              }}
-              formatter={(value: number) => [`${value}%`, 'Percentage']}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {isLoading ? (
+          <div className='h-full bg-gray-100 rounded-lg animate-pulse' />
+        ) : hasData ? (
+          <ResponsiveContainer width='100%' height='100%'>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx='50%'
+                cy='50%'
+                labelLine={false}
+                label={(entry) => `${entry.name} ${entry.percentage}%`}
+                outerRadius={80}
+                fill='#8884d8'
+                dataKey='value'
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+                formatter={(value: number) => [`${value}`, 'Tasks']}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className='flex flex-col items-center justify-center h-full text-gray-400'>
+            <PieChartIcon className='w-12 h-12 mb-3 opacity-50' />
+            <p className='text-sm'>No tasks created yet</p>
+          </div>
+        )}
       </div>
     </Card>
   );
