@@ -17,7 +17,7 @@ import { useWeeklyStudyHours } from '@/hooks/useAnalyticsStats';
 export const WeeklyStudyHoursChart: React.FC = () => {
   const { data, isLoading } = useWeeklyStudyHours();
 
-  const hasData = data && data.length > 0 && data.some((d) => d.hours > 0);
+  const hasData = data && data.length > 0 && data.some(d => d.hours > 0);
 
   return (
     <Card className='p-6 shadow-sm'>
