@@ -6,7 +6,6 @@ import {
   WeeklyStudyHoursChart,
   TaskDistributionChart,
   StudyTimeByCourseChart,
-  WeeklyTaskCompletionChart,
   FocusHoursHeatmap,
   RecentAchievements,
 } from '@/components/analytics';
@@ -38,7 +37,8 @@ export default function AnalyticsPage() {
                   Track your progress and insights
                 </p>
               </div>
-              <div className='flex gap-2 bg-white rounded-lg p-1 border border-gray-200'>
+              {/* Time selection button section */}
+              {/* <div className='flex gap-2 bg-white rounded-lg p-1 border border-gray-200'>
                 <Button size='sm' variant='solid' color='primary'>
                   Week
                 </Button>
@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
                 <Button size='sm' variant='light'>
                   Year
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             {/* Stats Cards */}
@@ -121,17 +121,14 @@ export default function AnalyticsPage() {
               ) : null}
             </div>
 
-            {/* Charts Row 1 */}
+            {/* Weekly Study Hours */}
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               <WeeklyStudyHoursChart />
               <TaskDistributionChart />
             </div>
 
             {/* Charts Row 2 */}
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-              <StudyTimeByCourseChart />
-              <WeeklyTaskCompletionChart />
-            </div>
+            <StudyTimeByCourseChart />
 
             {/* Heatmap */}
             <FocusHoursHeatmap />

@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Card } from '@heroui/react';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, BarChart3 } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -10,18 +12,13 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-
-const data = [
-  { day: 'Mon', hours: 4.5 },
-  { day: 'Tue', hours: 3.2 },
-  { day: 'Wed', hours: 5.8 },
-  { day: 'Thu', hours: 4 },
-  { day: 'Fri', hours: 6.5 },
-  { day: 'Sat', hours: 3.5 },
-  { day: 'Sun', hours: 2.8 },
-];
+import { useWeeklyStudyHours } from '@/hooks/useAnalyticsStats';
 
 export const WeeklyStudyHoursChart: React.FC = () => {
+  const { data, isLoading } = useWeeklyStudyHours();
+
+  const hasData = data && data.length > 0 && data.some((d) => d.hours > 0);
+
   return (
     <Card className='p-6 shadow-sm'>
       {/* Header */}
@@ -37,29 +34,38 @@ export const WeeklyStudyHoursChart: React.FC = () => {
         </button>
       </div>
 
-      {/* Chart */}
+      {/* Chart / Loading / Empty State */}
       <div className='h-[300px]'>
-        <ResponsiveContainer width='100%' height='100%'>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-            <XAxis
-              dataKey='day'
-              stroke='#9ca3af'
-              style={{ fontSize: '12px' }}
-            />
-            <YAxis stroke='#9ca3af' style={{ fontSize: '12px' }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '12px',
-              }}
-              formatter={(value: number) => [`${value}h`, 'Study Hours']}
-            />
-            <Bar dataKey='hours' fill='#3b82f6' radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {isLoading ? (
+          <div className='h-full bg-gray-100 rounded-lg animate-pulse' />
+        ) : hasData ? (
+          <ResponsiveContainer width='100%' height='100%'>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
+              <XAxis
+                dataKey='day'
+                stroke='#9ca3af'
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis stroke='#9ca3af' style={{ fontSize: '12px' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+                formatter={(value: number) => [`${value}h`, 'Study Hours']}
+              />
+              <Bar dataKey='hours' fill='#3b82f6' radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className='flex flex-col items-center justify-center h-full text-gray-400'>
+            <BarChart3 className='w-12 h-12 mb-3 opacity-50' />
+            <p className='text-sm'>No study hours recorded this week</p>
+          </div>
+        )}
       </div>
     </Card>
   );
