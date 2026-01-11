@@ -20,10 +20,11 @@ import {
   useAmbientPreset,
   useActiveTimerSession,
   useTodayTimerSessions,
+  useTabTitle,
 } from '@/hooks';
 import type { Task } from '@/types';
 
-type TimerMode = 'focus' | 'break' | 'long_break';
+export type TimerMode = 'focus' | 'break' | 'long_break';
 
 interface FocusTimerProps {
   selectedTask: Task | null;
@@ -66,6 +67,13 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ selectedTask }) => {
 
   // Play ambient sound only when timer is running
   useAmbientSound(selectedAmbientPreset, isRunning);
+
+  // Update tab title if timer is running
+  useTabTitle({
+    isRunning,
+    remainingTime,
+    mode: activeMode,
+  });
 
   const { mutate: createTimerSession } = useCreateTimerSessionMutation({
     onSuccess: (id: number) => {
